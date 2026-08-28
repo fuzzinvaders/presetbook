@@ -41,6 +41,24 @@ is out of circuit in the current mode is greyed with a `—` rather than hidden,
 Values that have no number — a compressor threshold you set by ear — say **à régler**, "set it by
 ear", instead of inventing a figure.
 
+## Filter, then print
+
+Two lists of chips — **Gear** and **Styles** — whose counts already account for the other filters in
+place. Several choices within one list add up, the two lists intersect. Filtering on a pedal also
+brings back the pedalboards that use it.
+
+![The filter panel open: Laney Lionheart and blues selected, the two matching presets
+below](docs/images/filtres.png)
+
+The **Print** button puts on paper exactly what is on screen, filters included. The header says what
+the sheet holds — active filters, preset count, date — and a preset is never cut across two pages.
+
+![The same view printed: white ground, two columns, no header or buttons, dials still
+readable](docs/images/impression.png)
+
+The dark theme is forced to light, and the dial fills are kept: browsers drop background colours when
+printing, and a dial without its marker says nothing at all.
+
 ## Pedals and pedalboards
 
 A pedalboard is a chain of pedals in signal order, each with its own settings and an in-circuit
@@ -101,7 +119,7 @@ as a static page, or opened straight from disk.
 
 | | |
 | --- | --- |
-| [Using Presetbook](docs/utilisation.md) 🇫🇷 | reading and editing a preset, building a pedalboard, creating a front panel, importing a Reaper chain, switching language, exporting |
+| [Using Presetbook](docs/utilisation.md) 🇫🇷 | reading and editing a preset, building a pedalboard, creating a front panel, importing a Reaper chain, switching language, filtering, printing, exporting |
 | [Installing and running it](docs/installation.md) 🇫🇷 | Docker, reverse proxy, updates, accounts, the demo account, security, the third-party script |
 | [Developing](docs/developpement.md) 🇫🇷 | architecture, data model, registries, the `.RfxChain` codec, both languages, tests |
 
@@ -111,11 +129,11 @@ as a static page, or opened straight from disk.
 npm test
 ```
 
-Twelve suites, 373 checks, nothing to install: the page rendered again in a minimal DOM, the front
+Thirteen suites, 409 checks, nothing to install: the page rendered again in a minimal DOM, the front
 panel registry, panels created from the interface, the form that creates them, pedals and their
 drawing, the effect-chain codec against a real chain, ReaEQ band types, exporting a preset and
 bringing it back into another library, the licence and the donation widget, account creation, the
-demo account against a real server, and the English version — thirteen screens rendered in English,
+demo account against a real server, the filters and the print sheet, and the English version — thirteen screens rendered in English,
 failing if a French word survives.
 
 ## Licence and donations
