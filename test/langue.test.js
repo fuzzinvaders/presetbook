@@ -137,7 +137,8 @@ Object.keys(ecrans).forEach((nom) => {
 /* --- la recherche accepte les deux langues, dans les deux sens --- */
 function trouvees(langue, q) {
   const w = run(page, { search: (langue ? "?lang=en&" : "?") + "q=" + encodeURIComponent(q) });
-  return (w.__nodes.get("list").innerHTML.match(/class="card/g) || []).length;
+  /* une carte, une balise <article> : « class="card » apparaît trois fois par carte */
+  return (w.__nodes.get("list").innerHTML.match(/<article/g) || []).length;
 }
 check("un mot français cherché en anglais", trouvees(true, "répétition") > 0,
   String(trouvees(true, "répétition")));

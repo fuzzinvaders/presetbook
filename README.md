@@ -7,8 +7,10 @@ and the plugin chains of a recording program — kept in one page you can search
 
 It was born for bass, and the shipped catalogue shows it: a Yamaha BB734A, a Fender Rumble 40. But
 **nothing in the tool is specific to bass.** A front panel is described — its knobs, its modes, which
-controls leave the circuit — and the interface follows. Guitar, keys, a modular synth, electronic
-drums: if it has knobs, it belongs here.
+controls leave the circuit — and the interface follows. The catalogue proves it: the **Laney
+Lionheart L20T-112** guitar combo went in without a line of code, with its two channels, its global
+Tone, down to its white blue-marked knobs on a stainless panel. Keys, a modular synth, a drum
+machine: if it has knobs, it belongs here.
 
 ![The All Star cover, grouped by song: the bass preset with its clock-hour dials next to the Reaper
 chain, showing TSE BOD parameters and a ReaEQ band table](docs/images/par-morceau.png)
