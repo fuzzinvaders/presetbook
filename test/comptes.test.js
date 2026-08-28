@@ -28,19 +28,63 @@ const who = w.__nodes.get("who").innerHTML;
 check("le bouton Comptes apparaît une fois connecté", who.indexOf('id="btn-account"') > 0, who);
 check("la déconnexion est toujours là", who.indexOf('id="btn-logout"') > 0);
 
-/* --- la feuille : trois champs, et rien qui traîne dans le gestionnaire de mots de passe --- */
+/* --- la feuille porte deux formulaires : on les examine séparément --- */
 pb.openAccount();
 const f = w.__nodes.get("veil").innerHTML;
+
+/** Le morceau de HTML d'un formulaire donné, pour ne pas compter chez le voisin. */
+function form(id) {
+  const d = f.indexOf('id="' + id + '"');
+  return d < 0 ? "" : f.slice(d, f.indexOf("</form>", d));
+}
+const creation = form("acc-form");
+const motDePasse = form("pw-form");
+
+check("les deux formulaires sont là", creation.length > 0 && motDePasse.length > 0);
+
 ["name", "password", "again"].forEach((champ) => {
-  check("le champ « " + champ + " » est là", f.indexOf('name="' + champ + '"') > 0);
+  check("création : le champ « " + champ + " » est là", creation.indexOf('name="' + champ + '"') > 0);
 });
-check("les deux mots de passe sont masqués",
-  (f.match(/type="password"/g) || []).length === 2);
-check("le navigateur ne propose pas le mot de passe courant",
-  (f.match(/autocomplete="new-password"/g) || []).length === 2, f.slice(0, 60));
-check("le formulaire n'est pas rempli automatiquement", f.indexOf('autocomplete="off"') > 0);
+check("création : les deux mots de passe sont masqués",
+  (creation.match(/type="password"/g) || []).length === 2);
+check("création : le navigateur ne propose pas un mot de passe existant",
+  (creation.match(/autocomplete="new-password"/g) || []).length === 2);
+check("création : rien n'est rempli automatiquement", creation.indexOf('autocomplete="off"') > 0);
 check("l'écran dit que la session ne change pas", f.indexOf("Ta session ne change pas") > 0);
 check("il annonce l'absence de récupération", f.indexOf("récupération par courriel") > 0);
+
+["current", "password", "again"].forEach((champ) => {
+  check("changement : le champ « " + champ + " » est là",
+    motDePasse.indexOf('name="' + champ + '"') > 0);
+});
+check("changement : les trois champs sont masqués",
+  (motDePasse.match(/type="password"/g) || []).length === 3);
+check("changement : le mot de passe actuel est proposé par le gestionnaire",
+  motDePasse.indexOf('autocomplete="current-password"') > 0);
+check("changement : les deux nouveaux ne le sont pas",
+  (motDePasse.match(/autocomplete="new-password"/g) || []).length === 2);
+check("il prévient que les autres sessions tombent",
+  motDePasse.indexOf("autres sessions seront fermées") > 0);
+
+/* --- les refus du changement, avant tout appel réseau --- */
+function essaiPw(actuel, neuf, encore) {
+  pb.openAccount();
+  pb.submitPassword({
+    elements: { current: { value: actuel }, password: { value: neuf }, again: { value: encore } },
+    querySelector: () => ({ disabled: false }),
+  });
+  const err = w.__nodes.get("pw-err");
+  return err ? err.textContent : "";
+}
+check("deux nouveaux différents sont refusés",
+  essaiPw("ancien-mot-de-passe", "nouveau-mot-1", "nouveau-mot-2").indexOf("identiques") > 0,
+  essaiPw("ancien-mot-de-passe", "nouveau-mot-1", "nouveau-mot-2"));
+check("un nouveau trop court est refusé",
+  essaiPw("ancien-mot-de-passe", "court", "court").indexOf("10 caractères") > 0);
+check("réutiliser l'ancien est refusé",
+  essaiPw("le-meme-mot-de-passe", "le-meme-mot-de-passe", "le-meme-mot-de-passe")
+    .indexOf("identique à l'ancien") > 0,
+  essaiPw("le-meme-mot-de-passe", "le-meme-mot-de-passe", "le-meme-mot-de-passe"));
 
 /* --- les refus, avant tout appel réseau --- */
 function essai(nom, mdp, encore) {

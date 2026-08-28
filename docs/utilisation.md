@@ -358,6 +358,23 @@ droite rappelle en permanence qu'on est en démonstration.
 Pour garder son travail, il faut un vrai compte. En attendant, **Exporter** sur une carte et
 **Sauvegarde** fonctionnent normalement : rien n'empêche d'emporter ce qu'on a fait dans la démo.
 
+### Changer son mot de passe
+
+Le bouton **Comptes** ouvre deux formulaires. Le premier change **votre** mot de passe : l'actuel, le
+nouveau, sa répétition. Vos **autres sessions sont fermées** au passage — celle qui fait le
+changement reste ouverte. C'est le geste à faire dès qu'on vous a transmis un mot de passe par
+message.
+
+Personne ne peut changer le mot de passe de quelqu'un d'autre depuis l'application, même connecté, et
+ce n'est pas un oubli : ce serveur n'a pas d'administrateur, tout utilisateur connecté pouvant ouvrir
+un compte. Ajouter ce droit reviendrait à permettre à n'importe qui de prendre n'importe quel compte.
+
+Le compte de démonstration fait exception dans l'autre sens : il **garde** son mot de passe, qui est
+public et affiché. Le changer fermerait la porte à tout le monde jusqu'au redémarrage.
+
+Un mot de passe **oublié** se répare depuis la machine qui héberge, pas depuis l'application — voir
+[Installer et exploiter](installation.md).
+
 ### Ouvrir un compte à quelqu'un
 
 Une fois connecté, le bouton **Comptes** de l'en-tête ouvre un compte à quelqu'un d'autre :
@@ -369,10 +386,10 @@ La personne se connecte ensuite elle-même, et ses fiches sont entièrement sép
 évite d'ouvrir `ALLOW_REGISTER` sur un serveur exposé à Internet : vous créez les comptes de votre
 groupe un par un, sans laisser la création ouverte à tout venant.
 
-Deux limites à connaître. Le mot de passe se transmet **de la main à la main** : il n'y a ni envoi
-par courriel, ni écran pour le changer ensuite — le remplacer demande de retirer l'entrée du compte
-dans `users.json` et de le recréer. Et il n'existe pas de liste des comptes dans l'interface : un
-identifiant déjà pris est signalé au moment de la création, c'est tout.
+Deux choses à savoir. Le mot de passe se transmet **de la main à la main** — il n'y a pas d'envoi par
+courriel — donc dites à la personne de le **changer à sa première connexion**, ce qui fermera du même
+coup toute autre session. Et il n'existe pas de liste des comptes dans l'interface : un identifiant
+déjà pris est signalé au moment de la création, c'est tout.
 
 ## Licence et dons
 
