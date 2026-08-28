@@ -105,6 +105,16 @@ Le séparateur décimal et l'écriture des heures suivent aussi la langue (`6,5`
 `12 h 30` contre `12:30`). La recherche, elle, accepte les deux langues quelle que soit celle
 affichée.
 
+## Sur le téléphone, et hors ligne
+
+L'application **s'installe** : sur Android, un bouton **Installer** apparaît dès que le navigateur le
+propose ; sur iPhone, *Partager → Sur l'écran d'accueil*. Elle s'ouvre alors dans sa propre fenêtre,
+avec son icône, et **s'ouvre sans réseau** — vérifié serveur éteint, le catalogue s'affiche entier.
+
+Le service worker va délibérément **au réseau d'abord**, et ne se replie sur sa copie que si le réseau
+ne répond pas. C'est l'inverse du réflexe habituel : servir le cache en premier ferait tourner une
+version périmée après chaque mise à jour, sans que rien ne le signale.
+
 ## Démarrer
 
 ```bash
@@ -139,12 +149,12 @@ serveur du tout — publiée en statique, ou ouverte depuis le disque.
 npm test
 ```
 
-Treize suites, 409 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
+Quatorze suites, 454 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
 minimal, le registre des façades, celles créées depuis l'interface, le formulaire qui les crée, les
 pédales et leur dessin, le codec des chaînes d'effets sur une chaîne réelle, les types de bande de
 ReaEQ, l'export d'une fiche et son retour dans une autre bibliothèque, la licence et le widget de
 dons, la création de comptes, le compte de démonstration éprouvé contre un vrai serveur, les filtres et la
-feuille d'impression, et la version anglaise — treize écrans rendus en anglais, qui échouent si un mot français y subsiste.
+feuille d'impression, le téléphone et l'installation, et la version anglaise — treize écrans rendus en anglais, qui échouent si un mot français y subsiste.
 
 ## Licence et dons
 

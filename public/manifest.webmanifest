@@ -1,0 +1,26 @@
+{
+  "name": "Presetbook",
+  "short_name": "Presetbook",
+  "description": "Les réglages d'un instrument, d'un ampli, d'une pédale, d'un pédalier et des chaînes de plugins, affichés comme sur le matériel.",
+  "id": "/",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#121412",
+  "theme_color": "#121412",
+  "categories": ["music", "utilities", "productivity"],
+  "lang": "fr",
+  "dir": "ltr",
+  "icons": [
+    { "src": "icone.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Chaînes Reaper", "url": "?kind=reaper" },
+    { "name": "Pédaliers", "url": "?kind=board" },
+    { "name": "Nouveau preset", "url": "?new=1" }
+  ]
+}

@@ -96,6 +96,16 @@ labels and pedal families. Proper names are left alone — a Yamaha BB734A stays
 The decimal separator and the way EQ hours are written follow the language too (`6,5` against `6.5`,
 `12 h 30` against `12:30`). Search accepts both languages whichever one is displayed.
 
+## On a phone, and offline
+
+The app **installs**: on Android an **Install** button appears as soon as the browser offers it; on
+iPhone it is *Share → Add to Home Screen*. It then opens in its own window, with its icon, and
+**opens with no network** — verified with the server stopped, the whole catalogue still renders.
+
+The service worker deliberately goes **to the network first**, falling back on its copy only when the
+network does not answer. That is the opposite of the usual reflex: serving the cache first would run a
+stale version after every update, with nothing to signal it.
+
 ## Run it
 
 ```bash
@@ -129,11 +139,11 @@ as a static page, or opened straight from disk.
 npm test
 ```
 
-Thirteen suites, 409 checks, nothing to install: the page rendered again in a minimal DOM, the front
+Fourteen suites, 454 checks, nothing to install: the page rendered again in a minimal DOM, the front
 panel registry, panels created from the interface, the form that creates them, pedals and their
 drawing, the effect-chain codec against a real chain, ReaEQ band types, exporting a preset and
 bringing it back into another library, the licence and the donation widget, account creation, the
-demo account against a real server, the filters and the print sheet, and the English version — thirteen screens rendered in English,
+demo account against a real server, the filters and the print sheet, the phone layout and the install, and the English version — thirteen screens rendered in English,
 failing if a French word survives.
 
 ## Licence and donations
