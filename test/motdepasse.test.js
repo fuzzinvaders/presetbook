@@ -217,15 +217,66 @@ const NOUVEAU = "un-nouveau-mot-de-passe";
     check("le mot de passe tiré par l'outil ouvre bien le compte",
       apresOutil.code === 200, String(apresOutil.code));
 
-    const inconnu = execFileSync(process.execPath,
-      [path.join(RACINE, "tools", "motdepasse.js"), "personne"],
-      { env: { ...process.env, DATA_DIR: dossier }, encoding: "utf8", stdio: "pipe" })
-      .toString().trim() || "";
-    check("un compte inconnu ne casse rien", inconnu === "" || inconnu.length >= 0);
+    /* L'outil sort en erreur sur un compte inconnu : on l'attrape ici, sinon
+       il emporterait avec lui tout ce qui suit dans ce bloc. */
+    let refuse = false;
+    try {
+      execFileSync(process.execPath, [path.join(RACINE, "tools", "motdepasse.js"), "personne"],
+        { env: { ...process.env, DATA_DIR: dossier }, encoding: "utf8", stdio: "pipe" });
+    } catch { refuse = true; }
+    check("l'outil refuse un compte inconnu", refuse === true);
+    /* --- la reprise choisit le bon compte, même mal daté --- */
+    const dossier2 = await fsp.mkdtemp(path.join(os.tmpdir(), "presetbook-role-"));
+    const crypto = require("node:crypto");
+    const compte = (nom, quand) => {
+      const sel = crypto.randomBytes(16);
+      const o = { id: crypto.randomUUID(), name: nom, kdf: "scrypt",
+        params: { N: 16384, r: 8, p: 1, keylen: 64 }, salt: sel.toString("hex"),
+        hash: crypto.scryptSync("mdp-" + nom, sel, 64, { N: 16384, r: 8, p: 1 }).toString("hex") };
+      if (quand) o.created = quand;
+      return o;
+    };
+    /* Le deuxième compte n'a pas de date : c'est le cas qui donnait le rôle au
+       mauvais compte, une chaîne vide précédant n'importe quelle date. */
+    await fsp.writeFile(path.join(dossier2, "users.json"), JSON.stringify({ v: 1, users: [
+      compte("premier", "2026-08-22T09:00:00.000Z"),
+      compte("sansdate", null),
+      compte("dernier", "2026-08-28T09:00:00.000Z"),
+    ] }), "utf8");
+
+    const PORT2 = PORT + 1;
+    const s2 = spawn(process.execPath, [path.join(RACINE, "server.js")], {
+      env: { ...process.env, PORT: String(PORT2), HOST: "127.0.0.1", DATA_DIR: dossier2 },
+      stdio: "ignore",
+    });
+    for (let i = 0; i < 60; i++) {
+      try { await fetch("http://127.0.0.1:" + PORT2 + "/healthz"); break; } catch { await attendre(100); }
+    }
+    const r2 = await fetch("http://127.0.0.1:" + PORT2 + "/api/login", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "premier", password: "mdp-premier" }) });
+    const c2 = (r2.headers.get("set-cookie") || "").split(";")[0];
+    const vue = await (await fetch("http://127.0.0.1:" + PORT2 + "/api/session",
+      { headers: { Cookie: c2 } })).json();
+    check("le rôle va au premier compte du fichier, pas à celui sans date",
+      vue.isAdmin === true, JSON.stringify(vue));
+
+    const rSans = await fetch("http://127.0.0.1:" + PORT2 + "/api/login", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "sansdate", password: "mdp-sansdate" }) });
+    const cSans = (rSans.headers.get("set-cookie") || "").split(";")[0];
+    const vueSans = await (await fetch("http://127.0.0.1:" + PORT2 + "/api/session",
+      { headers: { Cookie: cSans } })).json();
+    check("le compte sans date ne l'est pas", vueSans.isAdmin === false, JSON.stringify(vueSans));
+
+    s2.kill();
+    await attendre(300);
+    await fsp.rm(dossier2, { recursive: true, force: true }).catch(() => {});
+
   } catch (err) {
     /* execFileSync sort en erreur quand l'outil refuse : c'est attendu. */
-    if (!/Command failed/.test(err.message)) { failed++; console.log("  ÉCHEC exécution — " + err.message); }
-    else check("l'outil refuse un compte inconnu par un code de sortie", true);
+    failed++;
+    console.log("  ÉCHEC exécution — " + err.message);
   } finally {
     if (serveur) { serveur.kill(); await attendre(300); }
     if (dossier) await fsp.rm(dossier, { recursive: true, force: true }).catch(() => {});

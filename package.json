@@ -15,7 +15,8 @@
     "learn:eqtypes": "node tools/learn-eqtypes.js",
     "captures": "node tools/captures.js",
     "icones": "node tools/icones.js",
-    "motdepasse": "node tools/motdepasse.js"
+    "motdepasse": "node tools/motdepasse.js",
+    "admin": "node tools/admin.js"
   },
   "engines": {
     "node": ">=18"

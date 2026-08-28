@@ -140,6 +140,26 @@ service derrière un reverse proxy en **HTTPS** : l'authentification transmet le
 corps de la requête, ce qui n'a de sens que sous TLS. `BASIC_AUTH` peut servir de barrière
 supplémentaire pour masquer entièrement l'existence du site.
 
+### Voir et déplacer le rôle d'administrateur
+
+```bash
+docker compose -f docker-compose.traefik.yml exec presetbook node tools/admin.js
+```
+
+Sans argument, l'outil affiche les comptes, leur date de création et qui porte le rôle. C'est le
+premier réflexe si le rôle n'est pas là où vous l'attendiez : il signale notamment les comptes sans
+date de création, qui ont pu fausser l'attribution sur les versions antérieures.
+
+Pour le déplacer :
+
+```bash
+docker compose -f docker-compose.traefik.yml exec presetbook node tools/admin.js <identifiant>
+```
+
+Le changement est immédiat — le serveur relit les comptes à chaque requête — et il n'y a **pas**
+d'écran pour cela : sans quoi un administrateur pourrait s'en désigner un autre à l'insu du
+propriétaire du serveur.
+
 ### Un mot de passe oublié
 
 Chacun change le sien depuis l'application, bouton **Comptes**. Mais personne ne peut changer celui
