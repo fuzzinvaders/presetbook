@@ -517,6 +517,20 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Mon mot de passe": "My password",
+  "Mot de passe actuel": "Current password",
+  "Nouveau mot de passe": "New password",
+  "Répéter le nouveau": "Repeat the new one",
+  "Changer le mot de passe": "Change the password",
+  "Au moins 10 caractères. Tes autres sessions seront fermées — celle-ci reste ouverte.":
+    "At least 10 characters. Your other sessions will be closed — this one stays open.",
+  "Le nouveau mot de passe est identique à l'ancien.": "The new password is the same as the old one.",
+  "Mot de passe changé.": "Password changed.",
+  "Mot de passe changé, {0} autre(s) session(s) fermée(s).":
+    "Password changed, {0} other session(s) closed.",
+  "Mot de passe actuel incorrect.": "Current password is incorrect.",
+  "Le compte de démonstration garde son mot de passe.":
+    "The demo account keeps its password.",
   "Installer": "Install",
   "Presetbook est installé.": "Presetbook is installed.",
   "Filtres": "Filters",
@@ -1900,9 +1914,26 @@ function renderWho(){
 function openAccount(){
   var veil = document.getElementById("veil");
   veil.innerHTML = tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Comptes">' +
-    '<div class="sheet-h"><h2>Nouveau compte</h2>' +
+    '<div class="sheet-h"><h2>Comptes</h2>' +
       '<button class="btn small ghost" data-close>Fermer</button></div>' +
     '<div class="sheet-b">' +
+      '<fieldset><legend>Mon mot de passe</legend>' +
+        '<form id="pw-form" autocomplete="on">' +
+          '<label class="fld">Mot de passe actuel' +
+            '<input type="password" name="current" required autocomplete="current-password"></label>' +
+          '<label class="fld">Nouveau mot de passe' +
+            '<input type="password" name="password" required autocomplete="new-password"' +
+            ' minlength="10"></label>' +
+          '<label class="fld">Répéter le nouveau' +
+            '<input type="password" name="again" required autocomplete="new-password"' +
+            ' minlength="10"></label>' +
+          '<p class="hint">Au moins 10 caractères. Tes autres sessions seront fermées — ' +
+          'celle-ci reste ouverte.</p>' +
+          '<p class="gate-err" id="pw-err"></p>' +
+          '<div class="acts"><button class="btn" type="submit">Changer le mot de passe</button></div>' +
+        '</form>' +
+      '</fieldset>' +
+      '<fieldset><legend>Nouveau compte</legend>' +
       '<p class="hint">Ouvre un compte à quelqu\'un d\'autre sur ce serveur. ' +
       'Ta session ne change pas, et ses fiches seront séparées des tiennes.</p>' +
       '<form id="acc-form" autocomplete="off">' +
@@ -1924,10 +1955,37 @@ function openAccount(){
           '<button class="btn ghost" type="button" data-close>Annuler</button>' +
         '</div>' +
       '</form>' +
+      '</fieldset>' +
     '</div></div>');
   veil.classList.add("open");
   var first = veil.querySelector('input[name="name"]');
   if (first) first.focus();
+}
+
+function passwordError(msg){
+  var el = document.getElementById("pw-err");
+  if (!el) return;
+  el.textContent = t(msg);
+  el.classList.add("show");
+}
+
+function submitPassword(f){
+  var actuel = f.elements.current.value;
+  var neuf = f.elements.password.value;
+  var encore = f.elements.again.value;
+  if (neuf !== encore){ passwordError("Les deux mots de passe ne sont pas identiques."); return; }
+  if (neuf.length < 10){ passwordError("Mot de passe : au moins 10 caractères."); return; }
+  if (neuf === actuel){ passwordError("Le nouveau mot de passe est identique à l'ancien."); return; }
+  var btn = f.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  post("api/password", {current:actuel, password:neuf}).then(function(j){
+    closeEditor();
+    toast(j && j.closed ? tf("Mot de passe changé, {0} autre(s) session(s) fermée(s).", j.closed)
+                        : "Mot de passe changé.");
+  }, function(err){
+    btn.disabled = false;
+    passwordError(err.message);
+  });
 }
 
 function accountError(msg){
@@ -3666,9 +3724,9 @@ document.getElementById("veil").addEventListener("click", function(e){
 
 document.getElementById("veil").addEventListener("submit", function(e){
   var f = e.target;
-  if (!f || f.id !== "acc-form") return;
-  e.preventDefault();
-  submitAccount(f);
+  if (!f) return;
+  if (f.id === "acc-form"){ e.preventDefault(); submitAccount(f); return; }
+  if (f.id === "pw-form"){ e.preventDefault(); submitPassword(f); return; }
 });
 document.getElementById("veil").addEventListener("change", function(e){
   var f = e.target;
@@ -3874,6 +3932,7 @@ window.__pb = {
   renderFilters: renderFilters, filterLabel: filterLabel, activeFilters: activeFilters,
   ui: function(){ return ui; }, printDate: printDate,
   openAccount: openAccount, submitAccount: submitAccount, renderWho: renderWho,
+  submitPassword: submitPassword,
   setSession: function(u, demo){ session.user = u; session.isDemo = !!demo; },
   setDemo: function(d){ session.demo = d; },
   getSession: function(){ return session; },

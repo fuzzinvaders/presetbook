@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
  * Statique      : public/
- * Session       : GET /api/session, POST /api/register, /api/login, /api/logout
+ * Session       : GET /api/session, POST /api/register, /api/login, /api/logout, /api/password
  * Presets       : GET/PUT /api/presets — propres à l'utilisateur connecté
  * Santé         : GET /healthz — jamais protégé
  *
@@ -275,6 +275,81 @@ async function createUser(db, name, password) {
   db.users.push(user);
   await writeJsonFile(USERS_FILE, db);
   return user;
+}
+
+/**
+ * Changer son propre mot de passe, et seulement le sien.
+ *
+ * Personne ne peut changer celui d'un autre, même en étant connecté : ce
+ * serveur n'a pas d'administrateur, et n'importe quel utilisateur pouvant
+ * ouvrir un compte, ce droit-là reviendrait à pouvoir prendre le compte de
+ * n'importe qui. Un mot de passe oublié se répare depuis la machine, avec
+ * « npm run motdepasse ».
+ */
+async function handlePassword(req, res) {
+  if (throttled(req)) {
+    return sendJson(res, 429, { error: "Trop de tentatives. Réessaie dans un quart d'heure." });
+  }
+  const user = await currentUser(req);
+  if (!user) return sendJson(res, 401, { error: "Connexion requise." });
+  if (isDemo(user)) {
+    /* Ses identifiants sont publics et affichés : les changer fermerait la
+       porte à tout le monde jusqu'au prochain redémarrage. */
+    return sendJson(res, 403, { error: "Le compte de démonstration garde son mot de passe." });
+  }
+
+  let body;
+  try { body = await readJsonBody(req); }
+  catch { return sendJson(res, 400, { error: "Requête invalide." }); }
+
+  const actuel = String(body.current || "");
+  const neuf = String(body.password || "");
+
+  if (!(await passwordMatches(user, actuel))) {
+    noteFailure(req);
+    console.warn(`[presetbook] mot de passe actuel refusé pour « ${user.name} »`);
+    return sendJson(res, 401, { error: "Mot de passe actuel incorrect." });
+  }
+  if (neuf.length < PW_MIN || neuf.length > PW_MAX) {
+    return sendJson(res, 422, { error: `Mot de passe : au moins ${PW_MIN} caractères.` });
+  }
+  if (neuf === actuel) {
+    return sendJson(res, 422, { error: "Le nouveau mot de passe est identique à l'ancien." });
+  }
+
+  const db = await readUsers();
+  const cible = db.users.find((u) => u.id === user.id);
+  if (!cible) return sendJson(res, 401, { error: "Connexion requise." });
+  await setPassword(db, cible, neuf);
+  fails.delete(clientIp(req));
+
+  /* Les autres sessions tombent : un mot de passe qu'on change est souvent un
+     mot de passe qu'on ne veut plus voir servir ailleurs. Celle-ci survit. */
+  const fermees = dropSessions(user.id, tokenHash(cookieValue(req, COOKIE) || ""));
+  console.log(`[presetbook] mot de passe changé : ${user.name}` +
+              (fermees ? ` (${fermees} autre(s) session(s) fermée(s))` : ""));
+  return sendJson(res, 200, { ok: true, closed: fermees });
+}
+
+/** Remplace la dérivation d'un compte. Le sel est refait : deux mots de passe
+    successifs ne doivent pas partager le leur. */
+async function setPassword(db, user, password) {
+  const salt = crypto.randomBytes(16);
+  user.salt = salt.toString("hex");
+  user.hash = (await scrypt(password, salt)).toString("hex");
+  user.params = { N: SCRYPT.N, r: SCRYPT.r, p: SCRYPT.p, keylen: SCRYPT.keylen };
+  user.passwordChanged = new Date().toISOString();
+  await writeJsonFile(USERS_FILE, db);
+}
+
+/** Ferme toutes les sessions d'un compte, sauf éventuellement celle en cours. */
+function dropSessions(userId, sauf) {
+  let n = 0;
+  for (const [h, s] of sessions) {
+    if (s.userId === userId && h !== sauf) { sessions.delete(h); n++; }
+  }
+  if (n) flushSessions();
+  return n;
 }
 
 async function passwordMatches(user, password) {
@@ -706,6 +781,7 @@ const server = http.createServer(async (req, res) => {
     if (pathname === "/api/register" && req.method === "POST") return await handleRegister(req, res);
     if (pathname === "/api/login" && req.method === "POST") return await handleLogin(req, res);
     if (pathname === "/api/demo" && req.method === "POST") return await handleDemo(req, res);
+    if (pathname === "/api/password" && req.method === "POST") return await handlePassword(req, res);
     if (pathname === "/api/logout" && req.method === "POST") return handleLogout(req, res);
 
     if (pathname === "/api/presets") {

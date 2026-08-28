@@ -16,6 +16,9 @@ WORKDIR /app
 # Aucune dépendance : rien à installer, donc pas d'étape npm.
 COPY package.json server.js ./
 COPY public ./public
+# Les outils voyagent avec l image : redonner un mot de passe oublié doit être
+# possible depuis le conteneur, sans dépôt cloné ni Node sur l hôte.
+COPY tools ./tools
 
 RUN mkdir -p /data && chown -R node:node /data /app
 

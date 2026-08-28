@@ -127,13 +127,39 @@ Ce qui est stocké, et comment :
 - au-delà de 10 échecs de connexion en un quart d'heure, la même adresse est refusée sans même
   vérifier le mot de passe. Un identifiant inconnu et un mauvais mot de passe donnent la même
   réponse, pour ne pas révéler quels comptes existent ;
-- **pas de récupération par courriel.** Un mot de passe perdu se répare en retirant l'entrée du
-  compte dans `users.json` et en le recréant — les presets, eux, restent dans leur propre fichier.
+- **pas de récupération par courriel.** Un mot de passe perdu se redonne depuis la machine, voir
+  juste en dessous — les presets, eux, ne bougent pas.
 
 Les comptes protègent les données, pas le réseau. Pour une exposition hors du réseau local, placer le
 service derrière un reverse proxy en **HTTPS** : l'authentification transmet le mot de passe dans le
 corps de la requête, ce qui n'a de sens que sous TLS. `BASIC_AUTH` peut servir de barrière
 supplémentaire pour masquer entièrement l'existence du site.
+
+### Un mot de passe oublié
+
+Chacun change le sien depuis l'application, bouton **Comptes**. Mais personne ne peut changer celui
+d'un autre par le web, et c'est délibéré : ce serveur n'a pas d'administrateur, et tout utilisateur
+connecté pouvant ouvrir un compte, ce droit-là permettrait de prendre n'importe quel compte.
+
+Le droit vient donc de l'accès à la machine :
+
+```bash
+DATA_DIR=/srv/presetbook-data node tools/motdepasse.js <identifiant>
+```
+
+Sans second argument, l'outil **tire un mot de passe au hasard et l'affiche** — rien ne passe par
+l'historique du shell. Il ferme aussi les sessions enregistrées du compte. Les sessions déjà en
+mémoire du serveur, elles, tombent au redémarrage :
+
+```bash
+docker compose -f docker-compose.traefik.yml restart presetbook
+```
+
+Depuis un conteneur en marche, sans arrêter le service :
+
+```bash
+docker compose -f docker-compose.traefik.yml exec presetbook node tools/motdepasse.js <identifiant>
+```
 
 ### Ce qui part sur le fil
 
