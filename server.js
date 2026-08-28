@@ -11,7 +11,8 @@
  * Presets       : GET/PUT /api/presets — propres à l'utilisateur connecté
  * Santé         : GET /healthz — jamais protégé
  *
- * Environnement : PORT, HOST, DATA_DIR, BASIC_AUTH, ALLOW_REGISTER, SESSION_DAYS, SECURE_COOKIES
+ * Environnement : PORT, HOST, DATA_DIR, BASIC_AUTH, ALLOW_REGISTER, SESSION_DAYS, SECURE_COOKIES,
+ *                 DEMO_LOGIN
  *
  * Les mots de passe ne sont jamais stockés : seule une dérivation scrypt l'est,
  * avec un sel propre à chaque compte. Les jetons de session ne sont pas stockés
@@ -37,6 +38,16 @@ const BASIC_AUTH = process.env.BASIC_AUTH || "";
 const ALLOW_REGISTER = /^(1|true|oui|yes)$/i.test(process.env.ALLOW_REGISTER || "");
 const SESSION_DAYS = Number(process.env.SESSION_DAYS || 30);
 const SECURE_COOKIES = /^(1|true|oui|yes)$/i.test(process.env.SECURE_COOKIES || "");
+
+/* Compte de démonstration, « identifiant:motdepasse », vide pour le désactiver.
+   Ses identifiants sont publics par construction, donc il est tenu à l'écart :
+   il ne peut pas créer de compte, et ses fiches repartent de zéro à chaque
+   démarrage. Il ne compte dans aucune règle de comptes non plus — sans quoi sa
+   simple existence ferait croire au serveur qu'il a déjà un propriétaire. */
+const DEMO_LOGIN = process.env.DEMO_LOGIN || "";
+const DEMO_NAME = DEMO_LOGIN.split(":")[0] || "";
+const DEMO_PASSWORD = DEMO_LOGIN.slice(DEMO_NAME.length + 1);
+const DEMO_MAX_GRANTS = 20;
 
 const MAX_BODY = 4 * 1024 * 1024;
 const MAX_PRESETS = 5000;
@@ -171,6 +182,16 @@ async function readUsers() {
   return Array.isArray(db.users) ? db : { v: 1, users: [] };
 }
 
+/** Le compte de démonstration, reconnu par son nom. */
+function isDemo(user) {
+  return !!DEMO_NAME && !!user && String(user.name).toLowerCase() === DEMO_NAME.toLowerCase();
+}
+
+/** Les vrais comptes : ceux qui décident si le serveur a un propriétaire. */
+function realUsers(db) {
+  return db.users.filter((u) => !isDemo(u));
+}
+
 function findUser(db, name) {
   const wanted = String(name).trim().toLowerCase();
   return db.users.find((u) => u.name.toLowerCase() === wanted) || null;
@@ -225,11 +246,23 @@ function saveSessionsSoon() {
   if (sessionSaveTimer) return;
   sessionSaveTimer = setTimeout(() => {
     sessionSaveTimer = null;
-    writeJsonFile(SESSIONS_FILE, Object.fromEntries(sessions)).catch((err) =>
-      console.error("[presetbook] sessions non enregistrées", err.message)
-    );
+    flushSessions();
   }, 1000);
+  /* Le minuteur ne retient pas le processus : c'est voulu, mais cela veut dire
+     qu'une écriture en attente se perd si le serveur s'arrête avant l'échéance.
+     L'arrêt appelle donc flushSessions() — sans quoi un redémarrage déconnecte
+     ceux qui venaient de se connecter. */
   sessionSaveTimer.unref();
+}
+
+function flushSessions() {
+  if (sessionSaveTimer) {
+    clearTimeout(sessionSaveTimer);
+    sessionSaveTimer = null;
+  }
+  return writeJsonFile(SESSIONS_FILE, Object.fromEntries(sessions)).catch((err) =>
+    console.error("[presetbook] sessions non enregistrées", err.message)
+  );
 }
 
 function newSession(userId) {
@@ -337,6 +370,32 @@ function sanitizeState(input) {
   };
 }
 
+/**
+ * Crée le compte de démonstration s'il manque, aligne son mot de passe sur la
+ * configuration, et remet ses fiches à zéro. La remise à zéro à chaque
+ * démarrage borne les dégâts : le compte est ouvert à tous, donc une démo
+ * abîmée se répare en redémarrant.
+ *
+ * Le minimum de longueur ne s'applique pas : ce mot de passe n'est pas un
+ * secret, il est affiché dans la documentation.
+ */
+async function ensureDemoUser() {
+  if (!DEMO_NAME || !DEMO_PASSWORD) return null;
+  const db = await readUsers();
+  let user = findUser(db, DEMO_NAME);
+  if (!user) {
+    user = await createUser(db, DEMO_NAME, DEMO_PASSWORD);
+  } else if (!(await passwordMatches(user, DEMO_PASSWORD))) {
+    const salt = crypto.randomBytes(16);
+    user.salt = salt.toString("hex");
+    user.hash = (await scrypt(DEMO_PASSWORD, salt)).toString("hex");
+    user.params = { N: SCRYPT.N, r: SCRYPT.r, p: SCRYPT.p, keylen: SCRYPT.keylen };
+    await writeJsonFile(USERS_FILE, db);
+  }
+  await writeJsonFile(presetsFile(user), { ...EMPTY_STATE, updated: new Date().toISOString() });
+  return user;
+}
+
 /** Le fichier unique d'avant les comptes revient au premier compte créé. */
 async function adoptLegacyPresets(user) {
   try {
@@ -421,17 +480,29 @@ async function serveStatic(req, res, pathname) {
 async function handleSession(req, res) {
   const db = await readUsers();
   const user = await currentUser(req);
+  const vrais = realUsers(db);
   return sendJson(res, 200, {
     user: user ? { id: user.id, name: user.name } : null,
-    canRegister: db.users.length === 0 || ALLOW_REGISTER || !!user,
-    firstRun: db.users.length === 0,
+    /* La démo ne compte pas : sinon, sur une installation neuve, sa présence
+       fermerait la création de comptes avant que le propriétaire ait le sien. */
+    /* Jamais pour la démo : le serveur refuserait, l'interface ne doit pas
+       proposer ce qu'elle n'obtiendra pas. */
+    canRegister: isDemo(user) ? false : (vrais.length === 0 || ALLOW_REGISTER || !!user),
+    firstRun: vrais.length === 0,
+    demo: DEMO_NAME ? { name: DEMO_NAME } : null,
+    isDemo: isDemo(user),
   });
 }
 
 async function handleRegister(req, res) {
   const db = await readUsers();
   const asUser = await currentUser(req);
-  if (!(db.users.length === 0 || ALLOW_REGISTER || asUser)) {
+  if (isDemo(asUser)) {
+    /* Les identifiants de la démo sont publics : lui laisser ce droit
+       ouvrirait la création de comptes à tout Internet. */
+    return sendJson(res, 403, { error: "Le compte de démonstration ne peut pas créer de compte." });
+  }
+  if (!(realUsers(db).length === 0 || ALLOW_REGISTER || asUser)) {
     return sendJson(res, 403, { error: "La création de comptes est fermée sur ce serveur." });
   }
 
@@ -453,7 +524,7 @@ async function handleRegister(req, res) {
   if (findUser(db, name)) return sendJson(res, 409, { error: "Cet identifiant est déjà pris." });
 
   const user = await createUser(db, name, password);
-  if (db.users.length === 1) await adoptLegacyPresets(user);
+  if (realUsers(db).length === 1) await adoptLegacyPresets(user);
   console.log(`[presetbook] compte créé : ${user.name}`);
 
   // Un compte créé par un utilisateur déjà connecté ne change pas sa session.
@@ -462,6 +533,32 @@ async function handleRegister(req, res) {
   return sendJson(res, 201, { user: { id: user.id, name: user.name }, switched: true }, {
     "Set-Cookie": sessionCookie(token, req),
   });
+}
+
+/* Entrer en démo en un clic. Le mot de passe reste sur le serveur : la page ne
+   l'affiche pas et ne le transmet pas. Compté par adresse, pour qu'un robot ne
+   fabrique pas des sessions à l'infini. */
+const demoGrants = new Map(); // ip -> {n, first}
+
+async function handleDemo(req, res) {
+  if (!DEMO_NAME) return sendJson(res, 404, { error: "Aucun compte de démonstration ici." });
+  const ip = clientIp(req);
+  const rec = demoGrants.get(ip);
+  if (rec && Date.now() - rec.first < LOGIN_WINDOW_MS) {
+    if (rec.n >= DEMO_MAX_GRANTS) {
+      return sendJson(res, 429, { error: "Trop d'entrées en démo. Réessaie dans un quart d'heure." });
+    }
+    rec.n++;
+  } else {
+    demoGrants.set(ip, { n: 1, first: Date.now() });
+  }
+
+  const db = await readUsers();
+  const user = findUser(db, DEMO_NAME);
+  if (!user) return sendJson(res, 503, { error: "Le compte de démonstration n'est pas prêt." });
+  const token = newSession(user.id);
+  return sendJson(res, 200, { user: { id: user.id, name: user.name } },
+    { "Set-Cookie": sessionCookie(token, req) });
 }
 
 async function handleLogin(req, res) {
@@ -523,6 +620,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (pathname === "/api/register" && req.method === "POST") return await handleRegister(req, res);
     if (pathname === "/api/login" && req.method === "POST") return await handleLogin(req, res);
+    if (pathname === "/api/demo" && req.method === "POST") return await handleDemo(req, res);
     if (pathname === "/api/logout" && req.method === "POST") return handleLogout(req, res);
 
     if (pathname === "/api/presets") {
@@ -570,24 +668,38 @@ loadSessions()
   .catch((err) => console.error("[presetbook] sessions illisibles", err.message))
   .then(() =>
     server.listen(PORT, HOST, async () => {
+      await ensureDemoUser().catch((err) =>
+        console.error("[presetbook] compte de démonstration indisponible :", err.message)
+      );
       const db = await readUsers().catch(() => ({ users: [] }));
       console.log(`[presetbook] écoute sur http://${HOST}:${PORT}`);
       console.log(`[presetbook] données : ${DATA_DIR}`);
       console.log(`[presetbook] page servie : ${appFingerprint.sha} (${appFingerprint.bytes} octets, ${appFingerprint.mtime})`);
-      console.log(`[presetbook] comptes : ${db.users.length}` + (db.users.length ? "" : " — le premier créé sera le tien"));
+      const vrais = realUsers(db).length;
+      console.log(`[presetbook] comptes : ${vrais}` + (vrais ? "" : " — le premier créé sera le tien"));
       console.log(
         `[presetbook] création de comptes : ${
-          db.users.length === 0 ? "ouverte (aucun compte)" : ALLOW_REGISTER ? "ouverte" : "réservée aux connectés"
+          vrais === 0 ? "ouverte (aucun compte)" : ALLOW_REGISTER ? "ouverte" : "réservée aux connectés"
         }`
       );
+      if (DEMO_NAME) {
+        console.log(`[presetbook] démonstration : « ${DEMO_NAME} », fiches remises à zéro à ce démarrage`);
+      }
       if (BASIC_AUTH) console.log("[presetbook] authentification basique activée en amont");
     })
   );
 
+let arretDemande = false;
+function partir() {
+  if (arretDemande) return;
+  arretDemande = true;
+  flushSessions().finally(() => process.exit(0));
+}
+
 for (const sig of ["SIGINT", "SIGTERM"]) {
   process.on(sig, () => {
     console.log(`[presetbook] ${sig} reçu, arrêt`);
-    server.close(() => process.exit(0));
-    setTimeout(() => process.exit(0), 5000).unref();
+    server.close(partir);                 /* les requêtes en cours finissent */
+    setTimeout(partir, 5000).unref();     /* filet : on n'attend pas indéfiniment */
   });
 }

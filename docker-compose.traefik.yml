@@ -37,6 +37,8 @@ services:
       # Traefik envoie X-Forwarded-Proto, dont le serveur déduit déjà le
       # drapeau Secure du cookie ; cette ligne le garantit en toutes circonstances.
       SECURE_COOKIES: "1"
+      # Compte de démonstration public — voir .env. Laisser vide le désactive.
+      DEMO_LOGIN: "${DEMO_LOGIN:-}"
       # Mot de passe HTTP devant tout le site, sauf /healthz. Facultatif : les
       # comptes de Presetbook protègent déjà les presets, et la création de
       # comptes se ferme d'elle-même dès que le premier existe. Si tu le gardes,

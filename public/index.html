@@ -286,6 +286,10 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
 }
 .gate-err.show{display:block}
 .gate-note{font-size:12.5px; color:var(--ink-3)}
+.gate-demo{
+  display:flex; flex-direction:column; gap:7px; align-items:stretch;
+  padding-top:14px; margin-top:4px; border-top:1px solid var(--line);
+}
 .gate-card .seg{width:100%}
 .gate-card .seg button{flex:1}
 #who{display:inline-flex; gap:6px; align-items:center}
@@ -357,6 +361,11 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Essayer la démonstration": "Try the demo",
+  "Un compte ouvert à tous, pour regarder sans s'inscrire. Ses fiches repartent de zéro à chaque redémarrage du serveur.":
+    "An account open to everyone, to look around without signing up. Its presets are wiped every time the server restarts.",
+  "démonstration": "demo",
+  "démonstration — remise à zéro au redémarrage": "demo — wiped on restart",
   "Comptes": "Accounts",
   "Nouveau compte": "New account",
   "Créer le compte": "Create the account",
@@ -1594,7 +1603,7 @@ function readUrlFilter(){
 /* ============================ comptes ============================
    Uniquement en déploiement autonome : la page publiée n'a pas de
    serveur, donc aucun écran de connexion n'apparaît là-bas.        */
-var session = {user:null, canRegister:false, firstRun:false};
+var session = {user:null, canRegister:false, firstRun:false, demo:null, isDemo:false};
 var gateMode = "login";
 
 function post(url, body){
@@ -1612,10 +1621,14 @@ function post(url, body){
 function renderWho(){
   var host = document.getElementById("who");
   if (!session.user){ host.innerHTML = ""; return; }
-  host.innerHTML = tHtml('<span class="store"><span class="dot ok"></span>' + esc(session.user.name) + '</span>' +
-                   '<button class="btn" id="btn-account">Comptes</button>' +
+  host.innerHTML = tHtml('<span class="store' + (session.isDemo ? " warn" : "") + '">' +
+                   '<span class="dot ' + (session.isDemo ? "warn" : "ok") + '"></span>' +
+                   esc(session.user.name) + (session.isDemo ? " · démonstration" : "") + '</span>' +
+                   /* La démo ne peut pas créer de compte : le serveur refuse, donc
+                      le bouton n'a pas à faire croire le contraire. */
+                   (session.isDemo ? "" : '<button class="btn" id="btn-account">Comptes</button>') +
                    '<button class="btn" id="btn-logout">Déconnexion</button>');
-  document.getElementById("btn-account").addEventListener("click", openAccount);
+  if (!session.isDemo) document.getElementById("btn-account").addEventListener("click", openAccount);
   document.getElementById("btn-logout").addEventListener("click", function(){
     post("api/logout").then(function(){ window.location.reload(); },
       function(){ toast("La déconnexion a échoué."); });
@@ -1702,6 +1715,12 @@ function showGate(){
       (session.firstRun ?
         '<p class="gate-note">Aucun compte sur ce serveur : le premier créé sera le tien, ' +
         'et les presets déjà enregistrés lui seront rattachés.</p>' : "") +
+      (session.demo ?
+        '<div class="gate-demo">' +
+          '<button class="btn" type="button" id="gate-demo">Essayer la démonstration</button>' +
+          '<p class="gate-note">Un compte ouvert à tous, pour regarder sans s\'inscrire. ' +
+          'Ses fiches repartent de zéro à chaque redémarrage du serveur.</p>' +
+        '</div>' : "") +
       '<form id="gate-form" autocomplete="on">' +
         '<label class="fld">Identifiant' +
           '<input type="text" name="name" required autocomplete="username" autocapitalize="none" spellcheck="false">' +
@@ -1744,11 +1763,26 @@ function loadFromApi(){
     hideGate();
     renderWho();
     render();
-    setStore("api", tf("presets de {0}", session.user.name));
+    setStore("api", session.isDemo ? t("démonstration — remise à zéro au redémarrage")
+                                   : tf("presets de {0}", session.user.name));
   });
 }
 
 document.getElementById("gate").addEventListener("click", function(e){
+  if (e.target.closest("#gate-demo")){
+    var b = e.target.closest("#gate-demo");
+    b.disabled = true;
+    post("api/demo").then(function(j){
+      session.user = j.user;
+      session.isDemo = true;
+      mountKofi();
+      return loadFromApi();
+    }, function(err){
+      b.disabled = false;
+      gateError(err.message);
+    });
+    return;
+  }
   var seg = e.target.closest("[data-gm]");
   if (!seg) return;
   gateMode = seg.getAttribute("data-gm");
@@ -3386,7 +3420,9 @@ window.__pb = {
   tf: tf, renderChrome: renderChrome,
   presetFile: presetFile, addPreset: addPreset, findPreset: findPreset, fileName: fileName,
   openAccount: openAccount, submitAccount: submitAccount, renderWho: renderWho,
-  setSession: function(u){ session.user = u; },
+  setSession: function(u, demo){ session.user = u; session.isDemo = !!demo; },
+  setDemo: function(d){ session.demo = d; },
+  getSession: function(){ return session; },
   mountKofi: mountKofi, kofiUser: function(){ return KOFI; },
   kofiMounted: function(){ return kofiMounted; }
 };

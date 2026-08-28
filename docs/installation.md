@@ -96,6 +96,7 @@ récupérer une évolution des fichiers compose eux-mêmes.
 | `SESSION_DAYS` | `30` | durée d'une session |
 | `SECURE_COOKIES` | vide | `1` pour forcer le cookie `Secure` |
 | `BASIC_AUTH` | vide | `utilisateur:motdepasse` — barrière HTTP devant tout le site sauf `/healthz` |
+| `DEMO_LOGIN` | vide | `identifiant:motdepasse` — compte de démonstration public, voir plus bas |
 
 Un bloc `environment` se rédige **soit** en table (`CLE: "valeur"`), **soit** en liste
 (`- CLE=valeur`) : mélanger les deux dans le même bloc est une erreur de syntaxe YAML, et le fichier
@@ -133,6 +134,28 @@ Les comptes protègent les données, pas le réseau. Pour une exposition hors du
 service derrière un reverse proxy en **HTTPS** : l'authentification transmet le mot de passe dans le
 corps de la requête, ce qui n'a de sens que sous TLS. `BASIC_AUTH` peut servir de barrière
 supplémentaire pour masquer entièrement l'existence du site.
+
+### Le compte de démonstration
+
+`DEMO_LOGIN=demo:demo` ouvre un compte public, pour laisser regarder l'application sans inscription.
+Il apparaît alors sur l'écran de connexion sous la forme d'un bouton **Essayer la démonstration** —
+un clic, aucun mot de passe à taper ni à transmettre : le serveur ouvre la session lui-même. Les
+identifiants restent utilisables à la main pour qui les connaît.
+
+Ses identifiants étant publics, le compte est tenu à l'écart sur quatre points :
+
+- il **ne peut pas créer de compte**. Sans cela, n'importe qui sur Internet pourrait s'ouvrir un
+  compte sur votre serveur, puisqu'un utilisateur connecté a ce droit ;
+- ses fiches **repartent de zéro à chaque démarrage** du serveur. Une démonstration abîmée se répare
+  en redémarrant, et rien ne s'accumule ;
+- il **ne compte pas** comme propriétaire du serveur. Sur une installation neuve, sa présence ne
+  ferme pas la création de comptes : le premier vrai compte créé reste le vôtre ;
+- les entrées en démonstration sont **plafonnées par adresse**, pour qu'un robot ne fabrique pas des
+  sessions à l'infini.
+
+Le minimum de dix caractères ne s'applique pas à ce mot de passe : il n'est pas un secret. Laisser
+`DEMO_LOGIN` vide retire le compte de l'écran de connexion — le compte existant, lui, reste dans
+`users.json` tant qu'on ne l'en retire pas à la main.
 
 ### Le seul script tiers
 
