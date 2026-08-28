@@ -1,42 +1,59 @@
 # Presetbook
 
-Le carnet de réglages : les presets d'un instrument, d'un ampli, d'une pédale, d'un pédalier entier,
-et les chaînes de plugins
-d'un logiciel d'enregistrement, rangés dans une seule page qu'on peut chercher, dupliquer et
-modifier.
+*[Version française](README.fr.md) — the documentation in `docs/` is in French for now.*
 
-Une fiche s'affiche telle qu'on la lirait sur le matériel : en heures d'horloge pour un bouton cranté
-au milieu, sur son échelle pour un bouton gradué, avec les vrais noms de paramètres des plugins.
-Rien n'est câblé en dur pour un modèle précis — les façades et les plugins sont décrits dans des
-registres, et l'interface en découle.
+A settings notebook: the presets of an instrument, an amp, a single pedal, a whole pedalboard, and
+the plugin chains of a recording program, kept in one page you can search, duplicate and edit.
 
-En français ou en anglais, au choix : le bouton `FR` / `EN` traduit l'interface **et** le catalogue,
-en laissant les noms propres tranquilles. / Available in French and English — the `FR` / `EN` button
-switches the interface and the catalogue alike.
+A preset is shown the way you would read it **on the gear itself** — in clock hours for a knob
+that's centre-detented, on its own scale for a graduated one, with the real parameter names of the
+plugins. Nothing is hard-wired for a particular model: front panels and plugins are described in
+declarative registries, and the interface follows. So you can add your own gear — down to drawing a
+pedal, its colour and the placement of its knobs — without touching the code.
 
-## Démarrer
+Available in French and English: the `FR` / `EN` button switches the interface **and** the
+catalogue, leaving proper names alone.
+
+## Try it
+
+A demo account is open on the public instance — click **Try the demo** on the sign-in screen, or use
+`demo` / `demo`. Its presets are wiped every time the server restarts, so feel free to break things.
+
+## Run it
 
 ```bash
 docker run -d -p 8080:8080 -v presetbook-data:/data ghcr.io/fuzzinvaders/presetbook:latest
 ```
 
-L'image publique est reconstruite à chaque commit, pour **amd64 et arm64** — elle tourne donc aussi
-sur un Raspberry Pi. Sans Docker, le serveur n'a aucune dépendance :
+The public image is rebuilt on every commit, for **amd64 and arm64** — it runs on a Raspberry Pi
+too. Without Docker, the server has no dependencies at all:
 
 ```bash
 git clone https://github.com/fuzzinvaders/presetbook.git && cd presetbook && npm start
 ```
 
-Puis <http://localhost:8080>. À la première ouverture, aucun compte n'existe : le premier créé est le
-vôtre.
+Then <http://localhost:8080>. On first open no account exists: the first one created is yours.
+
+## What is in it
+
+- **Five kinds of preset** — instrument, amp, pedal, pedalboard, plugin chain — each attachable to a
+  song, so the bass, the amp and the chain of one cover gather together.
+- **Reaper chains, read and written.** `.RfxChain` files import and export. Five plugins have their
+  binary format established and are fully editable; every other plugin is preserved **byte for
+  byte**. An effect whose values you did not change is rewritten identically, and the export
+  **refuses and names the obstacle** rather than inventing a state that would crash Reaper.
+- **Your own gear.** Front panels, pedals and pedalboards are yours to create, with knob types that
+  match real controls: clock dials, bounded scales, pickup blends, switches, EQ faders.
+- **No dependencies.** One HTML page and one Node file. It also works with no server at all —
+  published as a static page, or opened from disk.
 
 ## Documentation
 
 | | |
 | --- | --- |
-| [Utiliser Presetbook](docs/utilisation.md) | lire et modifier une fiche, composer un pédalier, créer une façade, importer une chaîne de Reaper, changer de langue, exporter, sauvegarder |
-| [Installer et exploiter](docs/installation.md) | Docker, reverse proxy, mise à jour, comptes, sécurité, script tiers, erreurs de démarrage |
-| [Développer](docs/developpement.md) | architecture, modèle de données, registres, codec `.RfxChain`, les deux langues, tests |
+| [Using Presetbook](docs/utilisation.md) 🇫🇷 | reading and editing a preset, building a pedalboard, creating a front panel, importing a Reaper chain, switching language, exporting |
+| [Installing and running it](docs/installation.md) 🇫🇷 | Docker, reverse proxy, updates, accounts, the demo account, security, the third-party script |
+| [Developing](docs/developpement.md) 🇫🇷 | architecture, data model, registries, the `.RfxChain` codec, both languages, tests |
 
 ## Tests
 
@@ -44,32 +61,32 @@ vôtre.
 npm test
 ```
 
-Onze suites, 345 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
-minimal, le registre des façades, celles créées depuis l'interface, le formulaire qui les crée, les
-pédales et leur dessin, le codec des chaînes d'effets sur une chaîne réelle, les types de bande de
-ReaEQ, l'export d'une fiche et son retour dans une autre bibliothèque, la licence et le widget de
-dons, la création de comptes, et la version anglaise — treize écrans rendus en anglais, qui échouent
-si un mot français y subsiste.
+Twelve suites, 373 checks, nothing to install: the page rendered again in a minimal DOM, the front
+panel registry, panels created from the interface, the form that creates them, pedals and their
+drawing, the effect-chain codec against a real chain, ReaEQ band types, exporting a preset and
+bringing it back into another library, the licence and the donation widget, account creation, the
+demo account against a real server, and the English version — thirteen screens rendered in English,
+failing if a French word survives.
 
-## Licence et dons
+## Licence and donations
 
 Copyright © 2026 fuzzinvaders.
 
-**Logiciel libre sous [AGPL-3.0-or-later](LICENSE), et gratuit.** Vous pouvez l'utiliser, l'étudier,
-le modifier et le redistribuer. L'AGPL ajoute une seule contrainte à la GPL, et c'est celle qui
-compte pour une application web : **si vous en hébergez une version modifiée pour d'autres, vous
-devez proposer votre code source à ses utilisateurs.** Un usage privé, lui, n'oblige à rien.
+**Free software under [AGPL-3.0-or-later](LICENSE), and free of charge.** You may use, study, modify
+and redistribute it. The AGPL adds a single obligation to the GPL, and it is the one that matters for
+a web application: **if you host a modified version for other people, you must offer them your source
+code.** Private use requires nothing.
 
-C'est le choix adapté à un outil auto-hébergeable : il garantit que les améliorations restent
-partageables, y compris quand l'application est servie plutôt que distribuée.
+That is the right fit for a self-hostable tool: it keeps improvements shareable even when the
+application is served rather than distributed.
 
-Les dons sont **bienvenus, jamais demandés** — rien n'est bridé, rien n'expire, aucune fonction
-n'attend un paiement : <https://ko-fi.com/talva>.
+Donations are **welcome, never asked for** — nothing is limited, nothing expires, no feature waits
+for a payment: <https://ko-fi.com/talva>.
 
-Le bouton flottant vient d'un script servi par Ko-fi. Il n'est chargé **qu'une fois la session
-ouverte**, pour qu'un script tiers ne partage jamais sa page avec le champ de mot de passe, et il est
-absent de la page publiée. Pour le retirer entièrement, videz la constante `KOFI` dans
-`public/index.html` : le lien du pied de page, lui, ne dépend d'aucun tiers.
+The floating button comes from a script served by Ko-fi. It is loaded **only once a session is
+open**, so that a third-party script never shares its page with the password field, and it is absent
+from the published page. To remove it entirely, empty the `KOFI` constant in `public/index.html`: the
+footer link depends on no third party.
 
-Le catalogue livré relève de la même licence. Les valeurs de réglages, elles, sont des faits — un
-égaliseur à 14 h reste un égaliseur à 14 h, et personne n'en possède la mesure.
+The shipped catalogue falls under the same licence. The setting values themselves are facts — an EQ
+at 2 o'clock is an EQ at 2 o'clock, and nobody owns that measurement.

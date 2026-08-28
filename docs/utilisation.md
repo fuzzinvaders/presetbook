@@ -275,6 +275,20 @@ compte à quelqu'un d'autre.
 Il n'y a **pas de récupération de mot de passe par courriel** : un serveur auto-hébergé sans service
 de messagerie ne peut pas en offrir. Gardez le mot de passe dans un gestionnaire.
 
+### Le compte de démonstration
+
+Si le serveur en propose un, l'écran de connexion affiche **Essayer la démonstration**. Un clic
+suffit : c'est un compte ouvert à tous, fait pour regarder l'application sans s'inscrire.
+
+Deux choses à savoir avant d'y ranger quoi que ce soit. Ses fiches **repartent de zéro à chaque
+redémarrage du serveur** — ce n'est pas un rangement, c'est un bac à sable. Et il **ne peut pas
+ouvrir de compte** : ses identifiants étant publics, ce droit reviendrait à ouvrir le serveur à tout
+le monde. Le bouton **Comptes** n'apparaît donc pas dans cette session, et la pastille en haut à
+droite rappelle en permanence qu'on est en démonstration.
+
+Pour garder son travail, il faut un vrai compte. En attendant, **Exporter** sur une carte et
+**Sauvegarde** fonctionnent normalement : rien n'empêche d'emporter ce qu'on a fait dans la démo.
+
 ### Ouvrir un compte à quelqu'un
 
 Une fois connecté, le bouton **Comptes** de l'en-tête ouvre un compte à quelqu'un d'autre :

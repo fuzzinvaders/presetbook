@@ -16,6 +16,8 @@ services:
     environment:
       PORT: "8080"
       DATA_DIR: /data
+      # Compte de démonstration public : "identifiant:motdepasse", vide = désactivé.
+      DEMO_LOGIN: "${DEMO_LOGIN:-}"
       # Décommenter pour exiger un identifiant sur tout le site (sauf /healthz).
       # La valeur se met dans un fichier .env à côté, jamais ici.
       # BASIC_AUTH: "${BASIC_AUTH:?renseigne BASIC_AUTH dans .env}"

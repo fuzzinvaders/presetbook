@@ -74,6 +74,31 @@ check("un cas valide n'est pas retenu par la validation",
   auReseau.indexOf("identiques") < 0 && auReseau.indexOf("10 caractères") < 0,
   auReseau);
 
+/* --- le compte de démonstration, côté page --- */
+const g = run(page, { search: "" });
+g.__pb.showGate();
+check("sans démonstration configurée, aucun bouton",
+  g.__nodes.get("gate").innerHTML.indexOf("gate-demo") < 0);
+
+g.__pb.setDemo({ name: "demo" });
+g.__pb.showGate();
+const porte = g.__nodes.get("gate").innerHTML;
+check("le bouton d'entrée apparaît", porte.indexOf('id="gate-demo"') > 0, porte.slice(0, 80));
+check("l'écran prévient de la remise à zéro", porte.indexOf("repartent de zéro") > 0);
+check("aucun mot de passe n'est affiché", porte.indexOf("demo</") < 0 && !/value="demo"/.test(porte));
+
+g.__pb.setSession({ id: "d", name: "demo" }, true);
+g.__pb.renderWho();
+const enDemo = g.__nodes.get("who").innerHTML;
+check("l'en-tête dit qu'on est en démonstration", enDemo.indexOf("démonstration") > 0, enDemo);
+check("le bouton Comptes disparaît en démonstration",
+  enDemo.indexOf('id="btn-account"') < 0, enDemo);
+
+g.__pb.setSession({ id: "u", name: "remi" }, false);
+g.__pb.renderWho();
+check("il revient pour un vrai compte",
+  g.__nodes.get("who").innerHTML.indexOf('id="btn-account"') > 0);
+
 /* --- la version anglaise de l'écran --- */
 const en = run(page, { search: "?lang=en" }).__pb;
 en.setSession({ id: "u1", name: "remi" });
