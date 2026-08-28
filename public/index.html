@@ -1,0 +1,3396 @@
+<title>Presetbook</title>
+<!-- Presetbook — carnet de réglages d'instruments, d'amplis et de plugins.
+     Copyright (C) 2026 fuzzinvaders
+     SPDX-License-Identifier: AGPL-3.0-or-later
+     Logiciel libre et gratuit. Le texte complet est dans le fichier LICENSE. -->
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+:root{
+  --bg:#E4E4E0; --panel:#F7F7F5; --panel-2:#ECECE8; --sunk:#1D1F1E; --sunk-ink:#E8EAE6; --sunk-line:#3C4340;
+  --ink:#181917; --ink-2:#52564F; --ink-3:#84887F; --line:#CCCCC6; --line-2:#B6B6AF;
+  --bass:#9E5F19; --bass-soft:#F1E3CF; --amp:#A62F26; --amp-soft:#F4DEDA; --reaper:#22654F; --reaper-soft:#D6E7E0;
+  --pedal:#7A4FA8; --pedal-soft:#E8DEF3; --board:#1F6470; --board-soft:#D6E8EB;
+  --ok:#1F6B45; --warn:#8A5A11; --danger:#A62F26;
+  --shadow:0 1px 0 rgba(24,25,23,.05),0 8px 20px -14px rgba(24,25,23,.4);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#121412; --panel:#1C1E1C; --panel-2:#242724; --sunk:#0C0E0D; --sunk-ink:#DFE2DE; --sunk-line:#333935;
+    --ink:#ECEEE9; --ink-2:#A8ADA3; --ink-3:#7C8178; --line:#2C302C; --line-2:#3C413B;
+    --bass:#D79A4F; --bass-soft:#33260F; --amp:#E0705F; --amp-soft:#391B16; --reaper:#5FB893; --reaper-soft:#122C24;
+    --pedal:#BE9AE0; --pedal-soft:#2A1E38; --board:#6FBAC6; --board-soft:#10292E;
+    --ok:#67B98C; --warn:#D4A055; --danger:#E0705F;
+    --shadow:0 1px 0 rgba(0,0,0,.5),0 10px 24px -16px #000;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121412; --panel:#1C1E1C; --panel-2:#242724; --sunk:#0C0E0D; --sunk-ink:#DFE2DE; --sunk-line:#333935;
+  --ink:#ECEEE9; --ink-2:#A8ADA3; --ink-3:#7C8178; --line:#2C302C; --line-2:#3C413B;
+  --bass:#D79A4F; --bass-soft:#33260F; --amp:#E0705F; --amp-soft:#391B16; --reaper:#5FB893; --reaper-soft:#122C24;
+  --pedal:#BE9AE0; --pedal-soft:#2A1E38; --board:#6FBAC6; --board-soft:#10292E;
+  --ok:#67B98C; --warn:#D4A055; --danger:#E0705F;
+  --shadow:0 1px 0 rgba(0,0,0,.5),0 10px 24px -16px #000;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-size:15px; line-height:1.5;
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; -webkit-font-smoothing:antialiased;
+}
+/* Aucune marge sous le pied de page : elle le décollerait du bas de l ecran
+   des que le bas du conteneur entre dans la vue. */
+.wrap{max-width:1240px; margin:0 auto; padding:clamp(16px,3vw,32px) clamp(14px,3vw,28px) 0}
+h1,h2,h3{font-family:Archivo,system-ui,sans-serif; margin:0; text-wrap:balance}
+h1{font-size:clamp(26px,4vw,38px); font-weight:700; letter-spacing:-.015em; text-transform:uppercase; line-height:1}
+h2{font-size:15px; font-weight:700; text-transform:uppercase; letter-spacing:.06em}
+h3{font-size:17px; font-weight:700; line-height:1.15}
+p{margin:0}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.15em; text-transform:uppercase; color:var(--ink-3)}
+:focus-visible{outline:2px solid var(--ink); outline-offset:2px; border-radius:3px}
+
+/* ---- chrome ---- */
+.top{display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px 18px; padding-bottom:16px; border-bottom:3px solid var(--ink)}
+.top .ttl{display:flex; flex-direction:column; gap:5px; margin-right:auto}
+.acts{display:flex; flex-wrap:wrap; gap:8px}
+.foot{
+  position:sticky; bottom:0; z-index:5;    /* toujours visible, sans quitter la colonne de contenu */
+  margin-top:34px; padding:10px 0;
+  border-top:1px solid var(--line); background:var(--bg);
+  display:flex; flex-wrap:wrap; gap:4px 14px; align-items:baseline;
+  font-size:12.5px; color:var(--ink-3);
+}
+/* Le bouton flottant du tiers occupe le coin bas-gauche : 195 x 50 px à 16 px
+   des bords. On lui laisse la place à côté du texte, et en dessous quand la
+   fenêtre est trop étroite pour les mettre côte à côte. */
+.foot.kofi{padding-left:227px}
+@media (max-width:800px){
+  .foot.kofi{padding-left:0; padding-bottom:76px}
+}
+.foot a{color:var(--ink-2); text-decoration:none; border-bottom:1px solid var(--line-2)}
+.foot a:hover{color:var(--ink); border-bottom-color:var(--ink)}
+.foot .lic{font-weight:600}
+.foot .sep{color:var(--line-2)}
+button{font-family:inherit; font-size:13.5px; cursor:pointer}
+.btn{
+  border:1px solid var(--line-2); background:var(--panel); color:var(--ink);
+  padding:7px 13px; border-radius:3px; font-weight:500; transition:background .13s ease;
+}
+.btn:hover{background:var(--panel-2)}
+.btn.primary{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.btn.primary:hover{opacity:.88}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--danger); border-color:var(--danger)}
+.btn.small{padding:4px 9px; font-size:12px}
+.btn[disabled]{opacity:.45; cursor:not-allowed}
+
+.store{
+  display:inline-flex; align-items:center; gap:7px; font-family:"IBM Plex Mono",monospace; font-size:11px;
+  letter-spacing:.04em; color:var(--ink-2); border:1px solid var(--line); background:var(--panel);
+  padding:5px 10px; border-radius:3px;
+}
+.dot{width:7px; height:7px; border-radius:50%; background:var(--ink-3); flex:none}
+.dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.err{background:var(--danger)}
+
+/* ---- toolbar ---- */
+.bar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:18px 0 6px}
+.tabs{display:flex; gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:4px; padding:3px}
+.tab{border:0; background:transparent; color:var(--ink-2); padding:6px 12px; border-radius:2px; font-size:13px; font-weight:600}
+.tab[aria-selected="true"]{background:var(--panel); color:var(--ink); box-shadow:var(--shadow)}
+.tab .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3); margin-left:5px}
+input[type="text"],input[type="search"],input[type="number"],textarea,select{
+  font-family:inherit; font-size:14px; color:var(--ink); background:var(--panel);
+  border:1px solid var(--line-2); border-radius:3px; padding:7px 10px;
+}
+input[type="search"]{min-width:190px; flex:1 1 190px; max-width:320px}
+textarea{width:100%; resize:vertical; line-height:1.5}
+label.fld{display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--ink-3);
+  font-family:"IBM Plex Mono",monospace; letter-spacing:.07em; text-transform:uppercase}
+label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",sans-serif; font-size:14px; letter-spacing:0; text-transform:none; color:var(--ink)}
+
+/* ---- knobs, aplats, façades respectées ---- */
+.knob{
+  --a:0deg; --face:#1D1814; --ptr:#F2BE72; --edge:rgba(255,255,255,.18);
+  position:relative; width:38px; height:38px; border-radius:50%; flex:none;
+  background:var(--face); box-shadow:0 0 0 1px var(--edge);
+}
+.knob i{position:absolute; inset:0; transform:rotate(var(--a))}
+.knob i::before{
+  content:""; position:absolute; left:50%; top:4px; width:3px; height:13px;
+  margin-left:-1.5px; background:var(--ptr); border-radius:2px;
+}
+.knob.off{opacity:.45; --ptr:#9C9188}
+.knob.amp{--face:#F2EDDB; --ptr:#17150F; --edge:rgba(0,0,0,.55)}
+.knob.amp.dr{--ptr:#7C1F14}
+.knob.lg{width:52px; height:52px}
+.knob.lg i::before{top:6px; height:18px; width:3.5px; margin-left:-1.75px}
+
+.dial{display:flex; flex-direction:column; align-items:center; gap:4px; min-width:52px}
+.dl{font-family:"IBM Plex Mono",monospace; font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); white-space:nowrap}
+.dv{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; font-variant-numeric:tabular-nums}
+.strip{
+  display:flex; gap:10px; flex-wrap:wrap; justify-content:space-around; align-items:flex-start;
+  border-radius:4px; padding:10px 8px 8px;
+}
+.strip.bass{background:var(--panel-2); border:1px solid var(--line)}
+.strip.amp{background:var(--sunk); border:1px solid var(--sunk-line)}
+.strip.amp .dl{color:#8E948C}
+.strip.amp .dv{color:var(--sunk-ink)}
+.strip.plain{background:var(--panel-2); border:1px solid var(--line)}
+.fdr{position:relative; width:14px; height:38px; border-radius:3px; background:var(--line);
+  box-shadow:inset 0 0 0 1px var(--line-2); flex:none}
+.fdr i{position:absolute; left:-2px; right:-2px; height:5px; border-radius:2px; background:var(--ink);
+  margin-bottom:-2px}
+.art{display:flex; gap:10px; align-items:flex-end; overflow-x:auto; padding:2px 0 4px}
+.art svg{display:block; flex:none; height:132px; width:auto}
+.art .cable{flex:none; align-self:center; color:var(--ink-3)}
+.pdname{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--ink-3); text-align:center; margin-top:3px}
+.knob.plain{--face:var(--line); --ptr:var(--ink); --edge:var(--line-2)}
+.gearname{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--ink-3); margin-top:-4px}
+
+/* ---- cards ---- */
+.grid{display:grid; gap:13px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); margin-top:16px}
+.card{
+  background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--line-2);
+  border-radius:4px; padding:14px 15px 12px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--shadow);
+}
+.card.k-bass{border-left-color:var(--bass)} .card.k-amp{border-left-color:var(--amp)} .card.k-reaper{border-left-color:var(--reaper)}
+.card.k-pedal{border-left-color:var(--pedal)} .card.k-board{border-left-color:var(--board)}
+.card.k-board{grid-column:span 2}
+.card-h{display:flex; align-items:flex-start; justify-content:space-between; gap:8px}
+.card-h h3{text-transform:uppercase; letter-spacing:.01em; font-size:16px}
+.kind{
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  padding:3px 7px; border-radius:2px; flex:none;
+}
+.kind.bass{background:var(--bass-soft); color:var(--bass)}
+.kind.amp{background:var(--amp-soft); color:var(--amp)}
+.kind.reaper{background:var(--reaper-soft); color:var(--reaper)}
+.kind.pedal{background:var(--pedal-soft); color:var(--pedal)}
+.kind.board{background:var(--board-soft); color:var(--board)}
+.tags{display:flex; flex-wrap:wrap; gap:5px}
+.tag{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.05em; color:var(--ink-2); border:1px solid var(--line); padding:2px 7px; border-radius:2px}
+.tag.on{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.tag.off{color:var(--ink-3); opacity:.65}
+.song{font-size:12.5px; color:var(--ink-2)}
+.song b{color:var(--ink); font-weight:600}
+.note{font-size:13px; color:var(--ink-2)}
+/* ---- chaîne de plugins ---- */
+.chain{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px}
+.slot{background:var(--panel-2); border:1px solid var(--line); border-left:2px solid var(--reaper); border-radius:4px; padding:8px 10px 9px}
+.slot.bx{border-left-style:dashed; opacity:.72}
+.slot-h{display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; margin-bottom:6px}
+.slot-h .n{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--ink-3)}
+.slot-h .p{font-weight:600; font-size:13.5px}
+.slot-h .r{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-3); letter-spacing:.04em}
+.slot-h .bp{margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--warn); border:1px solid var(--warn); border-radius:2px; padding:1px 5px}
+.pgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(122px,1fr)); gap:2px 10px}
+.pgrid .pk{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3)}
+.pgrid .pv{font-family:"IBM Plex Mono",monospace; font-size:12px; font-variant-numeric:tabular-nums; margin-bottom:3px}
+.bwrap{overflow-x:auto; margin-bottom:6px}
+table.bands{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; font-size:11.5px; width:100%; font-variant-numeric:tabular-nums}
+table.bands th{text-align:left; font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
+  font-weight:600; padding:0 8px 3px 0; border-bottom:1px solid var(--line)}
+table.bands td{padding:2px 8px 2px 0; white-space:nowrap}
+table.bands tr.bx td{opacity:.5; text-decoration:line-through}
+.slot .sn{font-size:12px; color:var(--ink-2); font-style:italic; margin-top:5px}
+.card-f{display:flex; gap:6px; margin-top:auto; padding-top:10px; border-top:1px solid var(--line)}
+.card-f .btn{padding:4px 10px; font-size:12px}
+.card-f .spacer{margin-left:auto}
+.empty{border:1px dashed var(--line-2); border-radius:5px; padding:34px 20px; text-align:center; color:var(--ink-2); font-size:14px}
+.grp{margin-top:26px}
+.grp-h{display:flex; align-items:baseline; gap:10px; padding-bottom:6px; border-bottom:1px solid var(--line-2)}
+.grp-h .c{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
+
+/* ---- editor ---- */
+.veil{position:fixed; inset:0; background:rgba(12,14,13,.55); display:none; z-index:40; padding:16px; overflow:auto}
+.veil.open{display:block}
+.sheet{
+  max-width:660px; margin:24px auto; background:var(--panel); border:1px solid var(--line-2);
+  border-radius:6px; box-shadow:0 24px 60px -20px rgba(0,0,0,.6); overflow:hidden;
+}
+.sheet-h{display:flex; align-items:center; gap:10px; padding:14px 18px; border-bottom:1px solid var(--line); background:var(--panel-2)}
+.sheet-h h2{margin-right:auto}
+.sheet-b{padding:18px; display:flex; flex-direction:column; gap:16px}
+.sheet-f{display:flex; gap:8px; padding:14px 18px; border-top:1px solid var(--line); background:var(--panel-2)}
+.sheet-f .spacer{margin-left:auto}
+.row{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+fieldset{border:1px solid var(--line); border-radius:4px; padding:12px 14px 14px; margin:0}
+legend{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3); padding:0 5px}
+.sl{display:grid; grid-template-columns:84px 1fr 98px; gap:10px; align-items:center; margin:7px 0}
+.sl .k{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-2)}
+.sl .v{font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.sl input[type="range"]{width:100%; accent-color:var(--acc,var(--ink))}
+.sl.dim{opacity:.4}
+.toggles{display:flex; flex-wrap:wrap; gap:7px; margin-top:4px}
+.tg{border:1px solid var(--line-2); background:var(--panel); color:var(--ink-3); padding:5px 11px; border-radius:3px;
+  font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase}
+.tg[aria-pressed="true"]{background:var(--acc,var(--ink)); border-color:var(--acc,var(--ink)); color:#fff}
+.seg{display:flex; gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:4px; padding:3px; width:fit-content}
+.seg button{border:0; background:transparent; color:var(--ink-2); padding:5px 12px; border-radius:2px; font-size:12.5px; font-weight:600}
+.seg button[aria-selected="true"]{background:var(--panel); color:var(--ink)}
+.slots{display:flex; flex-direction:column; gap:10px}
+.slot-e{border:1px solid var(--line); border-left:2px solid var(--reaper); border-radius:4px; padding:9px 10px;
+  background:var(--panel-2); display:flex; flex-direction:column; gap:7px}
+.slot-e-h{display:flex; gap:7px; align-items:center; flex-wrap:wrap}
+.slot-e-h select[data-s="plugin"]{font-weight:600; min-width:130px}
+select[data-gear]{font-weight:600}
+.slot-e-h input[data-s="role"]{flex:1 1 130px; min-width:110px}
+.slot-e .tools{display:flex; gap:4px; margin-left:auto}
+.slot-e .full{width:100%}
+.slot-e input[type="text"],.slot-e input[type="number"],.slot-e select{padding:5px 8px; font-size:13px}
+.ck{display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+  letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); white-space:nowrap}
+.ck input{accent-color:var(--reaper)}
+.mini{display:inline-flex; align-items:center; gap:5px; font-family:"IBM Plex Mono",monospace; font-size:10px;
+  letter-spacing:.05em; text-transform:uppercase; color:var(--ink-3); white-space:nowrap}
+.mini input[type="number"]{width:74px; font-family:"IBM Plex Mono",monospace; text-align:right}
+.mini select{font-family:"IBM Plex Sans",sans-serif; font-size:12.5px; text-transform:none; letter-spacing:0}
+.mini .u{color:var(--ink-3); font-size:9.5px}
+.pgridE{display:flex; flex-wrap:wrap; gap:7px 12px; align-items:center}
+.bandsE{display:flex; flex-direction:column; gap:6px; padding:7px 8px; border:1px dashed var(--line-2); border-radius:4px}
+.bandE{display:flex; flex-wrap:wrap; gap:6px 9px; align-items:center}
+.bandE select[data-sb="t"]{min-width:104px; font-size:12.5px; padding:4px 6px}
+.chain-acts{display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; align-items:center}
+.preview{border:1px dashed var(--line-2); border-radius:5px; padding:10px 12px; display:flex;
+  gap:12px; align-items:center; flex-wrap:wrap}
+.preview .art{padding:0}
+.preview .hint{margin:0; flex:1 1 160px}
+input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel);
+  border:1px solid var(--line-2); border-radius:3px}
+.glrow{display:flex; align-items:center; gap:9px; flex-wrap:wrap; padding:7px 0; border-bottom:1px solid var(--line)}
+.glrow:last-of-type{border-bottom:0}
+.glrow .gln{font-weight:600; font-size:14px}
+.glrow .glc{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-3)}
+.glrow .tools{margin-left:auto; display:flex; gap:5px}
+.hint{font-size:12.5px; color:var(--ink-3); font-style:italic}
+
+/* ---- porte d'entrée (déploiement autonome uniquement) ---- */
+.gate{position:fixed; inset:0; z-index:80; display:none; background:var(--bg); overflow:auto; padding:24px 16px}
+.gate.open{display:block}
+.gate-card{
+  max-width:380px; margin:8vh auto 0; background:var(--panel); border:1px solid var(--line-2);
+  border-radius:6px; padding:26px 26px 22px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:16px;
+}
+.gate-card h1{font-size:30px}
+.gate-card .eyebrow{margin-top:-6px}
+.gate-card form{display:flex; flex-direction:column; gap:12px}
+.gate-card input{width:100%}
+.gate-err{
+  font-size:13px; color:var(--danger); border-left:2px solid var(--danger); padding-left:9px; display:none;
+}
+.gate-err.show{display:block}
+.gate-note{font-size:12.5px; color:var(--ink-3)}
+.gate-card .seg{width:100%}
+.gate-card .seg button{flex:1}
+#who{display:inline-flex; gap:6px; align-items:center}
+#lang{padding:2px 2px 2px 7px; gap:1px; align-items:center}
+#lang .globe{color:var(--ink-3); flex:none; margin-right:4px}
+#lang .tab{padding:5px 7px; font-size:11px; font-family:"IBM Plex Mono",monospace; letter-spacing:.06em}
+
+.toast{
+  position:fixed; left:50%; bottom:74px; transform:translateX(-50%); z-index:60;
+  background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:4px; font-size:13.5px;
+  box-shadow:0 10px 30px -10px rgba(0,0,0,.6); opacity:0; pointer-events:none; transition:opacity .18s ease;
+  max-width:min(520px,92vw);
+}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="ttl">
+      <p class="eyebrow" id="eyebrow"></p>
+      <h1>Presetbook</h1>
+    </div>
+    <div class="acts">
+      <span class="store" id="store"><span class="dot" id="store-dot"></span><span id="store-txt">chargement…</span></span>
+      <span id="who"></span>
+      <button class="btn" id="btn-gear"></button>
+      <button class="btn" id="btn-io"></button>
+      <button class="btn primary" id="btn-new"></button>
+      <span class="tabs" id="lang" role="group" aria-label="Langue / Language"></span>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <input type="search" id="q">
+    <div class="seg" id="grp" role="tablist"></div>
+  </div>
+
+  <div id="list"></div>
+
+  <footer class="foot" id="foot"></footer>
+</div>
+
+<div class="veil" id="veil"></div>
+<div class="gate" id="gate" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Codec .RfxChain : absent du miroir publié, l'interface s'adapte. -->
+<script src="rfxchain.js"></script>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================ langue ============================
+   Le dictionnaire est indexé par le texte français, ce qui évite d'inventer
+   des clés. La traduction n'a que deux points d'entrée :
+
+     - esc(), par où passe tout contenu affiché (noms, notes, libellés) ;
+     - tHtml(), appliqué à chaque fragment d'interface avant insertion,
+       qui ne touche qu'aux textes entre balises, jamais aux attributs.
+
+   Les valeurs d'attributs affichées (placeholder, title) passent par t().
+   Les nombres et les heures sont localisés à part : une virgule décimale et
+   « 12 h 30 » en français, un point et « 12:30 » en anglais.            */
+
+var LANG = "fr";
+
+var EN = {
+  /* complétés par l'audit de traduction */
+  "Comptes": "Accounts",
+  "Nouveau compte": "New account",
+  "Créer le compte": "Create the account",
+  "Répéter le mot de passe": "Repeat the password",
+  "Ouvre un compte à quelqu'un d'autre sur ce serveur. Ta session ne change pas, et ses fiches seront séparées des tiennes.":
+    "Open an account for someone else on this server. Your own session does not change, and their presets stay separate from yours.",
+  "Identifiant : 2 à 40 caractères, lettres, chiffres, espace, point, tiret. Mot de passe : au moins 10 caractères. Transmets-le de la main à la main — il n'y a ni récupération par courriel, ni écran pour le changer ensuite.":
+    "Username: 2 to 40 characters, letters, digits, space, dot, hyphen. Password: at least 10 characters. Hand it over in person — there is neither email recovery nor a screen to change it afterwards.",
+  "Les deux mots de passe ne sont pas identiques.": "The two passwords do not match.",
+  "Mot de passe : au moins 10 caractères.": "Password: at least 10 characters.",
+  "C'est ton propre identifiant.": "That is your own username.",
+  "Compte créé : {0}": "Account created: {0}",
+  "logiciel libre sous AGPL-3.0": "free software under AGPL-3.0",
+  "Gratuit, et le restera. Les dons sont bienvenus, jamais demandés.":
+    "Free, and it will stay free. Donations are welcome, never asked for.",
+  "Me soutenir": "Support me",
+  "Exporter": "Export",
+  "Fiche exportée.": "Preset exported.",
+  "Ce fichier ne contient pas de fiche.": "This file contains no preset.",
+  "Façade absente : {0}": "Missing front panel: {0}",
+  "Fiche importée : {0}": "Preset imported: {0}",
+  "Écrit la fiche dans un fichier, façades comprises": "Writes the preset to a file, front panels included",
+  "Écrit un fichier de chaîne pour Reaper": "Writes a chain file for Reaper",
+  "Pour restaurer : colle une sauvegarde dans le bloc, puis « Restaurer ». Une fiche exportée seule se colle ici aussi : elle s'ajoute à la bibliothèque au lieu de la remplacer.": "To restore: paste a backup into the block, then “Restore”. A single exported preset can be pasted here too: it is added to the library instead of replacing it.",
+  "{0} (copie)": "{0} (copy)",
+  "{0} (importée)": "{0} (imported)",
+  "Le serveur n'a pas répondu ({0}) — enregistré dans ce navigateur.": "The server did not answer ({0}) — saved in this browser.",
+  "Le serveur n'a pas répondu ({0}). Exporte ta sauvegarde.": "The server did not answer ({0}). Export your backup.",
+  "Écriture en ligne indisponible ({0}) — enregistré localement.": "Online writing unavailable ({0}) — saved locally.",
+  "Impossible d'enregistrer ({0}). Exporte ta sauvegarde.": "Cannot save ({0}). Export your backup.",
+  "presets de {0}": "{0}’s presets",
+  "{0} effets importés, {1} reconnus en détail.": "{0} effects imported, {1} recognised in detail.",
+  "Export impossible — {0}": "Export failed — {0}",
+  "Export impossible : {0}": "Export failed: {0}",
+  "La commande {0} n'a pas de libellé.": "Control {0} has no label.",
+  "{0} fiches utilisent cette façade : change-les de matériel d'abord.": "{0} presets use this panel: move them to other gear first.",
+  "{0} fiche utilise cette façade : change-la de matériel d'abord.": "{0} preset uses this panel: move it to other gear first.",
+  "Téléchargement refusé ({0}) — copie le bloc à la main.": "Download declined ({0}) — copy the block by hand.",
+  "Fichier illisible : {0}": "Unreadable file: {0}",
+  "Une autre fenêtre a enregistré avant celle-ci — elle va se recharger.": "Another window saved before this one — it is going to reload.",
+  "Aucun stockage disponible : exporte ta sauvegarde avant de fermer.": "No storage available: export your backup before closing.",
+  "Aucun effet trouvé dans ce fichier.": "No effect found in this file.",
+  "Chaîne enregistrée.": "Chain saved.",
+  "Enregistrement refusé.": "Save refused.",
+  "Export indisponible dans cette vue.": "Export unavailable in this view.",
+  "Chaîne exportée : à déposer dans le dossier FXChains de Reaper.": "Chain exported: drop it in Reaper’s FXChains folder.",
+  "Téléchargement indisponible ici : copie le bloc à la main.": "Download unavailable here: copy the block by hand.",
+  "Téléchargement impossible — copie le bloc à la main.": "Download failed — copy the block by hand.",
+  "Copie refusée — sélectionne le bloc et fais Ctrl+C.": "Copy declined — select the block and press Ctrl+C.",
+  "Sélectionne le bloc et fais Ctrl+C.": "Select the block and press Ctrl+C.",
+  "Lecture du fichier impossible.": "Could not read the file.",
+  "enregistré dans ce navigateur": "saved in this browser",
+  "session seulement": "this session only",
+  "à établir": "not established",
+  "Une ligne par bande, dans l'ordre de la fenêtre. La bande passante est en octaves.": "One row per band, in the order of the plugin window. Bandwidth is in octaves.",
+  "Le délai initial est conservé normalisé : son étendue en millisecondes n'est pas établie.": "The initial delay is kept normalised: its range in milliseconds is not established.",
+  "Les JSFX gardent leurs curseurs en texte clair dans la chaîne. Seul le premier est renseigné ici — les suivants restent au défaut dans tes chaînes et sont conservés à l'import.": "JSFX keep their sliders as plain text in the chain. Only the first one is filled in here — the others stay at their default in your chains and are preserved on import.",
+  "JSFX loser/Saturation, livré avec Reaper": "JSFX loser/Saturation, shipped with Reaper",
+  "pédales dans l’ordre du signal": "pedals in signal order",
+  "commandes": "controls",
+  "fiche": "preset",
+  "fiches": "presets",
+  "livré": "shipped",
+  "clé": "key",
+  "Volume à 100 %. Plus d'attaque que sur Yellow, sans rendre la basse métallique — les positions viennent en pourcentage de course : balance 45 % manche / 55 % chevalet, Bass 55 %, Treble 52 %.": "Volume at 100%. More attack than on Yellow, without turning the bass metallic — positions are given as a percentage of travel: blend 45% neck / 55% bridge, Bass 55%, Treble 52%.",
+  "L'ordre qui marche presque partout : dynamique, puis grain, puis correction. L'accordeur et l'overdrive attendent au pied.": "The order that works almost everywhere: dynamics, then grit, then correction. The tuner and the overdrive wait at your feet.",
+  "Le compresseur avant le filtre : sinon la sensibilité suit les écarts de niveau du jeu.": "The compressor before the filter: otherwise sensitivity follows the level swings of your playing.",
+  "Les deux bandes qui font le caractère : 900 Hz et 2,5 kHz.": "The two bands that make the character: 900 Hz and 2.5 kHz.",
+  "Threshold : descendre jusqu'à 4–5 dB de réduction sur les attaques fortes.": "Threshold: bring it down until you get 4–5 dB of reduction on the loud attacks.",
+  "Pas plus : le BOD apporte déjà le caractère.": "No more than that: the BOD already brings the character.",
+  "Laissée hors circuit : c'est elle qui causait le claquement. À comparer dans le mix avant de trancher.": "Left out of circuit: it was the one causing the click. Compare it in the mix before deciding.",
+  "Le caractère All Star tient aux bandes 900 Hz et 2,5 kHz : c'est la présence, pas le volume.": "The All Star character comes from the 900 Hz and 2.5 kHz bands: it is presence, not volume.",
+  "Une façade décrit les commandes d'un instrument ou d'un ampli. Les façades livrées se dupliquent pour servir de point de départ.": "A front panel describes the controls of an instrument or an amp. Shipped panels can be duplicated to serve as a starting point.",
+  "Aperçu : il suit la couleur, la silhouette et les commandes déclarées.": "Preview: it follows the colour, the silhouette and the declared controls.",
+  "Sur la BB734A, le second mode est « passif » et met l'égaliseur hors circuit.": "On the BB734A the second mode is “passive” and takes the EQ out of circuit.",
+  "Chaîne saisie à la main : elle s'exporte quand même, pour les plugins dont le format est établi": "Chain entered by hand: it still exports, for the plugins whose format is established",
+  "Un pédalier vide : ajoute la première pédale, puis règle-la ici même.": "An empty pedalboard: add the first pedal, then set it right here.",
+  "Trois types seulement ont leur équivalent établi dans le fichier (Band, Low Pass, High Pass). Les autres se choisissent dans Reaper : importés ici, ils sont conservés et réécrits sans dommage.": "Only three types have an established equivalent in the file (Band, Low Pass, High Pass). The others are chosen in Reaper: imported here, they are preserved and rewritten unharmed.",
+  "Le bloc ci-dessous contient tout : le catalogue tel qu'il est affiché et tes modifications. Garde-le quelque part — c'est ton filet de sécurité.": "The block below contains everything: the catalogue as displayed and your changes. Keep it somewhere — it is your safety net.",
+  "Pour restaurer : colle une sauvegarde dans le bloc, puis « Restaurer ».": "To restore: paste a backup into the block, then “Restore”.",
+  "Aucun compte sur ce serveur : le premier créé sera le tien, et les presets déjà enregistrés lui seront rattachés.": "No account on this server yet: the first one created will be yours, and any presets already saved will be attached to it.",
+  "Au moins 10 caractères. Garde-le dans ton gestionnaire de mots de passe : il n'y a pas de récupération par courriel sur un serveur auto-hébergé.": "At least 10 characters. Keep it in your password manager: there is no email recovery on a self-hosted server.",
+  "Ne sert que si": "Only used if",
+  "hors circuit en": "out of circuit in",
+  /* ---- chrome : en-tête et barre de tri ---- */
+  "Instruments · amplis · pédales · chaînes de plugins": "Instruments · amps · pedals · plugin chains",
+  "Matériel": "Gear",
+  "Sauvegarde": "Backup",
+  "Nouveau preset": "New preset",
+  "Déconnexion": "Sign out",
+  "Tout": "All",
+  "Basse": "Bass",
+  "Ampli": "Amp",
+  "Pédale": "Pedal",
+  "Pédalier": "Pedalboard",
+  "Reaper": "Reaper",
+  "Par matériel": "By gear",
+  "Par morceau": "By song",
+  "Chercher un style, un morceau, un plugin…": "Search a style, a song, a plugin…",
+  "Chercher": "Search",
+  "Regrouper": "Group",
+  "chargement…": "loading…",
+
+  /* ---- pastille de stockage ---- */
+  "chargé en ligne": "loaded online",
+  "chargé du navigateur": "loaded from this browser",
+  "catalogue d'origine": "shipped catalogue",
+  "serveur Presetbook": "Presetbook server",
+  "stockage en ligne prêt": "online storage ready",
+  "connexion requise": "sign-in required",
+  "session expirée": "session expired",
+  "enregistré sur le serveur": "saved on the server",
+  "enregistré en ligne": "saved online",
+  "enregistré dans ce navigateur": "saved in this browser",
+  "serveur injoignable, gardé ici": "server unreachable, kept here",
+  "session seulement": "this session only",
+
+  /* ---- cartes ---- */
+  "Instruments": "Instruments",
+  "Amplis": "Amps",
+  "Pédales": "Pedals",
+  "Pédaliers": "Pedalboards",
+  "Chaîne de plugins": "Plugin chain",
+  "Modifier": "Edit",
+  "Dupliquer": "Duplicate",
+  "Supprimer": "Delete",
+  "Confirmer ?": "Confirm?",
+  "Confirmer la suppression": "Confirm deletion",
+  "Actif": "Active",
+  "Passif": "Passive",
+  "Balance": "Blend",
+  "Overdrive": "Overdrive",
+  "Main droite": "Picking hand",
+  "Cordes": "Strings",
+  "Tonalité": "Tone",
+  "hors circuit": "out of circuit",
+  "à régler": "set by ear",
+  "coupée": "off",
+  "· coupée": "· off",
+  "Aucun preset ne correspond.": "No preset matches.",
+  "Essaie un autre mot-clé.": "Try another keyword.",
+  "Crée le premier avec « Nouveau preset ».": "Create the first one with “New preset”.",
+
+  /* ---- éditeur d'une fiche ---- */
+  "Éditer un preset": "Edit a preset",
+  "Nouveau": "New",
+  "Nom": "Name",
+  "Styles (séparés par des virgules)": "Styles (comma separated)",
+  "Morceau": "Song",
+  "Artiste": "Artist",
+  "Titre de la cover": "Cover title",
+  "Notes": "Notes",
+  "Façade": "Front panel",
+  "Enregistrer": "Save",
+  "Annuler": "Cancel",
+  "Fermer": "Close",
+  "Retour": "Back",
+  "Ex. Motown doux": "e.g. Soft Motown",
+  "À quoi sert ce preset, ce qu'il faut surveiller…": "What this preset is for, what to watch out for…",
+  "Pour quel maillon de la chaîne ?": "Which link of the chain?",
+  "Choisir un type": "Choose a type",
+  "Donne un nom au preset.": "Give the preset a name.",
+  "Preset enregistré.": "Preset saved.",
+  "Preset supprimé.": "Preset deleted.",
+  "Copie créée.": "Copy created.",
+
+  /* ---- matériel ---- */
+  "Nouvelle façade": "New front panel",
+  "Modifier une façade": "Edit a front panel",
+  "+ Nouvelle façade": "+ New front panel",
+  "commandes": "controls",
+  "aucune fiche": "no preset",
+  " · livré": " · shipped",
+  "Marque": "Brand",
+  "Modèle": "Model",
+  "laisser vide pour un gabarit": "leave empty for a template",
+  "Ex. Rumble 500": "e.g. Rumble 500",
+  "Aspect des boutons": "Knob look",
+  "Note": "Note",
+  "ce qu'il faut savoir sur cette façade": "what to know about this panel",
+  "Neutre": "Neutral",
+  "Bouton noir, repère laiton": "Black knob, brass pointer",
+  "Bouton ivoire sur façade sombre": "Ivory knob on a dark panel",
+  "Modes": "Modes",
+  "cette façade a deux modes": "this panel has two modes",
+  "Premier mode": "First mode",
+  "Second mode": "Second mode",
+  "Commandes, dans l'ordre de la façade": "Controls, in front-panel order",
+  "Libellé": "Label",
+  "Cadran cranté au milieu (lu en heures)": "Centre-detented knob (read as clock hours)",
+  "Échelle bornée (par exemple 1 à 10)": "Bounded scale (1 to 10 for instance)",
+  "Balance entre deux micros": "Blend between two pickups",
+  "Interrupteur": "Switch",
+  "Curseur vertical (bande d'égaliseur)": "Vertical slider (equaliser band)",
+  "Min": "Min",
+  "Max": "Max",
+  "Pas": "Step",
+  "Défaut": "Default",
+  "Défaut, en crans depuis midi": "Default, in notches from noon",
+  "Côté 0": "Side 0",
+  "Côté 100": "Side 100",
+  "Ne sert que si": "Only used if",
+  "toujours actif": "always active",
+  "+ Commande": "+ Control",
+  "Ajoute au moins une commande.": "Add at least one control.",
+  "Donne un modèle à cette façade.": "Give this panel a model name.",
+  "Façade enregistrée.": "Front panel saved.",
+  "Façade supprimée.": "Front panel deleted.",
+  "Couleur du boîtier": "Enclosure colour",
+  "Silhouette": "Silhouette",
+  "Boutons par rangée": "Knobs per row",
+  "selon la silhouette": "as per silhouette",
+  "Boîtier standard": "Standard enclosure",
+  "Compacte à bascule": "Compact with treadle",
+  "Haute et étroite": "Tall and narrow",
+  "Grand boîtier": "Large enclosure",
+  "Mini": "Mini",
+  "Monter": "Move up",
+  "Descendre": "Move down",
+  "Retirer": "Remove",
+  "Avancer": "Move earlier",
+  "Reculer": "Move later",
+
+  /* ---- pédalier ---- */
+  "Pédalier, dans l’ordre du signal": "Pedalboard, in signal order",
+  "+ Pédale": "+ Pedal",
+  "en circuit": "in circuit",
+  "Rôle dans la chaîne": "Role in the chain",
+  "Aucun réglage sur cette pédale.": "This pedal has no controls.",
+  "Pédalier vide — ajoute des pédales avec « Modifier ».": "Empty pedalboard — add pedals with “Edit”.",
+
+  /* ---- chaîne de plugins ---- */
+  "Chaîne Reaper": "Reaper chain",
+  "Tempo (bpm)": "Tempo (bpm)",
+  "Accordage": "Tuning",
+  "E standard, Drop D…": "E standard, Drop D…",
+  "+ Ajouter un plugin": "+ Add a plugin",
+  "Importer un .RfxChain": "Import a .RfxChain",
+  "Exporter en .RfxChain": "Export as .RfxChain",
+  "Plugin": "Plugin",
+  "Type de bande": "Band type",
+  "Fréq.": "Freq.",
+  "Fréquence": "Frequency",
+  "Gain": "Gain",
+  "Type": "Type",
+  "+ Bande": "+ Band",
+  "Retirer la bande": "Remove band",
+  "Chaîne vide — ajoute des plugins avec « Modifier ».": "Empty chain — add plugins with “Edit”.",
+  "Autre plugin": "Other plugin",
+  "non catalogué": "not catalogued",
+  "Décris les réglages en texte libre.": "Describe the settings as free text.",
+  "Cockos, livré avec Reaper": "Cockos, ships with Reaper",
+  "JSFX loser/Saturation, livré avec Reaper": "JSFX loser/Saturation, ships with Reaper",
+  "TSE Audio, gratuit": "TSE Audio, free",
+  "générique": "generic",
+
+  /* ---- sauvegarde ---- */
+  "Copier": "Copy",
+  "Télécharger le fichier": "Download the file",
+  "Restaurer depuis ce bloc": "Restore from this block",
+  "Réinitialiser mes modifications": "Reset my changes",
+  "Confirmer la réinitialisation": "Confirm reset",
+  "Copié.": "Copied.",
+  "Fichier enregistré.": "File saved.",
+  "Fichier téléchargé.": "File downloaded.",
+  "Sauvegarde restaurée.": "Backup restored.",
+  "Catalogue d'origine rétabli.": "Shipped catalogue restored.",
+  "Sauvegarde illisible.": "Unreadable backup.",
+  "Ce bloc n'est pas un JSON valide.": "This block is not valid JSON.",
+
+  /* ---- comptes ---- */
+  "Se connecter": "Sign in",
+  "Créer un compte": "Create an account",
+  "Créer le compte": "Create the account",
+  "Identifiant": "Username",
+  "Mot de passe": "Password",
+  "La déconnexion a échoué.": "Signing out failed.",
+
+  /* ---- catalogue : basse ---- */
+  "Rock / Hard rock": "Rock / Hard rock",
+  "Metal moderne": "Modern metal",
+  "Funk / Slap": "Funk / Slap",
+  "Gospel / Fusion": "Gospel / Fusion",
+  "Pop / Variété": "Pop / Mainstream",
+  "Punk / Garage": "Punk / Garage",
+  "Indie / Alternatif": "Indie / Alternative",
+  "Prog / Technique": "Prog / Technical",
+  "Hip-hop / Néo-soul": "Hip-hop / Neo-soul",
+  "Rock 70s": "70s rock",
+  "Motown / Soul": "Motown / Soul",
+  "Jazz / Walking": "Jazz / Walking",
+  "Blues / Sudiste": "Blues / Southern",
+  "Reggae / Dub": "Reggae / Dub",
+  "Country / Rockabilly": "Country / Rockabilly",
+  "All Star": "All Star",
+  "Répétition petit volume": "Low-volume rehearsal",
+  "Casque / travail": "Headphones / practice",
+  "Blues-rock": "Blues rock",
+  "Indie / Grunge": "Indie / Grunge",
+  "Stoner / Doom": "Stoner / Doom",
+  "Metal moderne ": "Modern metal ",
+
+  "Attaque nette qui traverse deux guitares saturées.": "A clean attack that cuts through two distorted guitars.",
+  "Médiator ou doigts, à mi-chemin entre les deux micros": "Pick or fingers, midway between the two pickups",
+  "Rondes, un peu jouées": "Roundwounds, slightly played in",
+  "Grave massif plus un cliquetis d'attaque audible sous les palm mutes.": "Massive lows plus an attack click that stays audible under palm mutes.",
+  "Médiator près du chevalet, palm mute serré": "Pick near the bridge, tight palm muting",
+  "Rondes neuves, tirant fort": "Fresh roundwounds, heavy gauge",
+  "Le creux de médiums : le pouce claque, l'index claque, rien au milieu.": "The midrange scoop: the thumb snaps, the finger snaps, nothing in between.",
+  "Pouce au bout du manche, pop de l'index sur sol et ré": "Thumb at the end of the neck, index pop on G and D",
+  "Rondes neuves, indispensable": "Fresh roundwounds, essential",
+  "Définition maximale pour les notes fantômes et les traits rapides.": "Maximum definition for ghost notes and fast runs.",
+  "Doigts nerveux vers le chevalet, beaucoup de mute": "Nervous fingers towards the bridge, plenty of muting",
+  "Rondes, action basse": "Roundwounds, low action",
+  "Le son qui ne pose pas de question, à peine plus rond que neutre.": "The sound that raises no questions, barely rounder than flat.",
+  "Doigts réguliers, dynamique tenue": "Steady fingers, controlled dynamics",
+  "Rondes rodées ou demi-filet": "Played-in roundwounds or half-rounds",
+  "Médiums en avant et grain de médiator.": "Mids forward and pick grit.",
+  "Médiator, aller simple vers le bas": "Pick, downstrokes only",
+  "Rondes, tirant medium": "Roundwounds, medium gauge",
+  "Le micro chevalet quasi seul : nasal, sec, reconnaissable.": "The bridge pickup nearly alone: nasal, dry, recognisable.",
+  "Doigts près du chevalet, ou médiator souple": "Fingers near the bridge, or a soft pick",
+  "Peu importe, c'est le micro qui fait le son": "Doesn't matter, the pickup makes the sound",
+  "Tout doit s'entendre : accords, tapping, unissons.": "Everything must be heard: chords, tapping, unisons.",
+  "Doigts et médiator alternés selon le passage": "Fingers and pick, alternating with the passage",
+  "Rondes neuves": "Fresh roundwounds",
+  "Grave épais et sourd, le haut du spectre laissé au beat.": "Thick, muffled lows, the top of the spectrum left to the beat.",
+  "Pouce ou doigts très près du manche, mousse au chevalet": "Thumb or fingers very close to the neck, foam at the bridge",
+  "Filets plats, ou rondes bien mortes": "Flatwounds, or thoroughly dead roundwounds",
+  "Bois, corde, doigts. La dynamique vient du poignet.": "Wood, string, fingers. The dynamics come from the wrist.",
+  "Doigts au-dessus du micro manche, attaque franche": "Fingers over the neck pickup, firm attack",
+  "Rondes, jouées": "Roundwounds, played in",
+  "Rond, court, chantant. Tonalité fermée jusqu'à ce que la note pousse.": "Round, short, singing. Tone rolled off until the note pushes through.",
+  "Un seul doigt, près du manche, mousse sous les cordes": "A single finger, near the neck, foam under the strings",
+  "Filets plats, les plus vieilles possibles": "Flatwounds, as old as possible",
+  "Imiter la contrebasse : du corps, très peu d'attaque.": "Imitating the double bass: body, very little attack.",
+  "Doigts sur la touche, presque au-dessus des frettes": "Fingers on the fingerboard, almost over the frets",
+  "Filets plats, action haute": "Flatwounds, high action",
+  "Médium naturel du micro P, tonalité presque ouverte.": "The natural midrange of the P pickup, tone nearly open.",
+  "Doigts, très dynamique : fort et doux dans la même mesure": "Fingers, very dynamic: loud and soft within the same bar",
+  "Rondes rodées": "Played-in roundwounds",
+  "Presque uniquement de la fondamentale.": "Almost nothing but the fundamental.",
+  "Pouce près du manche, paume qui étouffe en permanence": "Thumb near the neck, palm muting throughout",
+  "Filets plats morts, tirant fort": "Dead flatwounds, heavy gauge",
+  "Notes brèves et sèches, façon contrebasse claquée.": "Short, dry notes, like a slapped double bass.",
+  "Médiator, palm mute permanent, noires détachées": "Pick, constant palm muting, detached quarter notes",
+  "Filets plats ou demi-filet": "Flatwounds or half-rounds",
+  "Médiator, attaque appuyée, près du chevalet": "Pick, firm attack, near the bridge",
+
+  /* ---- catalogue : ampli ---- */
+  "Médiums tenus pour passer entre deux guitares saturées.": "Mids held up to sit between two distorted guitars.",
+  "Creux de médiums du Contour plus le brillant du Bright.": "The Contour midrange scoop plus the Bright sparkle.",
+  "Rond, court, sans aigu. Le Vintage fait la moitié du travail.": "Round, short, no treble. Vintage does half the work.",
+  "Beaucoup de corps, très peu d'attaque.": "Plenty of body, very little attack.",
+  "Le seul réglage où on ferme vraiment l'aigu.": "The only setting where the treble really gets closed.",
+  "Le presque-plat du Rumble, à mémoriser.": "The Rumble's near-flat setting, worth memorising.",
+  "Grave épais, le haut du spectre laissé au beat.": "Thick lows, the top of the spectrum left to the beat.",
+  "Définition maximale, grave qui reste serré.": "Maximum definition, lows staying tight.",
+  "Coupez le Bright : il fait ressortir le bruit de médiator.": "Switch Bright off: it brings out pick noise.",
+  "Aucun creux dans les médiums, gardez du Master en réserve.": "No midrange scoop, keep some Master in reserve.",
+  "Contour + overdrive : la combinaison prévue pour ça.": "Contour plus overdrive: the combination meant for this.",
+  "Pas de Contour : le creux de médiums vous ferait disparaître.": "No Contour: the midrange scoop would make you disappear.",
+  "Drive bas et Gain haut donnent un grain plus naturel que l'inverse.": "Low Drive and high Gain give a more natural grit than the other way round.",
+  "Overdrive engagé en permanence, on joue avec le poignet.": "Overdrive engaged throughout, play it with the wrist.",
+  "Le Low-Mid fait la taille du son, plus que le Bass.": "Low-Mid makes the size of the sound, more than Bass does.",
+  "Coupez le Contour dès que le batteur arrive.": "Switch Contour off as soon as the drummer shows up.",
+  "Ne gardez jamais un réglage trouvé au casque pour jouer en salle.": "Never keep a setting found on headphones for playing a room.",
+
+  /* ---- catalogue : pédales et pédaliers ---- */
+  "Overdrive discret": "Subtle overdrive",
+  "Fuzz épaisse": "Thick fuzz",
+  "Compression Motown": "Motown compression",
+  "Préampli de scène": "Stage preamp",
+  "Filtre funk": "Funk filter",
+  "Octave dub": "Dub octave",
+  "Égaliseur de scène": "Stage equaliser",
+  "Pédalier de scène": "Stage pedalboard",
+  "Pédalier funk": "Funk pedalboard",
+  "Juste de quoi épaissir sans qu'on entende une pédale.": "Just enough thickening without anyone hearing a pedal.",
+  "Tonalité rentrée : une fuzz de basse claire disparaît sous la guitare.": "Tone pulled back: a bright bass fuzz disappears under the guitar.",
+  "Tient les notes courtes et égalise le jeu à un doigt.": "Holds short notes and evens out one-finger playing.",
+  "Le grain se dose au Blend : à 6, le fondamental reste propre.": "The grit is dialled with Blend: at 6 the fundamental stays clean.",
+  "Sensibilité haute pour que le balayage suive l'attaque du pouce.": "High sensitivity so the sweep follows the thumb attack.",
+  "Une seule octave basse, et jamais devant le direct.": "A single lower octave, never in front of the direct signal.",
+  "Le creux à 400 Hz dégage la basse d'une salle qui résonne.": "The dip at 400 Hz clears the bass in a room that rings.",
+  "Accordeur, en tête": "Tuner, first in line",
+  "Compression légère": "Light compression",
+  "Grain de base": "Base grit",
+  "Renfort de refrain": "Chorus-section boost",
+  "Correction de salle": "Room correction",
+  "Égalise le slap": "Evens out the slap",
+  "Le balayage": "The sweep",
+  "Épaissir les refrains": "Thickening the choruses",
+  "DI vers la sono": "DI to the PA",
+
+  /* ---- familles de pédales ---- */
+  "Boost": "Boost",
+  "Distortion": "Distortion",
+  "Fuzz": "Fuzz",
+  "Préampli / DI": "Preamp / DI",
+  "Compresseur": "Compressor",
+  "Noise gate": "Noise gate",
+  "Égaliseur graphique": "Graphic equaliser",
+  "Octaver": "Octaver",
+  "Filtre à enveloppe": "Envelope filter",
+  "Chorus": "Chorus",
+  "Phaser": "Phaser",
+  "Flanger": "Flanger",
+  "Trémolo": "Tremolo",
+  "Delay / écho": "Delay / echo",
+  "Réverbe": "Reverb",
+  "Synthé de basse": "Bass synth",
+  "Accordeur": "Tuner",
+  "Sensibilité": "Sensitivity",
+  "Un seul bouton : de quoi passer devant sans changer de son.": "A single knob: enough to step forward without changing the sound.",
+  "Le schéma des préamplis de basse à mélange : le grain se dose au Blend.": "The layout of blend-type bass preamps: the grit is dialled with Blend.",
+  "Sept bandes en décibels, plus le niveau de sortie.": "Seven bands in decibels, plus the output level.",
+  "L'auto-wah : la sensibilité décide de ce qui déclenche le balayage.": "The auto-wah: sensitivity decides what triggers the sweep.",
+  "Aucun réglage : il coupe ou laisse passer.": "No controls: it mutes or passes through.",
+
+  /* ---- façades ---- */
+  "Basse passive, un micro": "Passive bass, one pickup",
+  "Basse passive, deux micros": "Passive bass, two pickups",
+  "Basse active, EQ 2 bandes": "Active bass, 2-band EQ",
+  "Ampli 3 bandes": "3-band amp",
+  "Ampli 4 bandes": "4-band amp",
+  "Ampli à contours grave et aigu": "Amp with low and high contours",
+  "Volume manche": "Neck volume",
+  "Volume chevalet": "Bridge volume",
+  "Micros P/J. En passif l'EQ sort du circuit et le bouton treble devient une tonalité.":
+    "P/J pickups. In passive mode the EQ leaves the circuit and the treble knob becomes a tone control.",
+  "Un volume, une tonalité : le schéma d'une Precision.": "One volume, one tone: the Precision layout.",
+  "Deux volumes et une tonalité : le schéma d'une Jazz Bass.": "Two volumes and one tone: the Jazz Bass layout.",
+  "Volume, balance, grave et aigu crantés au neutre.": "Volume, blend, bass and treble detented at centre.",
+  "Trois boutons de caractère et un canal overdrive commutable au pied. Échelle 1–10.":
+    "Three character switches and a footswitchable overdrive channel. 1–10 scale.",
+  "Le schéma le plus courant : gain, grave, médium, aigu, sur une échelle 1–10.":
+    "The most common layout: gain, bass, middle, treble, on a 1–10 scale.",
+  "Deux bandes de médiums, comme sur la plupart des amplis de basse récents.":
+    "Two midrange bands, as on most recent bass amps.",
+  "Trois bandes plus deux contours commutables, façon tête Ampeg.":
+    "Three bands plus two switchable contours, in the manner of an Ampeg head.",
+
+  /* ---- rôles dans une chaîne ---- */
+  "DI saturée": "Saturated DI",
+  "EQ post-ampli": "Post-amp EQ",
+  "Compression": "Compression",
+  "Saturation d'appoint": "Extra saturation",
+  "Réverbe, en bypass": "Reverb, bypassed"
+};
+
+function t(s){
+  if (LANG !== "en") return s;
+  var v = EN[String(s)];
+  return v === undefined ? s : v;
+}
+
+/** Traduit les textes visibles d'un fragment ; les attributs sont épargnés. */
+function tHtml(h){
+  if (LANG !== "en") return h;
+  /* Un fragment sans balise est du texte : il se traduit en entier. */
+  if (String(h).indexOf("<") < 0) return t(h);
+  return String(h).replace(/>([^<>]+)</g, function(tout, txt){
+    var net = txt.trim();
+    if (!net) return tout;
+    var v = EN[net];
+    return v === undefined ? tout : ">" + txt.replace(net, v) + "<";
+  });
+}
+function setHtml(el, h){ if (el) el.innerHTML = tHtml(h); }
+
+/** Un message à trou : le motif se traduit, puis les valeurs s'y insèrent. */
+function tf(motif){
+  var args = arguments;
+  return String(t(motif)).replace(/\{(\d)\}/g, function(tout, i){
+    var v = args[Number(i) + 1];
+    return v === undefined ? tout : String(v);
+  });
+}
+
+/** Séparateur décimal : virgule en français, point en anglais. */
+function dec(s){ return LANG === "en" ? String(s) : String(s).replace(".", ","); }
+
+function detectLang(){
+  var q = null;
+  try { q = new URLSearchParams(window.location.search).get("lang"); } catch (e) { /* pas d'URL */ }
+  if (q === "en" || q === "fr") return q;
+  if (S && (S.lang === "en" || S.lang === "fr")) return S.lang;
+  try { if (/^en/i.test(window.navigator.language || "")) return "en"; } catch (e) { /* sans objet */ }
+  return "fr";
+}
+
+/** Applique la langue déduite de l URL, des données ou du navigateur. */
+/* L'en-tête et la barre de recherche : leurs libellés vivent ici, pas dans le
+   gabarit, pour passer par la traduction comme le reste de l'interface. */
+function renderChrome(){
+  var el = document.getElementById.bind(document);
+  setHtml(el("eyebrow"), "Instruments · amplis · pédales · chaînes de plugins");
+  setHtml(el("btn-gear"), "Matériel");
+  setHtml(el("btn-io"), "Sauvegarde");
+  setHtml(el("btn-new"), "Nouveau preset");
+  var q = document.getElementById("q");
+  q.setAttribute("placeholder", t("Chercher un style, un morceau, un plugin…"));
+  q.setAttribute("aria-label", t("Chercher"));
+  /* Une phrase, un seul segment de texte : « sous » entre deux balises formerait
+     un segment à lui seul, absent du dictionnaire, et resterait en français. */
+  setHtml(el("foot"),
+    '<span>Presetbook · <a class="lic"' +
+    ' href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">' +
+    'logiciel libre sous AGPL-3.0</a></span>' +
+    '<span class="sep">·</span>' +
+    '<span>Gratuit, et le restera. Les dons sont bienvenus, jamais demandés.</span>' +
+    (KOFI ? '<span class="sep">·</span><a href="https://ko-fi.com/' + esc(KOFI) + '"' +
+            ' target="_blank" rel="noopener noreferrer">Me soutenir</a>' : ""));
+  var grp = document.getElementById("grp");
+  grp.setAttribute("aria-label", t("Regrouper"));
+  grp.innerHTML = tHtml(
+    '<button role="tab" data-g="kind" aria-selected="' + (ui.group === "kind") + '">Par matériel</button>' +
+    '<button role="tab" data-g="song" aria-selected="' + (ui.group === "song") + '">Par morceau</button>');
+}
+
+function applyLang(){
+  LANG = detectLang();
+  try { document.documentElement.setAttribute("lang", LANG); } catch (e) { /* sans objet */ }
+  renderLangPicker();
+  renderChrome();
+}
+
+function setLang(l){
+  LANG = l === "en" ? "en" : "fr";
+  S.lang = LANG;
+  try { document.documentElement.setAttribute("lang", LANG); } catch (e) { /* sans objet */ }
+  renderLangPicker();
+  renderChrome();
+  render();
+  save();
+}
+
+/* Un globe en aplat : deux traits suffisent à le faire lire. */
+var GLOBE =
+  '<svg class="globe" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" focusable="false">' +
+  '<circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/>' +
+  '<path d="M1.7 8h12.6" fill="none" stroke="currentColor" stroke-width="1.3"/>' +
+  '<path d="M8 1.7c-2 1.9-2 10.7 0 12.6" fill="none" stroke="currentColor" stroke-width="1.3"/>' +
+  '<path d="M8 1.7c2 1.9 2 10.7 0 12.6" fill="none" stroke="currentColor" stroke-width="1.3"/>' +
+  '</svg>';
+
+function renderLangPicker(){
+  var host = document.getElementById("lang");
+  if (!host) return;
+  host.innerHTML = tHtml(GLOBE + ["fr", "en"].map(function(l){
+    return '<button class="tab" data-lang="' + l + '" aria-selected="' + (LANG === l) + '">' +
+           l.toUpperCase() + '</button>';
+  }).join(""));
+}
+
+/* ============================ plugins ============================
+   Chaque définition suit la fenêtre réelle du plugin : mêmes noms de
+   paramètres, mêmes unités, mêmes bornes. Un champ laissé vide vaut
+   « à régler à l'oreille » et s'affiche comme tel.
+   Types : num (défaut), bool, enum.                                */
+var PLUGINS = {
+  "TSE BOD": {
+    vendor:"TSE Audio, gratuit",
+    /* Noms relevés dans l'état réel du plugin : BOD_Input, BOD_Bass, BOD_Treble… */
+    note:"Émulation du SansAmp Bass Driver DI. Sur Input et Output, 1,00 = +0 dB et 2,00 = +6 dB.",
+    params:[
+      {k:"input",    l:"Input",    min:0, max:2, step:0.001, d:1},
+      {k:"drive",    l:"Drive",    min:0, max:1, step:0.001, d:0},
+      {k:"blend",    l:"Blend",    min:0, max:1, step:0.001, d:1},
+      {k:"bass",     l:"Bass",     min:0, max:1, step:0.001, d:0.5},
+      {k:"treble",   l:"Treble",   min:0, max:1, step:0.001, d:0.5},
+      {k:"presence", l:"Presence", min:0, max:1, step:0.001, d:0.5},
+      {k:"level",    l:"Level",    min:0, max:1, step:0.001, d:0.5},
+      {k:"output",   l:"Output",   min:0, max:2, step:0.001, d:1}
+    ]
+  },
+  "ReaEQ": {
+    vendor:"Cockos, livré avec Reaper",
+    note:"Une ligne par bande, dans l'ordre de la fenêtre. La bande passante est en octaves.",
+    bands:{
+      /* Les onze types du menu du plugin. Ceux dont l'entier de fichier n'est pas
+         établi sont proposés mais non sélectionnables : mieux vaut un choix
+         impossible qu'un filtre faux écrit en silence dans Reaper. */
+      types:["Low Shelf","High Shelf","Band","Low Pass","High Pass","All Pass",
+             "Notch","Band Pass","Parallel Band Pass","Band (alt)","Band (alt 2)"],
+      dflt:{t:"Band", f:1000, g:0, bw:1, on:true}
+    }
+  },
+  "ReaComp": {
+    vendor:"Cockos, livré avec Reaper",
+    /* Ordre et unités relevés dans la vue « paramètres génériques ». Les
+       échelles internes sont déduites d'une chaîne réelle, à confirmer. */
+
+    params:[
+      {k:"threshold", l:"Threshold", min:-150, max:12,   step:0.1, u:"dB", inf:true},
+      {k:"ratio",     l:"Ratio",     min:1,    max:100,  step:0.01, d:4, u:": 1"},
+      {k:"attack",    l:"Attack",    min:0,    max:500,  step:0.1, d:3, u:"ms"},
+      {k:"release",   l:"Release",   min:0,    max:5000, step:1,   d:100, u:"ms"},
+      {k:"precomp",   l:"Pre-comp",  min:0,    max:500,  step:0.1, d:0, u:"ms"},
+      {k:"knee",      l:"Knee",      min:0,    max:24,   step:0.1, d:0, u:"dB"},
+      {k:"rms",       l:"RMS size",  min:0,    max:100,  step:0.1, d:5, u:"ms"},
+      {k:"detector",  l:"Detector",  t:"enum", opts:["Main inputs","Auxiliary inputs"], d:"Main inputs"},
+      {k:"wet",       l:"Wet",       min:-150, max:12,   step:0.1, d:0, u:"dB", inf:true},
+      {k:"dry",       l:"Dry",       min:-150, max:12,   step:0.1, d:-150, u:"dB", inf:true},
+      {k:"autorel",   l:"Auto release",  t:"bool", d:false},
+      {k:"makeup",    l:"Auto make-up",  t:"bool", d:false},
+      {k:"preview",   l:"Filter preview", t:"bool", d:false},
+      {k:"lowpass",   l:"Lowpass",   min:0, max:20000, step:1, d:20000, u:"Hz"},
+      {k:"hipass",    l:"Hipass",    min:0, max:20000, step:1, d:0, u:"Hz"}
+    ]
+  },
+  "ReaGate": {
+    vendor:"Cockos, livré avec Reaper",
+    params:[
+      {k:"threshold", l:"Threshold", min:-120, max:12,    step:0.1, u:"dB"},
+      {k:"hysteresis",l:"Hysteresis",min:-30,  max:0,     step:0.1, d:-3, u:"dB"},
+      {k:"attack",    l:"Attack",    min:0,    max:500,   step:1,   d:3, u:"ms"},
+      {k:"hold",      l:"Hold",      min:0,    max:2000,  step:1,   d:10, u:"ms"},
+      {k:"release",   l:"Release",   min:0,    max:5000,  step:1,   d:100, u:"ms"},
+      {k:"preopen",   l:"Pre-open",  min:0,    max:200,   step:0.1, d:0, u:"ms"},
+      {k:"rms",       l:"RMS size",  min:0,    max:100,   step:0.1, d:5, u:"ms"},
+      {k:"lowpass",   l:"Lowpass",   min:20,   max:20000, step:1,   d:20000, u:"Hz"},
+      {k:"highpass",  l:"Highpass",  min:0,    max:20000, step:1,   d:0, u:"Hz"},
+      {k:"wet",       l:"Wet",       min:-120, max:12,    step:0.1, d:0, u:"dB", inf:true},
+      {k:"dry",       l:"Dry",       min:-120, max:12,    step:0.1, d:-120, u:"dB", inf:true}
+    ]
+  },
+  "ReaVerbate": {
+    vendor:"Cockos, livré avec Reaper",
+    note:"Le délai initial est conservé normalisé : son étendue en millisecondes n'est pas établie.",
+    params:[
+      {k:"wet",      l:"Wet",           min:-150, max:12,    step:0.1, d:-6, u:"dB", inf:true},
+      {k:"dry",      l:"Dry",           min:-150, max:12,    step:0.1, d:0, u:"dB", inf:true},
+      {k:"room",     l:"Room size",     min:0,    max:100,   step:0.1, d:50},
+      {k:"damp",     l:"Dampening",     min:0,    max:100,   step:0.1, d:50},
+      {k:"width",    l:"Stereo width",  min:0,    max:1,     step:0.01, d:1},
+      {k:"delay",    l:"Initial delay", min:0,    max:1,     step:0.0001, d:0},
+      {k:"lowpass",  l:"Lowpass",       min:0,    max:20000, step:1, d:20000, u:"Hz"},
+      {k:"hipass",   l:"Highpass",      min:0,    max:20000, step:1, d:0, u:"Hz"}
+    ]
+  },
+  "JS: Saturation": {
+    vendor:"JSFX loser/Saturation, livré avec Reaper",
+    note:"Les JSFX gardent leurs curseurs en texte clair dans la chaîne. Seul le premier est renseigné " +
+         "ici — les suivants restent au défaut dans tes chaînes et sont conservés à l'import.",
+    params:[
+      {k:"drive", l:"Drive", min:0, max:1, step:0.01, d:0}
+    ]
+  },
+  "Autre plugin": {
+    vendor:"non catalogué",
+    note:"Décris les réglages en texte libre.",
+    params:[]
+  }
+};
+function pluginDef(name){
+  var d = PLUGINS[name] || PLUGINS["Autre plugin"];
+  if (!d.params) d.params = [];   /* ReaEQ na que des bandes : on garantit la clé */
+  return d;
+}
+function decimalsOf(step){
+  var t = String(step), i = t.indexOf(".");
+  return i < 0 ? 0 : t.length - i - 1;
+}
+function fmtParam(def, v){
+  if (v === null || v === undefined || v === "") return "à régler";
+  if (def.t === "bool") return v ? "ON" : "OFF";
+  if (def.t === "enum") return String(v);
+  if (def.inf && Number(v) <= def.min) return "−∞";
+  var s = dec(def.step ? Number(v).toFixed(decimalsOf(def.step)) : String(v));
+  return def.u ? s + " " + def.u : s;
+}
+
+/* ============================ modèle ============================ */
+/* Sur la BB, un bouton va de 7 h à 5 h : 0 = cran central (12 h), ±5 crans, 1 cran = 10 % de course. */
+function hourLabel(v){
+  var total = 12 + Math.max(-5, Math.min(5, v));
+  var h = Math.floor(total), m = Math.round((total - h) * 60);
+  if (m === 60){ h += 1; m = 0; }
+  if (LANG === "en") return h + ":" + (m < 10 ? "0" + m : m);
+  return h + " h" + (m ? " " + (m < 10 ? "0" + m : m) : "");
+}
+function hourAngle(v){ return (v * 30) + "deg"; }
+function pctToCrans(p){ return Math.round(((p - 50) / 10) * 4) / 4; }  /* 55 % -> +0,5 ; 52 % -> +0,25 */
+function ampAngle(v){ return (-150 + (v - 1) * (300 / 9)) + "deg"; }
+function ampLabel(v){ return dec(v); }
+/* Position exacte plutôt qu'un palier : c'est en pourcentage de course qu'on lit un balancer. */
+function balLabel(b){
+  if (b <= 4) return LANG === "en" ? "P only" : "P seul";
+  if (b >= 96) return LANG === "en" ? "J only" : "J seul";
+  return "P " + (100 - b) + " / J " + b;
+}
+
+function bass(id,name,tags,mode,bal,eq,tech,strings,aim){
+  return {id:id, kind:"bass", name:name, tags:tags, mode:mode, balance:bal,
+          eq:eq, tech:tech, strings:strings, notes:aim, song:null};
+}
+function amp(id,name,tags,gain,btn,od,eq,aim){
+  return {id:id, kind:"amp", name:name, tags:tags, gain:gain,
+          bright:btn.indexOf("bright")>=0, contour:btn.indexOf("contour")>=0, vintage:btn.indexOf("vintage")>=0,
+          od:od, eq:eq, notes:aim, song:null};
+}
+function chain(id,name,tags,tempo,tuning,rows,aim){
+  return {id:id, kind:"reaper", name:name, tags:tags, tempo:tempo, tuning:tuning,
+          chain:rows, notes:aim, song:null};
+}
+function slot(plugin,role,params,note){
+  var s = {plugin:plugin, role:role, on:true, p:params || {}, settings:note || ""};
+  if (pluginDef(plugin).bands) s.bands = [];
+  return s;
+}
+function eqSlot(role,bands,note){
+  return {plugin:"ReaEQ", role:role, on:true, p:{}, bands:bands, settings:note || ""};
+}
+function band(t,f,g,bw){ return {t:t, f:f, g:g, bw:bw, on:true}; }
+function bypassed(s){ s.on = false; return s; }
+function forSong(p,title,artist){ p.song = {title:title, artist:artist}; return p; }
+
+/** Une fiche de pédale : les valeurs sont posées à plat sur la fiche. */
+function pedal(id, gear, name, tags, vals, aim){
+  var o = {id:id, kind:"pedal", gear:gear, name:name, tags:tags, notes:aim, song:null}, k;
+  for (k in vals) o[k] = vals[k];
+  return o;
+}
+/** Un pédalier : des emplacements dans l'ordre du signal. */
+function board(id, name, tags, slots, aim){
+  return {id:id, kind:"board", name:name, tags:tags, slots:slots, notes:aim, song:null};
+}
+function ps(gear, role, vals, on){
+  return {gear:gear, role:role, on: on === false ? false : true, v: vals || {}};
+}
+
+/* Catalogue livré avec la page. Il se met à jour quand j'ajoute des presets ;
+   tes modifications et tes créations vivent à part et ne sont jamais écrasées. */
+var SEED = [
+  bass("b-rock","Rock / Hard rock",["rock"],"actif",50,{b:2,m:-1,t:2},
+    "Médiator ou doigts, à mi-chemin entre les deux micros","Rondes, un peu jouées",
+    "Attaque nette qui traverse deux guitares saturées."),
+  bass("b-metal","Metal moderne",["metal"],"actif",58,{b:2.5,m:-2,t:3},
+    "Médiator près du chevalet, palm mute serré","Rondes neuves, tirant fort",
+    "Grave massif plus un cliquetis d'attaque audible sous les palm mutes."),
+  bass("b-funk","Funk / Slap",["funk"],"actif",50,{b:2,m:-2,t:3},
+    "Pouce au bout du manche, pop de l'index sur sol et ré","Rondes neuves, indispensable",
+    "Le creux de médiums : le pouce claque, l'index claque, rien au milieu."),
+  bass("b-gospel","Gospel / Fusion",["gospel","fusion"],"actif",66,{b:1,m:-1,t:2},
+    "Doigts nerveux vers le chevalet, beaucoup de mute","Rondes, action basse",
+    "Définition maximale pour les notes fantômes et les traits rapides."),
+  bass("b-pop","Pop / Variété",["pop"],"actif",40,{b:1,m:0,t:1},
+    "Doigts réguliers, dynamique tenue","Rondes rodées ou demi-filet",
+    "Le son qui ne pose pas de question, à peine plus rond que neutre."),
+  bass("b-punk","Punk / Garage",["punk"],"actif",60,{b:0,m:1,t:2},
+    "Médiator, aller simple vers le bas","Rondes, tirant medium",
+    "Médiums en avant et grain de médiator."),
+  bass("b-indie","Indie / Alternatif",["indie"],"actif",88,{b:1,m:1,t:1},
+    "Doigts près du chevalet, ou médiator souple","Peu importe, c'est le micro qui fait le son",
+    "Le micro chevalet quasi seul : nasal, sec, reconnaissable."),
+  bass("b-prog","Prog / Technique",["prog"],"actif",50,{b:1,m:1,t:2},
+    "Doigts et médiator alternés selon le passage","Rondes neuves",
+    "Tout doit s'entendre : accords, tapping, unissons."),
+  bass("b-hiphop","Hip-hop / Néo-soul",["hip-hop","néo-soul"],"actif",12,{b:3,m:-1,t:-2},
+    "Pouce ou doigts très près du manche, mousse au chevalet","Filets plats, ou rondes bien mortes",
+    "Grave épais et sourd, le haut du spectre laissé au beat."),
+  bass("b-rock70","Rock 70s",["rock"],"passif",26,{t:3},
+    "Doigts au-dessus du micro manche, attaque franche","Rondes, jouées",
+    "Bois, corde, doigts. La dynamique vient du poignet."),
+  bass("b-motown","Motown / Soul",["soul","motown"],"passif",6,{t:-2},
+    "Un seul doigt, près du manche, mousse sous les cordes","Filets plats, les plus vieilles possibles",
+    "Rond, court, chantant. Tonalité fermée jusqu'à ce que la note pousse."),
+  bass("b-jazz","Jazz / Walking",["jazz"],"passif",6,{t:-3},
+    "Doigts sur la touche, presque au-dessus des frettes","Filets plats, action haute",
+    "Imiter la contrebasse : du corps, très peu d'attaque."),
+  bass("b-blues","Blues / Sudiste",["blues"],"passif",22,{t:1},
+    "Doigts, très dynamique : fort et doux dans la même mesure","Rondes rodées",
+    "Médium naturel du micro P, tonalité presque ouverte."),
+  bass("b-reggae","Reggae / Dub",["reggae"],"passif",6,{t:-4},
+    "Pouce près du manche, paume qui étouffe en permanence","Filets plats morts, tirant fort",
+    "Presque uniquement de la fondamentale."),
+  bass("b-country","Country / Rockabilly",["country"],"passif",12,{t:2},
+    "Médiator, palm mute permanent, noires détachées","Filets plats ou demi-filet",
+    "Notes brèves et sèches, façon contrebasse claquée."),
+
+  /* ---- reprises ---- */
+  forSong(bass("b-allstar","All Star",["rock","cover"],"actif",55,
+    {b:pctToCrans(55), m:0, t:pctToCrans(52)},
+    "Médiator, attaque appuyée, près du chevalet","Rondes rodées",
+    "Volume à 100 %. Plus d'attaque que sur Yellow, sans rendre la basse métallique — " +
+    "les positions viennent en pourcentage de course : balance 45 % manche / 55 % chevalet, " +
+    "Bass 55 %, Treble 52 %."),
+    "All Star","Smash Mouth"),
+
+  amp("a-rock","Rock / Hard rock",["rock"],6,["bright"],{on:false,drive:3,level:5},{b:6,lm:5,hm:6.5,tr:6},
+    "Médiums tenus pour passer entre deux guitares saturées."),
+  amp("a-funk","Funk / Slap",["funk"],5,["bright","contour"],{on:false,drive:3,level:5},{b:6.5,lm:4,hm:5,tr:7},
+    "Creux de médiums du Contour plus le brillant du Bright."),
+  amp("a-motown","Motown / Soul",["soul","motown"],6,["vintage"],{on:false,drive:3,level:5},{b:6.5,lm:6,hm:4,tr:3},
+    "Rond, court, sans aigu. Le Vintage fait la moitié du travail."),
+  amp("a-jazz","Jazz / Walking",["jazz"],5,["vintage"],{on:false,drive:3,level:5},{b:6,lm:6,hm:4.5,tr:3.5},
+    "Beaucoup de corps, très peu d'attaque."),
+  amp("a-reggae","Reggae / Dub",["reggae"],5,["vintage"],{on:false,drive:3,level:5},{b:7.5,lm:5.5,hm:3,tr:2},
+    "Le seul réglage où on ferme vraiment l'aigu."),
+  amp("a-pop","Pop / Variété",["pop"],5.5,["bright"],{on:false,drive:3,level:5},{b:6,lm:5,hm:5.5,tr:6},
+    "Le presque-plat du Rumble, à mémoriser."),
+  amp("a-hiphop","Hip-hop / Néo-soul",["hip-hop","néo-soul"],5,["vintage"],{on:false,drive:3,level:5},{b:7,lm:5,hm:3.5,tr:3},
+    "Grave épais, le haut du spectre laissé au beat."),
+  amp("a-gospel","Gospel / Fusion",["gospel","fusion"],5,["bright","contour"],{on:false,drive:3,level:5},{b:6,lm:4.5,hm:5.5,tr:7},
+    "Définition maximale, grave qui reste serré."),
+  amp("a-country","Country / Rockabilly",["country"],5.5,["vintage"],{on:false,drive:3,level:5},{b:6,lm:5.5,hm:5,tr:5},
+    "Coupez le Bright : il fait ressortir le bruit de médiator."),
+  amp("a-prog","Prog / Technique",["prog"],5.5,["bright"],{on:false,drive:3,level:5},{b:6,lm:5.5,hm:6,tr:6},
+    "Aucun creux dans les médiums, gardez du Master en réserve."),
+  amp("a-metal","Metal moderne",["metal"],6,["bright","contour"],{on:true,drive:5,level:5},{b:7,lm:4,hm:7,tr:7},
+    "Contour + overdrive : la combinaison prévue pour ça."),
+  amp("a-punk","Punk / Garage",["punk"],7,["bright"],{on:true,drive:6,level:5},{b:6,lm:5.5,hm:6.5,tr:6.5},
+    "Pas de Contour : le creux de médiums vous ferait disparaître."),
+  amp("a-grunge","Indie / Grunge",["indie","grunge"],6,[],{on:true,drive:3.5,level:5},{b:5.5,lm:6,hm:6,tr:5.5},
+    "Drive bas et Gain haut donnent un grain plus naturel que l'inverse."),
+  amp("a-bluesrock","Blues-rock",["blues"],6.5,["vintage"],{on:true,drive:2.5,level:5},{b:6,lm:6,hm:6,tr:5},
+    "Overdrive engagé en permanence, on joue avec le poignet."),
+  amp("a-stoner","Stoner / Doom",["stoner","doom"],7,["vintage"],{on:true,drive:7.5,level:5},{b:6.5,lm:7,hm:5,tr:4},
+    "Le Low-Mid fait la taille du son, plus que le Bass."),
+  amp("a-repet","Répétition petit volume",["répétition"],5.5,["contour"],{on:false,drive:3,level:5},{b:5.5,lm:6,hm:5.5,tr:5},
+    "Coupez le Contour dès que le batteur arrive."),
+  amp("a-casque","Casque / travail",["casque"],5,[],{on:false,drive:3,level:5},{b:5,lm:5,hm:5,tr:5},
+    "Ne gardez jamais un réglage trouvé au casque pour jouer en salle."),
+
+  /* ---- pédales ---- */
+  pedal("p-od-doux","pd-od","Overdrive discret",["rock","pop"],
+    {gain:3, tone:5.5, level:6.5},
+    "Juste de quoi épaissir sans qu'on entende une pédale."),
+  pedal("p-fuzz-stoner","pd-fuzz","Fuzz épaisse",["stoner","doom"],
+    {fuzz:8, tone:4, level:5},
+    "Tonalité rentrée : une fuzz de basse claire disparaît sous la guitare."),
+  pedal("p-comp-motown","pd-comp","Compression Motown",["soul","motown"],
+    {sustain:6, level:6, attack:4},
+    "Tient les notes courtes et égalise le jeu à un doigt."),
+  pedal("p-preamp-di","pd-preamp","Préampli de scène",["rock","polyvalent"],
+    {drive:3, blend:6, bass:5.5, treble:5.5, presence:5, level:6.5},
+    "Le grain se dose au Blend : à 6, le fondamental reste propre."),
+  pedal("p-filter-funk","pd-filter","Filtre funk",["funk"],
+    {sens:7, range:5.5, blend:7, decay:4},
+    "Sensibilité haute pour que le balayage suive l'attaque du pouce."),
+  pedal("p-octave-dub","pd-octave","Octave dub",["reggae","dub"],
+    {direct:6, oct1:5, oct2:0},
+    "Une seule octave basse, et jamais devant le direct."),
+  pedal("p-eq-scene","pd-eq","Égaliseur de scène",["polyvalent"],
+    {b100:2, b200:0, b400:-3, b800:0, b1k6:2, b3k2:1, b6k4:0, level:5},
+    "Le creux à 400 Hz dégage la basse d'une salle qui résonne."),
+
+  /* ---- pédaliers ---- */
+  board("bd-scene","Pédalier de scène",["rock","polyvalent"],[
+    ps("pd-tuner","Accordeur, en tête", {}, false),
+    ps("pd-comp","Compression légère", {sustain:4, level:6, attack:5}),
+    ps("pd-preamp","Grain de base", {drive:3, blend:6, bass:5.5, treble:5.5, presence:5, level:6.5}),
+    ps("pd-od","Renfort de refrain", {gain:4, tone:5.5, level:6.5}, false),
+    ps("pd-eq","Correction de salle", {b100:1, b200:0, b400:-3, b800:0, b1k6:1.5, b3k2:0, b6k4:0, level:5})
+  ], "L'ordre qui marche presque partout : dynamique, puis grain, puis correction. " +
+     "L'accordeur et l'overdrive attendent au pied."),
+  board("bd-funk","Pédalier funk",["funk","fusion"],[
+    ps("pd-comp","Égalise le slap", {sustain:5, level:6, attack:3}),
+    ps("pd-filter","Le balayage", {sens:7, range:5.5, blend:7, decay:4}),
+    ps("pd-octave","Épaissir les refrains", {direct:6, oct1:4, oct2:0}, false),
+    ps("pd-preamp","DI vers la sono", {drive:2, blend:5, bass:5, treble:6, presence:6, level:6.5})
+  ], "Le compresseur avant le filtre : sinon la sensibilité suit les écarts de niveau du jeu."),
+
+  forSong(chain("r-allstar","All Star",["rock","cover","reaper"],104,"E standard",[
+    slot("TSE BOD","DI saturée",
+      {input:0.694, drive:0.079, blend:0.604, bass:0.551, treble:0.652,
+       presence:0.501, level:0.854, output:0.903}),
+    eqSlot("EQ post-ampli",[
+      band("High Pass",   40, 0,    1.00),
+      band("Band",        90, 2.0,  1.60),
+      band("Band",       300, -2.0, 1.30),
+      band("Band",       900, 3.0,  1.00),
+      band("Band",      2500, 2.5,  1.00),
+      band("Low Pass",  6500, 0,    1.00)
+    ], "Les deux bandes qui font le caractère : 900 Hz et 2,5 kHz."),
+    slot("ReaComp","Compression",
+      {threshold:null, ratio:4, attack:20, release:90, precomp:0, knee:6, rms:5,
+       detector:"Main inputs", wet:0, dry:-150, autorel:false, makeup:false, preview:false,
+       lowpassN:1, hipassN:0},
+      "Threshold : descendre jusqu'à 4–5 dB de réduction sur les attaques fortes."),
+    slot("JS: Saturation","Saturation d'appoint", {drive:0.05},
+      "Pas plus : le BOD apporte déjà le caractère."),
+    bypassed(slot("ReaVerbate","Réverbe",
+      {wet:-18, dry:0, room:12, damp:80, width:0.15, delay:0, lowpass:3000, hipass:250},
+      "Laissée hors circuit : c'est elle qui causait le claquement. À comparer dans le mix avant de trancher."))
+  ],
+    "Le caractère All Star tient aux bandes 900 Hz et 2,5 kHz : c'est la présence, pas le volume."),
+    "All Star","Smash Mouth")
+];
+
+var KINDS = {
+  bass:   {label:"Basse",    full:"Instruments",       acc:"var(--bass)"},
+  amp:    {label:"Ampli",    full:"Amplis",            acc:"var(--amp)"},
+  pedal:  {label:"Pédale",   full:"Pédales",           acc:"var(--pedal)"},
+  board:  {label:"Pédalier", full:"Pédaliers",         acc:"var(--board)"},
+  reaper: {label:"Reaper",   full:"Chaîne de plugins", acc:"var(--reaper)"}
+};
+
+/* ============================ matériel ============================
+   Chaque instrument et chaque ampli décrit sa façade : les commandes,
+   dans leur ordre, avec leur type. L'affichage et l'éditeur en découlent,
+   il n'y a donc rien de câblé en dur pour un modèle particulier.
+
+   Types de commande : clock (cranté à midi, ±5 crans, la BB), scale (une
+   échelle bornée, 1–10 sur le Rumble), balance (0 = premier micro, 100 =
+   second), switch (interrupteur), et needs pour une commande qui ne sert
+   que si une autre est active.
+   face : dark (bouton noir), ivory (bouton crème), plain (neutre).        */
+var GEAR = {
+  "bb734a": {
+    kind:"bass", brand:"Yamaha", model:"BB734A", face:"bass", dim:"passif",
+    note:"Micros P/J. En passif l'EQ sort du circuit et le bouton treble devient une tonalité.",
+    modes:{ options:["actif","passif"], off:{ passif:["eq.b","eq.m"] } },
+    controls:[
+      {k:"balance", t:"balance", l:"Balance", a:"P", b:"J", min:0, max:100, step:1, d:50},
+      {k:"eq.b", t:"clock", l:"Bass", d:0},
+      {k:"eq.m", t:"clock", l:"Middle", d:0},
+      {k:"eq.t", t:"clock", l:"Treble", lAlt:{passif:"Tonalité"}, d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+  "pbass": {
+    kind:"bass", brand:"générique", model:"Basse passive, un micro", face:"plain",
+    note:"Un volume, une tonalité : le schéma d'une Precision.",
+    controls:[
+      {k:"vol", t:"clock", l:"Volume", d:5},
+      {k:"tone", t:"clock", l:"Tonalité", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+  "jbass": {
+    kind:"bass", brand:"générique", model:"Basse passive, deux micros", face:"plain",
+    note:"Deux volumes et une tonalité : le schéma d'une Jazz Bass.",
+    controls:[
+      {k:"volN", t:"clock", l:"Volume manche", d:5},
+      {k:"volB", t:"clock", l:"Volume chevalet", d:5},
+      {k:"tone", t:"clock", l:"Tonalité", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+  "active2": {
+    kind:"bass", brand:"générique", model:"Basse active, EQ 2 bandes", face:"plain",
+    note:"Volume, balance, grave et aigu crantés au neutre.",
+    controls:[
+      {k:"balance", t:"balance", l:"Balance", a:"1", b:"2", min:0, max:100, step:1, d:50},
+      {k:"eq.b", t:"clock", l:"Bass", d:0},
+      {k:"eq.t", t:"clock", l:"Treble", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+
+  "rumble40": {
+    kind:"amp", brand:"Fender", model:"Rumble 40", face:"amp", hot:"od.on",
+    note:"Trois boutons de caractère et un canal overdrive commutable au pied. Échelle 1–10.",
+    controls:[
+      {k:"gain", t:"scale", l:"Gain", min:1, max:10, step:0.5, d:5.5},
+      {k:"bright", t:"switch", l:"Bright"},
+      {k:"contour", t:"switch", l:"Contour"},
+      {k:"vintage", t:"switch", l:"Vintage"},
+      {k:"od.on", t:"switch", l:"Overdrive"},
+      {k:"od.drive", t:"scale", l:"Drive", min:1, max:10, step:0.5, d:3, needs:"od.on"},
+      {k:"od.level", t:"scale", l:"Level", min:1, max:10, step:0.5, d:5, needs:"od.on"},
+      {k:"eq.b", t:"scale", l:"Bass", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.lm", t:"scale", l:"Low-Mid", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.hm", t:"scale", l:"High-Mid", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:1, max:10, step:0.5, d:5.5}
+    ]
+  },
+  "amp3": {
+    kind:"amp", brand:"générique", model:"Ampli 3 bandes", face:"plain",
+    note:"Le schéma le plus courant : gain, grave, médium, aigu, sur une échelle 1–10.",
+    controls:[
+      {k:"gain", t:"scale", l:"Gain", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.b", t:"scale", l:"Bass", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.m", t:"scale", l:"Middle", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:1, max:10, step:0.5, d:5.5}
+    ]
+  },
+  "amp4": {
+    kind:"amp", brand:"générique", model:"Ampli 4 bandes", face:"plain",
+    note:"Deux bandes de médiums, comme sur la plupart des amplis de basse récents.",
+    controls:[
+      {k:"gain", t:"scale", l:"Gain", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.b", t:"scale", l:"Bass", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.lm", t:"scale", l:"Low-Mid", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.hm", t:"scale", l:"High-Mid", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:1, max:10, step:0.5, d:5.5}
+    ]
+  },
+  "ampegstyle": {
+    kind:"amp", brand:"générique", model:"Ampli à contours grave et aigu", face:"plain",
+    note:"Trois bandes plus deux contours commutables, façon tête Ampeg.",
+    controls:[
+      {k:"gain", t:"scale", l:"Gain", min:1, max:10, step:0.5, d:5.5},
+      {k:"ultralo", t:"switch", l:"Ultra Lo"},
+      {k:"ultrahi", t:"switch", l:"Ultra Hi"},
+      {k:"eq.b", t:"scale", l:"Bass", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.m", t:"scale", l:"Midrange", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:1, max:10, step:0.5, d:5.5}
+    ]
+  }
+};
+
+/* ---------------------------- pédales d'effet ----------------------------
+   Décrites par famille, avec le jeu de commandes conventionnel de la
+   famille — pas d'après un modèle commercial dont la façade n'a pas été
+   relevée. `color` sert au dessin ; les boutons vont de 0 à 10 sauf
+   mention contraire, et un égaliseur graphique utilise des curseurs.     */
+function pk(k, l, d){ return {k:k, t:"scale", l:l, min:0, max:10, step:0.5, d:d === undefined ? 5 : d}; }
+function fader(k, l){ return {k:k, t:"slider", l:l, min:-15, max:15, step:0.5, d:0, u:"dB"}; }
+
+var PEDALS = {
+  "pd-boost":   {model:"Boost", color:"#E8B33A", style:"mini", perRow:1, note:"Un seul bouton : de quoi passer devant sans changer de son.",
+                 controls:[pk("level","Level",6)]},
+  "pd-od":      {model:"Overdrive", color:"#E9D53F", style:"std", perRow:2,
+                 controls:[pk("gain","Gain",4), pk("tone","Tone",5), pk("level","Level",6)]},
+  "pd-dist":    {model:"Distortion", color:"#E07C2E", style:"std", perRow:2,
+                 controls:[pk("gain","Gain",6), pk("level","Level",5), pk("high","High",5), pk("low","Low",5)]},
+  "pd-fuzz":    {model:"Fuzz", color:"#C2412F", style:"std", perRow:3,
+                 controls:[pk("fuzz","Fuzz",7), pk("tone","Tone",5), pk("level","Level",5)]},
+  "pd-preamp":  {model:"Préampli / DI", color:"#3C4A5A", style:"big", perRow:3,
+                 note:"Le schéma des préamplis de basse à mélange : le grain se dose au Blend.",
+                 controls:[pk("drive","Drive",3), pk("blend","Blend",6), pk("bass","Bass",5),
+                           pk("treble","Treble",5), pk("presence","Presence",5), pk("level","Level",6)]},
+  "pd-comp":    {model:"Compresseur", color:"#8C6FB0", style:"std", perRow:2,
+                 controls:[pk("sustain","Sustain",5), pk("level","Level",6), pk("attack","Attack",5)]},
+  "pd-gate":    {model:"Noise gate", color:"#C9CCC6", style:"std", perRow:2,
+                 controls:[pk("threshold","Threshold",4), pk("decay","Decay",5)]},
+  "pd-eq":      {model:"Égaliseur graphique", color:"#2E8B4F", style:"big", perRow:1,
+                 note:"Sept bandes en décibels, plus le niveau de sortie.",
+                 controls:[fader("b100","100"), fader("b200","200"), fader("b400","400"),
+                           fader("b800","800"), fader("b1k6","1,6k"), fader("b3k2","3,2k"),
+                           fader("b6k4","6,4k"), pk("level","Level",5)]},
+  "pd-octave":  {model:"Octaver", color:"#2F7C8C", style:"treadle", perRow:3,
+                 controls:[pk("direct","Direct",6), pk("oct1","Octave 1",5), pk("oct2","Octave 2",0)]},
+  "pd-filter":  {model:"Filtre à enveloppe", color:"#B8792E", style:"treadle", perRow:2,
+                 note:"L'auto-wah : la sensibilité décide de ce qui déclenche le balayage.",
+                 controls:[pk("sens","Sensibilité",5), pk("range","Range",5),
+                           pk("blend","Blend",6), pk("decay","Decay",5)]},
+  "pd-chorus":  {model:"Chorus", color:"#4E86C6", style:"treadle", perRow:3,
+                 controls:[pk("rate","Rate",4), pk("depth","Depth",4), pk("level","Level",5)]},
+  "pd-phaser":  {model:"Phaser", color:"#D2495F", style:"treadle", perRow:3,
+                 controls:[pk("speed","Speed",4), pk("depth","Depth",5), pk("level","Level",5)]},
+  "pd-flanger": {model:"Flanger", color:"#A98A5E", style:"treadle", perRow:2,
+                 controls:[pk("manual","Manual",5), pk("depth","Depth",5),
+                           pk("rate","Rate",3), pk("res","Res",4)]},
+  "pd-trem":    {model:"Trémolo", color:"#7FA05A", style:"treadle", perRow:3,
+                 controls:[pk("speed","Speed",5), pk("depth","Depth",5), pk("level","Level",5)]},
+  "pd-delay":   {model:"Delay / écho", color:"#5AA8C6", style:"treadle", perRow:2,
+                 controls:[pk("time","D. Time",4), pk("level","E. Level",4),
+                           pk("fback","F. Back",3), pk("mode","Mode",5)]},
+  "pd-reverb":  {model:"Réverbe", color:"#6E78C4", style:"treadle", perRow:3,
+                 controls:[pk("level","Level",4), pk("decay","Decay",5), pk("tone","Tone",5)]},
+  "pd-synth":   {model:"Synthé de basse", color:"#B45E9E", style:"big", perRow:2,
+                 controls:[pk("sens","Sensibilité",5), pk("filter","Filter",5),
+                           pk("dry","Dry",5), pk("synth","Synth",6)]},
+  "pd-tuner":   {model:"Accordeur", color:"#2B2B28", style:"tall", perRow:1, note:"Aucun réglage : il coupe ou laisse passer.",
+                 controls:[]}
+};
+
+/* Les pédales entrent dans le registre général : une pédale est une façade. */
+(function(){
+  var k;
+  for (k in PEDALS){
+    GEAR[k] = {
+      kind:"pedal", brand:"générique", model:PEDALS[k].model, face:"plain",
+      color:PEDALS[k].color, style:PEDALS[k].style, perRow:PEDALS[k].perRow,
+      note:PEDALS[k].note || "",
+      controls:PEDALS[k].controls, extras:[]
+    };
+  }
+})();
+
+var DEFAULT_GEAR = { bass:"bb734a", amp:"rumble40", pedal:"pd-od" };
+
+/** Le matériel d'une fiche ; les fiches d'avant gardent le matériel d'origine. */
+function gearOf(p){
+  var reg = allGear();
+  var id = p.gear || DEFAULT_GEAR[p.kind];
+  return reg[id] || reg[DEFAULT_GEAR[p.kind]] || GEAR.bb734a;
+}
+function gearId(p){ return p.gear || DEFAULT_GEAR[p.kind]; }
+function gearName(g){
+  return (!g.brand || g.brand === "générique") ? g.model : g.brand + " " + g.model;
+}
+function gearList(kind){
+  var reg = allGear(), out = [], k;
+  for (k in reg) if (reg[k].kind === kind) out.push({id:k, g:reg[k], own:isOwnGear(k)});
+  out.sort(function(a, b){
+    if (a.own !== b.own) return a.own ? 1 : -1;
+    return gearName(a.g).localeCompare(gearName(b.g), "fr");
+  });
+  return out;
+}
+/** Registre livré, plus les façades créées ici. */
+function allGear(){
+  var out = {}, k;
+  for (k in GEAR) out[k] = GEAR[k];
+  if (S.gear) for (k in S.gear) out[k] = S.gear[k];
+  return out;
+}
+function isOwnGear(id){ return !!(S.gear && S.gear[id]); }
+/** Combien de fiches utilisent ce matériel. */
+function gearUsage(id){
+  var L = library(), n = 0, i, j, sl0;
+  for (i=0;i<L.length;i++){
+    if (L[i].kind === "board"){
+      sl0 = L[i].slots || [];
+      for (j=0;j<sl0.length;j++) if (sl0[j].gear === id) { n++; break; }
+      continue;
+    }
+    if (L[i].kind !== "reaper" && gearId(L[i]) === id) n++;
+  }
+  return n;
+}
+function numLabel(v, step){
+  return dec(step ? Number(v).toFixed(decimalsOf(step)) : String(v));
+}
+
+
+/* ============================ état ============================ */
+var API = "api/presets";                 /* déploiement autonome : serveur Presetbook */
+var DATA_PATH = "data/presets.json";     /* page publiée : fichier de données de l'artifact */
+var LS_KEY = "presetbook-v1";
+var LS_KEY_OLD = "rack-presets-v1";
+var S = {v:1, custom:[], overrides:{}, gear:{}, hidden:[]};
+var store = {mode:"memory", api:false, writer:null, downloads:null};
+var ui = {kind:"all", q:"", group:"kind"};
+
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function library(){
+  var out = [];
+  for (var i=0;i<SEED.length;i++){
+    var s = SEED[i];
+    if (S.hidden.indexOf(s.id) >= 0) continue;
+    out.push(S.overrides[s.id] ? clone(S.overrides[s.id]) : clone(s));
+  }
+  for (var j=0;j<S.custom.length;j++) out.push(clone(S.custom[j]));
+  return out;
+}
+function isSeed(id){ for (var i=0;i<SEED.length;i++) if (SEED[i].id === id) return true; return false; }
+function findPreset(id){ var L = library(); for (var i=0;i<L.length;i++) if (L[i].id === id) return L[i]; return null; }
+
+/* ============================ persistance ============================ */
+function setStore(mode, msg){
+  store.mode = mode;
+  var dot = document.getElementById("store-dot"), txt = document.getElementById("store-txt");
+  dot.className = "dot " + (mode === "api" || mode === "artifact" ? "ok"
+                          : mode === "local" || mode === "locked" ? "warn" : "err");
+  txt.textContent = t(msg);
+}
+
+function readLocal(){
+  try {
+    var raw = window.localStorage.getItem(LS_KEY) || window.localStorage.getItem(LS_KEY_OLD);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function writeLocal(){
+  try { window.localStorage.setItem(LS_KEY, JSON.stringify(S)); return true; }
+  catch (e) { return false; }
+}
+
+function save(){
+  S.updated = new Date().toISOString();
+  var payload = JSON.stringify(S, null, 1);
+  if (store.api){
+    return fetch(API, {method:"PUT", headers:{"Content-Type":"application/json"},
+                       body:payload, credentials:"same-origin"})
+      .then(function(r){
+        if (r.status === 401){                       /* session expirée : ne pas dévier vers un autre stockage */
+          store.api = false;
+          setStore("locked", "session expirée");
+          showGate();
+          throw new Error("session expirée — reconnecte-toi, tes modifications sont toujours à l'écran");
+        }
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        setStore("api", "enregistré sur le serveur");
+        return true;
+      }).catch(function(err){
+        if (/session expirée/.test(err.message)){ toast(err.message); return false; }
+        if (writeLocal()){
+          setStore("local", "serveur injoignable, gardé ici");
+          toast(tf("Le serveur n'a pas répondu ({0}) — enregistré dans ce navigateur.", err.message));
+          return true;
+        }
+        setStore("memory", "session seulement");
+        toast(tf("Le serveur n'a pas répondu ({0}). Exporte ta sauvegarde.", err.message));
+        return false;
+      });
+  }
+  if (store.writer){
+    var files = {}; files[DATA_PATH] = payload;
+    return store.writer.publish(files).then(function(){
+      setStore("artifact", "enregistré en ligne");
+      return true;
+    }).catch(function(err){
+      var code = (err && err.code) || "upstream_error";
+      if (code === "conflict"){ toast("Une autre fenêtre a enregistré avant celle-ci — elle va se recharger."); return false; }
+      store.writer = null;
+      if (writeLocal()){ setStore("local", "enregistré dans ce navigateur"); toast(tf("Écriture en ligne indisponible ({0}) — enregistré localement.", code)); return true; }
+      setStore("memory", "session seulement"); toast(tf("Impossible d'enregistrer ({0}). Exporte ta sauvegarde.", code)); return false;
+    });
+  }
+  if (writeLocal()){ setStore("local", "enregistré dans ce navigateur"); return Promise.resolve(true); }
+  setStore("memory", "session seulement");
+  toast("Aucun stockage disponible : exporte ta sauvegarde avant de fermer.");
+  return Promise.resolve(false);
+}
+
+function fetchJson(url){
+  return fetch(url, {cache:"no-store", headers:{"Accept":"application/json"}}).then(function(r){
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  });
+}
+
+/* Filtre initial repris de l'URL : ?q=…&kind=bass|amp|reaper&group=song — un filtre se met en favori. */
+function readUrlFilter(){
+  try {
+    var qp = new URLSearchParams(window.location.search);
+    var q = qp.get("q"), kind = qp.get("kind"), group = qp.get("group");
+    if (q) ui.q = q;
+    if (kind === "all" || KINDS[kind]) ui.kind = kind;   /* toute famille connue */
+    if (group === "song" || group === "kind") ui.group = group;
+    document.getElementById("q").value = ui.q;
+    Array.prototype.forEach.call(document.querySelectorAll("#grp [data-g]"), function(b){
+      b.setAttribute("aria-selected", String(b.getAttribute("data-g") === ui.group));
+    });
+  } catch (e) { /* pas d'URL exploitable : on garde les valeurs par défaut */ }
+}
+
+/* ============================ comptes ============================
+   Uniquement en déploiement autonome : la page publiée n'a pas de
+   serveur, donc aucun écran de connexion n'apparaît là-bas.        */
+var session = {user:null, canRegister:false, firstRun:false};
+var gateMode = "login";
+
+function post(url, body){
+  return fetch(url, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body || {}), credentials:"same-origin"
+  }).then(function(r){
+    return r.json().catch(function(){ return {}; }).then(function(j){
+      if (!r.ok) throw new Error(j.error || ("HTTP " + r.status));
+      return j;
+    });
+  });
+}
+
+function renderWho(){
+  var host = document.getElementById("who");
+  if (!session.user){ host.innerHTML = ""; return; }
+  host.innerHTML = tHtml('<span class="store"><span class="dot ok"></span>' + esc(session.user.name) + '</span>' +
+                   '<button class="btn" id="btn-account">Comptes</button>' +
+                   '<button class="btn" id="btn-logout">Déconnexion</button>');
+  document.getElementById("btn-account").addEventListener("click", openAccount);
+  document.getElementById("btn-logout").addEventListener("click", function(){
+    post("api/logout").then(function(){ window.location.reload(); },
+      function(){ toast("La déconnexion a échoué."); });
+  });
+}
+
+/* Ouvrir un compte à quelqu'un d'autre. Le serveur, lui, ne bascule pas la
+   session de qui crée le compte — c'est ce qui rend l'écran sûr à utiliser. */
+function openAccount(){
+  var veil = document.getElementById("veil");
+  veil.innerHTML = tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Comptes">' +
+    '<div class="sheet-h"><h2>Nouveau compte</h2>' +
+      '<button class="btn small ghost" data-close>Fermer</button></div>' +
+    '<div class="sheet-b">' +
+      '<p class="hint">Ouvre un compte à quelqu\'un d\'autre sur ce serveur. ' +
+      'Ta session ne change pas, et ses fiches seront séparées des tiennes.</p>' +
+      '<form id="acc-form" autocomplete="off">' +
+        '<label class="fld">Identifiant' +
+          '<input type="text" name="name" required autocomplete="off" autocapitalize="none"' +
+          ' spellcheck="false" maxlength="40"></label>' +
+        '<label class="fld">Mot de passe' +
+          '<input type="password" name="password" required autocomplete="new-password"' +
+          ' minlength="10"></label>' +
+        '<label class="fld">Répéter le mot de passe' +
+          '<input type="password" name="again" required autocomplete="new-password"' +
+          ' minlength="10"></label>' +
+        '<p class="hint">Identifiant : 2 à 40 caractères, lettres, chiffres, espace, point, tiret. ' +
+        'Mot de passe : au moins 10 caractères. Transmets-le de la main à la main — il n\'y a ni ' +
+        'récupération par courriel, ni écran pour le changer ensuite.</p>' +
+        '<p class="gate-err" id="acc-err"></p>' +
+        '<div class="acts">' +
+          '<button class="btn primary" type="submit">Créer le compte</button>' +
+          '<button class="btn ghost" type="button" data-close>Annuler</button>' +
+        '</div>' +
+      '</form>' +
+    '</div></div>');
+  veil.classList.add("open");
+  var first = veil.querySelector('input[name="name"]');
+  if (first) first.focus();
+}
+
+function accountError(msg){
+  var el = document.getElementById("acc-err");
+  if (!el) return;
+  el.textContent = t(msg);
+  el.classList.add("show");
+}
+
+function submitAccount(f){
+  var name = f.elements.name.value.trim();
+  var password = f.elements.password.value;
+  var again = f.elements.again.value;
+  if (password !== again){ accountError("Les deux mots de passe ne sont pas identiques."); return; }
+  if (password.length < 10){ accountError("Mot de passe : au moins 10 caractères."); return; }
+  if (name.toLowerCase() === String(session.user && session.user.name).toLowerCase()){
+    accountError("C'est ton propre identifiant."); return;
+  }
+  var btn = f.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  post("api/register", {name:name, password:password}).then(function(j){
+    /* Le serveur répond « switched » s'il a ouvert la session du nouveau compte :
+       cela n'arrive pas depuis ici, mais l'ignorer laisserait un écran menteur. */
+    if (j && j.switched){ window.location.reload(); return; }
+    closeEditor();
+    toast(tf("Compte créé : {0}", j.user ? j.user.name : name));
+  }, function(err){
+    btn.disabled = false;
+    accountError(err.message);
+  });
+}
+
+function showGate(){
+  var g = document.getElementById("gate");
+  var creating = gateMode === "register";
+  g.innerHTML =
+    tHtml('<div class="gate-card">' +
+      '<p class="eyebrow">Instruments · amplis · pédales · chaînes de plugins</p>' +
+      '<h1>Presetbook</h1>' +
+      (session.canRegister ?
+        '<div class="seg" id="gate-seg" role="tablist">' +
+          '<button role="tab" data-gm="login" aria-selected="' + (!creating) + '">Se connecter</button>' +
+          '<button role="tab" data-gm="register" aria-selected="' + creating + '">Créer un compte</button>' +
+        '</div>' : "") +
+      (session.firstRun ?
+        '<p class="gate-note">Aucun compte sur ce serveur : le premier créé sera le tien, ' +
+        'et les presets déjà enregistrés lui seront rattachés.</p>' : "") +
+      '<form id="gate-form" autocomplete="on">' +
+        '<label class="fld">Identifiant' +
+          '<input type="text" name="name" required autocomplete="username" autocapitalize="none" spellcheck="false">' +
+        '</label>' +
+        '<label class="fld">Mot de passe' +
+          '<input type="password" name="password" required ' +
+          'autocomplete="' + (creating ? "new-password" : "current-password") + '"' +
+          (creating ? ' minlength="10"' : "") + '>' +
+        '</label>' +
+        (creating ? '<p class="gate-note">Au moins 10 caractères. Garde-le dans ton gestionnaire de mots de passe : ' +
+                    'il n\'y a pas de récupération par courriel sur un serveur auto-hébergé.</p>' : "") +
+        '<p class="gate-err" id="gate-err" role="alert"></p>' +
+        '<button class="btn primary" type="submit">' + (creating ? "Créer le compte" : "Se connecter") + '</button>' +
+      '</form>' +
+    '</div>');
+  g.classList.add("open");
+  g.setAttribute("aria-hidden", "false");
+  var first = g.querySelector('input[name="name"]');
+  if (first) first.focus();
+}
+
+function gateError(msg){
+  var e = document.getElementById("gate-err");
+  if (!e) return;
+  e.textContent = msg;
+  e.classList.add("show");
+}
+
+function hideGate(){
+  var g = document.getElementById("gate");
+  g.classList.remove("open");
+  g.setAttribute("aria-hidden", "true");
+  g.innerHTML = "";
+}
+
+function loadFromApi(){
+  return fetchJson(API).then(function(j){
+    if (j && typeof j === "object") S = normalize(j);
+    store.api = true;
+    hideGate();
+    renderWho();
+    render();
+    setStore("api", tf("presets de {0}", session.user.name));
+  });
+}
+
+document.getElementById("gate").addEventListener("click", function(e){
+  var seg = e.target.closest("[data-gm]");
+  if (!seg) return;
+  gateMode = seg.getAttribute("data-gm");
+  showGate();
+});
+document.getElementById("gate").addEventListener("submit", function(e){
+  e.preventDefault();
+  var f = e.target;
+  var name = f.elements.name.value.trim();
+  var password = f.elements.password.value;
+  var btn = f.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  post(gateMode === "register" ? "api/register" : "api/login", {name:name, password:password})
+    .then(function(j){
+      session.user = j.user;
+      mountKofi();
+      return loadFromApi();
+    })
+    .catch(function(err){
+      btn.disabled = false;
+      gateError(err.message);
+    });
+});
+
+/* Trois contextes possibles, dans l'ordre : serveur Presetbook, page publiée, navigateur seul. */
+/* ?edit=<id> ouvre directement une fiche : pratique pour envoyer un lien vers un réglage précis. */
+function openFromUrl(){
+  try {
+    var id = new URLSearchParams(window.location.search).get("edit");
+    if (!id) return;
+    var p = findPreset(id);
+    if (p) openEditor(p, false);
+  } catch (e) { /* rien à ouvrir */ }
+}
+
+/* ============================ soutien ============================
+   Le widget de dons est servi par un tiers, donc il n'est chargé qu'une fois
+   la session ouverte : un script qu'on ne sert pas soi-même n'a rien à faire
+   sur la même page qu'un champ de mot de passe. Vider KOFI le retire
+   entièrement, pied de page compris.                                        */
+var KOFI = "talva";
+var kofiMounted = false;
+
+function mountKofi(){
+  if (kofiMounted || !KOFI) return;
+  if (window.claude) return;      /* page publiée : la politique de sécurité bloque les tiers */
+  kofiMounted = true;
+  try {
+    var s = document.createElement("script");
+    s.src = "https://storage.ko-fi.com/cdn/scripts/overlay-widget.js";
+    s.async = true;
+    s.onload = function(){
+      try {
+        window.kofiWidgetOverlay.draw(KOFI, {
+          "type": "floating-chat",
+          "floating-chat.donateButton.text": t("Me soutenir"),
+          "floating-chat.donateButton.background-color": "#323842",
+          "floating-chat.donateButton.text-color": "#fff"
+        });
+      } catch (e) { /* le tiers a changé d'interface : le lien du pied de page reste */ }
+    };
+    (document.head || document.body).appendChild(s);
+    var f = document.getElementById("foot");
+    if (f) f.classList.add("kofi");        /* la place réservée suit le bouton, pas l'inverse */
+  } catch (e) { /* rien à faire : le pied de page porte déjà le lien */ }
+}
+
+function boot(){
+  readUrlFilter();
+  applyLang();
+  render();                                        /* le catalogue livré s'affiche tout de suite */
+  openFromUrl();
+
+  fetchJson("api/session").then(function(sess){    /* 1. serveur autonome */
+    session = sess || session;
+    if (session.user){ mountKofi(); return loadFromApi(); }
+    setStore("locked", "connexion requise");
+    showGate();
+  }, function(){
+    return fetchJson(DATA_PATH).then(function(j){  /* 2. page publiée */
+      if (j && typeof j === "object"){ S = normalize(j); applyLang(); render(); setStore("artifact", "chargé en ligne"); }
+    }, function(){                                 /* 3. navigateur seul */
+      var l = readLocal();
+      if (l){ S = normalize(l); applyLang(); render(); setStore("local", "chargé du navigateur"); }
+      else setStore("memory", "catalogue d'origine");
+      mountKofi();                  /* aucun formulaire de connexion dans ce contexte */
+    }).then(function(){
+      if (!window.claude || !window.claude.use) return;
+      window.claude.use("artifact").then(function(ns){
+        if (ns && typeof ns.publish === "function"){
+          store.writer = ns;
+          if (store.mode !== "artifact") setStore("artifact", "stockage en ligne prêt");
+        }
+      });
+      window.claude.use("downloads").then(function(ns){ store.downloads = ns; });
+    });
+  });
+}
+function normalize(j){
+  return {
+    v: 1,
+    custom: Array.isArray(j.custom) ? j.custom : [],
+    overrides: (j.overrides && typeof j.overrides === "object") ? j.overrides : {},
+    gear: (j.gear && typeof j.gear === "object" && !Array.isArray(j.gear)) ? j.gear : {},
+    hidden: Array.isArray(j.hidden) ? j.hidden : [],
+    lang: (j.lang === "en" || j.lang === "fr") ? j.lang : undefined,
+    updated: j.updated || null
+  };
+}
+
+/* ============================ rendu ============================ */
+/* Tout contenu affiché passe ici : c'est donc le point de traduction. */
+function esc(s){
+  return String(t(s == null ? "" : s)).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+  });
+}
+function knob(angle, cls){ return '<span class="knob ' + (cls||"") + '" style="--a:' + angle + '"><i></i></span>'; }
+function dial(label, value, angle, cls){
+  return '<div class="dial">' + knob(angle, cls) +
+         '<span class="dl">' + esc(label) + '</span><span class="dv">' + esc(value) + '</span></div>';
+}
+
+/* ---- lecture d'un réglage selon le type de commande ---- */
+function ctrlValue(p, c){
+  var v = getPath(p, c.k);
+  if (v === undefined || v === null) return (c.d !== undefined ? c.d : null);
+  return v;
+}
+function ctrlLabel(g, p, c){
+  if (c.lAlt && p.mode && c.lAlt[p.mode]) return c.lAlt[p.mode];
+  return c.l;
+}
+/** Une commande est-elle hors circuit dans le mode courant ? */
+function ctrlOff(g, p, c){
+  if (c.needs && !getPath(p, c.needs)) return true;
+  if (g.modes && p.mode && g.modes.off && g.modes.off[p.mode]){
+    return g.modes.off[p.mode].indexOf(c.k) >= 0;
+  }
+  return false;
+}
+function ctrlText(c, v){
+  if (v === null) return "—";
+  if (c.t === "clock") return hourLabel(v);
+  if (c.t === "balance") return balLabel(v);
+  if (c.t === "switch") return v ? "ON" : "OFF";
+  if (c.t === "slider") return fmtDb(v);
+  return numLabel(v, c.step);
+}
+/* Un curseur vertical : la position se lit à la hauteur du repère. */
+function faderCell(label, value, c, v){
+  var min = c.min === undefined ? -15 : c.min, max = c.max === undefined ? 15 : c.max;
+  var t = Math.max(0, Math.min(1, (Number(v) - min) / (max - min)));
+  return '<div class="dial"><span class="fdr"><i style="bottom:' + (t * 100).toFixed(1) + '%"></i></span>' +
+    '<span class="dl">' + esc(label) + '</span><span class="dv">' + esc(value) + '</span></div>';
+}
+/** Retrouve la description d'une commande à partir de sa clé. */
+function findCtrl(p, key){
+  var g = gearOf(p), i;
+  for (i=0;i<g.controls.length;i++) if (g.controls[i].k === key) return g.controls[i];
+  return null;
+}
+function ctrlAngle(c, v){
+  if (v === null) return "0deg";
+  if (c.t === "clock") return hourAngle(v);
+  var min = c.min === undefined ? 1 : c.min, max = c.max === undefined ? 10 : c.max;
+  var t = (Number(v) - min) / (max - min);
+  return (-150 + Math.max(0, Math.min(1, t)) * 300) + "deg";
+}
+
+/** Bandeau de cadrans d'un matériel, dans l'ordre de sa façade. */
+function gearStrip(p){
+  var g = gearOf(p), h = '<div class="strip ' + g.face + '">', i, c, v, off, cls;
+  for (i=0;i<g.controls.length;i++){
+    c = g.controls[i];
+    if (c.t === "switch" || c.t === "balance") continue;      /* rendus en étiquettes */
+    v = ctrlValue(p, c);
+    off = ctrlOff(g, p, c);
+    if (c.t === "slider"){
+      h += faderCell(ctrlLabel(g, p, c), off ? "—" : ctrlText(c, v), c, v);
+      continue;
+    }
+    cls = g.face + (g.dim && p.mode === g.dim ? " cool" : "") +
+          (g.hot && getPath(p, g.hot) ? " dr" : "") + (off ? " off" : "");
+    h += dial(ctrlLabel(g, p, c), off ? "—" : ctrlText(c, v), off ? "0deg" : ctrlAngle(c, v), cls);
+  }
+  return h + "</div>";
+}
+
+/* ======================= dessin d'une pédale =======================
+   Le boîtier est déduit de la description de la façade : les boutons se
+   répartissent en rangées, les curseurs en peigne, et chaque repère est à
+   la position réglée. Une pédale créée depuis l'interface est donc
+   dessinée elle aussi, sans travail supplémentaire.                    */
+
+function luma(hex){
+  var t = String(hex || "#888888").replace("#", "");
+  if (t.length === 3) t = t.charAt(0)+t.charAt(0)+t.charAt(1)+t.charAt(1)+t.charAt(2)+t.charAt(2);
+  var r = parseInt(t.slice(0,2),16), g = parseInt(t.slice(2,4),16), b = parseInt(t.slice(4,6),16);
+  return (0.299*r + 0.587*g + 0.114*b) / 255;
+}
+function slotValue(vals, c){
+  if (vals && vals[c.k] !== undefined && vals[c.k] !== null) return vals[c.k];
+  return c.d !== undefined ? c.d : 5;
+}
+
+/* Silhouettes de boîtier. Ce sont des formats, pas des marques : chacune
+   correspond à un gabarit courant du marché. `perRow` n'est qu'un défaut,
+   la façade peut imposer le sien. */
+var PEDAL_STYLES = {
+  std:     {l:"Boîtier standard",   perRow:2, pad:14, foot:"round",   name:8,   minW:104},
+  treadle: {l:"Compacte à bascule", perRow:3, pad:12, foot:"treadle", name:7.2, minW:112},
+  tall:    {l:"Haute et étroite",   perRow:1, pad:12, foot:"round",   name:6.4, minW:74},
+  big:     {l:"Grand boîtier",      perRow:3, pad:18, foot:"round",   name:10,  minW:130},
+  mini:    {l:"Mini",               perRow:1, pad:9,  foot:"small",   name:5.8, minW:66}
+};
+function pedalStyle(g){ return PEDAL_STYLES[g && g.style] || PEDAL_STYLES.std; }
+
+/** Combien de boutons par rangée : le choix de la façade, sinon celui du format. */
+function knobsPerRow(g, count){
+  var n = Number(g && g.perRow);
+  if (n >= 1 && n <= 4) return Math.min(n, Math.max(1, count));
+  var st = pedalStyle(g);
+  return Math.min(st.perRow, Math.max(1, count));
+}
+
+/** SVG d'une pédale, réglages compris. */
+function pedalArt(g, vals, opts){
+  opts = opts || {};
+  var knobs = [], sliders = [], switches = [], i, c;
+  for (i=0;i<g.controls.length;i++){
+    c = g.controls[i];
+    if (c.t === "slider") sliders.push(c);
+    else if (c.t === "switch") switches.push(c);
+    else knobs.push(c);
+  }
+
+  var st = pedalStyle(g);
+  var cols = knobsPerRow(g, knobs.length);
+  var rows = Math.ceil(knobs.length / cols) || 0;
+  var cellW = 40, cellH = 44, fadW = 16;
+
+  var inner = Math.max(cols * cellW, sliders.length * fadW + 10, st.minW);
+  var w = inner + st.pad * 2;
+  var knobH = rows * cellH;
+  var fadH = sliders.length ? 62 : 0;
+  var swH = switches.length ? 16 : 0;
+  var footH = st.foot === "treadle" ? 68 : (st.foot === "small" ? 40 : 58);
+  var h = st.pad + knobH + fadH + swH + footH;
+  if (h < w * 1.15) h = Math.round(w * 1.15);          /* un boîtier reste en portrait */
+
+  var light = luma(g.color) > 0.6;
+  var ink = light ? "#1A1A18" : "#F4F4F0";
+  var sub = light ? "rgba(26,26,24,.6)" : "rgba(244,244,240,.6)";
+  var off = opts.off === true;
+
+  var out = '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + esc(g.model) + '">';
+  out += '<rect x="2" y="2" width="' + (w-4) + '" height="' + (h-4) + '" rx="9" fill="' +
+    esc(g.color || "#888888") + '" stroke="rgba(0,0,0,.55)" stroke-width="2"' +
+    (off ? ' opacity=".5"' : '') + '/>';
+  [[9,9],[w-9,9],[9,h-9],[w-9,h-9]].forEach(function(pt){
+    out += '<circle cx="' + pt[0] + '" cy="' + pt[1] + '" r="2" fill="' + sub + '"/>';
+  });
+
+  /* boutons : chaque rangée est centrée, y compris la dernière si elle est incomplète */
+  var y = st.pad + 18;
+  for (i=0;i<knobs.length;i++){
+    var row = Math.floor(i / cols);
+    var inRow = Math.min(cols, knobs.length - row * cols);   /* boutons de cette rangée */
+    var posInRow = i - row * cols;
+    var cx = w / 2 + (posInRow - (inRow - 1) / 2) * cellW;
+    var cy = y + row * cellH;
+    var ang = parseFloat(ctrlAngle(knobs[i], slotValue(vals, knobs[i])));
+    out += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy + '" r="12.5" fill="#F3F1EA" stroke="rgba(0,0,0,.45)"/>' +
+      '<circle cx="' + cx.toFixed(1) + '" cy="' + cy + '" r="10" fill="#171613"/>' +
+      '<line x1="' + cx.toFixed(1) + '" y1="' + (cy - 9) + '" x2="' + cx.toFixed(1) + '" y2="' + (cy - 3) +
+      '" stroke="#F3F1EA" stroke-width="2" stroke-linecap="round" transform="rotate(' +
+      ang.toFixed(1) + ' ' + cx.toFixed(1) + ' ' + cy + ')"/>' +
+      '<text x="' + cx.toFixed(1) + '" y="' + (cy + 21) + '" fill="' + ink +
+      '" font-size="6.2" text-anchor="middle" font-family="IBM Plex Mono, monospace">' +
+      esc(String(knobs[i].l).toUpperCase()) + '</text>';
+  }
+  y += knobH;
+
+  for (i=0;i<sliders.length;i++){
+    var sx = w / 2 + (i - (sliders.length - 1) / 2) * fadW;
+    var mn = sliders[i].min === undefined ? -15 : sliders[i].min;
+    var mx = sliders[i].max === undefined ? 15 : sliders[i].max;
+    var t = Math.max(0, Math.min(1, (Number(slotValue(vals, sliders[i])) - mn) / (mx - mn)));
+    var tt = y + 6, th = 38;
+    out += '<line x1="' + sx.toFixed(1) + '" y1="' + tt + '" x2="' + sx.toFixed(1) + '" y2="' + (tt + th) +
+      '" stroke="rgba(0,0,0,.4)" stroke-width="2.5" stroke-linecap="round"/>' +
+      '<rect x="' + (sx - 5).toFixed(1) + '" y="' + (tt + (1 - t) * th - 3).toFixed(1) +
+      '" width="10" height="6" rx="1.6" fill="#171613" stroke="#F3F1EA" stroke-width=".8"/>' +
+      '<text x="' + sx.toFixed(1) + '" y="' + (tt + th + 10) + '" fill="' + sub +
+      '" font-size="5" text-anchor="middle" font-family="IBM Plex Mono, monospace">' +
+      esc(sliders[i].l) + '</text>';
+  }
+  y += fadH;
+
+  for (i=0;i<switches.length;i++){
+    var wx = w / 2 + (i - (switches.length - 1) / 2) * 26 - 9;
+    var on = !!(vals && vals[switches[i].k]);
+    out += '<rect x="' + wx.toFixed(1) + '" y="' + y + '" width="18" height="9" rx="4.5" fill="' +
+      (on ? "#171613" : "rgba(0,0,0,.22)") + '"/>' +
+      '<circle cx="' + (wx + (on ? 13 : 5)).toFixed(1) + '" cy="' + (y + 4.5) +
+      '" r="3.1" fill="#F3F1EA"/>';
+  }
+  y += swH;
+
+  /* bas du boîtier : nom, témoin, commande au pied */
+  var rest = h - y;
+  if (st.foot === "treadle"){
+    var bandY = y + Math.max(6, (rest - 60) / 2);
+    out += '<line x1="8" y1="' + bandY + '" x2="' + (w-8) + '" y2="' + bandY +
+      '" stroke="rgba(0,0,0,.3)"/>';
+    out += '<text x="' + (w/2) + '" y="' + (bandY + 13) + '" fill="' + ink + '" font-size="' + st.name +
+      '" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700">' +
+      esc(String(g.model).toUpperCase()) + '</text>';
+    out += '<circle cx="' + (w - 14) + '" cy="' + (st.pad + 2) + '" r="3.2" fill="' +
+      (off ? "rgba(0,0,0,.28)" : "#E24A3A") + '" stroke="rgba(0,0,0,.4)"/>';
+    out += '<rect x="9" y="' + (bandY + 19) + '" width="' + (w - 18) + '" height="' + (h - bandY - 28) +
+      '" rx="4" fill="rgba(0,0,0,.4)" stroke="rgba(0,0,0,.5)"/>' +
+      '<rect x="14" y="' + (bandY + 24) + '" width="' + (w - 28) + '" height="' + (h - bandY - 38) +
+      '" rx="3" fill="rgba(255,255,255,.07)"/>';
+  } else {
+    var fr = st.foot === "small" ? 8 : 11;
+    var nameY = y + Math.max(12, (rest - fr * 2 - 16) / 2 + 6);
+    if (st.foot !== "small"){
+      out += '<text x="' + (w/2) + '" y="' + nameY + '" fill="' + ink + '" font-size="' + st.name +
+        '" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700">' +
+        esc(String(g.model).toUpperCase()) + '</text>';
+    }
+    var ledY = st.foot === "small" ? y + 8 : nameY + 11;
+    out += '<circle cx="' + (w/2) + '" cy="' + ledY + '" r="3.4" fill="' +
+      (off ? "rgba(0,0,0,.28)" : "#E24A3A") + '" stroke="rgba(0,0,0,.4)"/>';
+    out += '<circle cx="' + (w/2) + '" cy="' + (h - fr - 8) + '" r="' + fr +
+      '" fill="#DCDCD6" stroke="rgba(0,0,0,.5)" stroke-width="1.6"/>' +
+      '<circle cx="' + (w/2) + '" cy="' + (h - fr - 8) + '" r="' + (fr / 2) + '" fill="#B9B9B2"/>';
+  }
+  return out + '</svg>';
+}
+/** Un pédalier : les pédales côte à côte, dans l’ordre du signal. */
+function boardArt(p){
+  var slots = p.slots || [];
+  if (!slots.length) return '<p class="hint">Pédalier vide — ajoute des pédales avec « Modifier ».</p>';
+  var reg = allGear(), h = '<div class="art">', i, g;
+  for (i=0;i<slots.length;i++){
+    g = reg[slots[i].gear];
+    if (!g) continue;
+    if (i) h += '<span class="cable" aria-hidden="true">→</span>';
+    h += '<div>' + pedalArt(g, slots[i].v || {}, {off: slots[i].on === false}) +
+         '<p class="pdname">' + (i+1) + '. ' + esc(g.model) +
+         (slots[i].on === false ? " · " + t("coupée") : "") + '</p></div>';
+  }
+  return h + '</div>';
+}
+
+/** Les valeurs d'une fiche de pédale, sous la forme attendue par le dessin. */
+function pedalValues(p){
+  var g = gearOf(p), out = {}, i, c;
+  for (i=0;i<g.controls.length;i++){ c = g.controls[i]; out[c.k] = getPath(p, c.k); }
+  return out;
+}
+
+/** Étiquettes : mode, balance, interrupteurs. */
+function gearTags(p){
+  var g = gearOf(p), out = [], i, c, v;
+  if (g.modes && p.mode){
+    out.push('<span class="tag ' + (p.mode === g.modes.options[0] ? "on" : "") + '">' +
+             esc(cap(p.mode)) + '</span>');
+  }
+  for (i=0;i<g.controls.length;i++){
+    c = g.controls[i];
+    v = ctrlValue(p, c);
+    if (c.t === "switch"){
+      out.push('<span class="tag ' + (v ? "on" : "off") + '">' + esc(c.l) + '</span>');
+    } else if (c.t === "balance"){
+      out.push('<span class="tag">' + esc(c.l) + " " + esc(balLabel(v)) + '</span>');
+    }
+  }
+  return out.length ? '<div class="tags">' + out.join("") + '</div>' : "";
+}
+function cap(s){ return String(s).charAt(0).toUpperCase() + String(s).slice(1); }
+var NO_GAIN = ["Low Pass","High Pass","All Pass","Notch","Band Pass"];
+function fmtDb(g){
+  var n = Number(g);
+  if (!isFinite(n)) return "à régler";
+  return (n > 0 ? "+" : n < 0 ? "−" : "") + dec(Math.abs(n).toFixed(1)) + " dB";
+}
+function paramGrid(s){
+  var def = pluginDef(s.plugin), out = [], i, d, v;
+  for (i=0;i<def.params.length;i++){
+    d = def.params[i];
+    v = (s.p && s.p[d.k] !== undefined) ? s.p[d.k] : (d.d !== undefined ? d.d : null);
+    out.push('<span class="pk">' + esc(d.l) + '</span><span class="pv">' + esc(fmtParam(d, v)) + '</span>');
+  }
+  return out.length ? '<div class="pgrid">' + out.join("") + '</div>' : "";
+}
+function bandTable(s){
+  var rows = s.bands || [];
+  if (!rows.length) return "";
+  var h = '<div class="bwrap"><table class="bands"><thead><tr>' +
+          '<th>#</th><th>Type</th><th>Fréquence</th><th>Gain</th><th>BW</th></tr></thead><tbody>';
+  rows.forEach(function(b, i){
+    h += '<tr' + (b.on === false ? ' class="bx"' : '') + '><td>' + (i+1) + '</td>' +
+         '<td>' + esc(b.t) + '</td>' +
+         '<td>' + esc(String(b.f).replace(".", ",")) + ' Hz</td>' +
+         '<td>' + (NO_GAIN.indexOf(b.t) >= 0 ? "—" : esc(fmtDb(b.g))) + '</td>' +
+         '<td>' + esc(String(b.bw).replace(".", ",")) + '</td></tr>';
+  });
+  return h + '</tbody></table></div>';
+}
+function chainView(p){
+  var rows = p.chain || [];
+  if (!rows.length) return '<p class="hint">Chaîne vide — ajoute des plugins avec « Modifier ».</p>';
+  var h = '<ol class="chain">';
+  for (var i=0;i<rows.length;i++){
+    var s = rows[i], off = s.on === false;
+    h += '<li class="slot' + (off ? " bx" : "") + '">' +
+      '<div class="slot-h"><span class="n">' + (i+1) + '</span><span class="p">' + esc(s.plugin) + '</span>' +
+      (s.role ? '<span class="r">' + esc(s.role) + '</span>' : "") +
+      (off ? '<span class="bp">hors circuit</span>' : "") + '</div>' +
+      bandTable(s) + paramGrid(s) +
+      (s.settings ? '<p class="sn">' + esc(s.settings) + '</p>' : "") +
+      '</li>';
+  }
+  return h + '</ol>';
+}
+
+function card(p){
+  var k = KINDS[p.kind] || KINDS.bass;
+  var h = '<article class="card k-' + p.kind + '" data-id="' + esc(p.id) + '">';
+  h += '<div class="card-h"><h3>' + esc(p.name) + '</h3><span class="kind ' + p.kind + '">' + esc(k.label) + '</span></div>';
+
+  if (p.kind === "bass" || p.kind === "amp"){
+    h += '<p class="gearname">' + esc(gearName(gearOf(p))) + '</p>';
+    h += gearTags(p);
+    h += gearStrip(p);
+  } else if (p.kind === "pedal"){
+    var pg = gearOf(p);
+    h += '<div class="art">' + pedalArt(pg, pedalValues(p), {}) + '</div>';
+    h += gearTags(p);
+    h += gearStrip(p);
+  } else if (p.kind === "board"){
+    h += '<p class="gearname">' + (p.slots || []).length + ' ' +
+         t("pédales dans l’ordre du signal") + '</p>';
+    h += boardArt(p);
+  } else {
+    var meta = [];
+    if (p.tempo) meta.push(p.tempo + " bpm");
+    if (p.tuning) meta.push(p.tuning);
+    if (meta.length) h += '<div class="tags"><span class="tag">' + esc(meta.join(" · ")) + '</span></div>';
+    h += chainView(p);
+  }
+
+  if (p.song && (p.song.title || p.song.artist)){
+    h += '<p class="song">♪ <b>' + esc(p.song.title || "—") + '</b>' + (p.song.artist ? " — " + esc(p.song.artist) : "") + '</p>';
+  }
+  if (p.notes) h += '<p class="note">' + esc(p.notes) + '</p>';
+  var ex = (gearOf(p).extras || []), xi;
+  for (xi=0; xi<ex.length; xi++){
+    if (p[ex[xi].k]) h += '<p class="song"><b>' + esc(ex[xi].l) + '</b> · ' + esc(p[ex[xi].k]) + '</p>';
+  }
+
+  h += '<div class="card-f"><button class="btn small" data-act="edit">Modifier</button>' +
+       '<button class="btn small ghost" data-act="dup">Dupliquer</button>' +
+       '<button class="btn small ghost" data-act="exp"' +
+       ' title="Écrit la fiche dans un fichier, façades comprises">Exporter</button>' +
+       (p.kind === "reaper" && window.RFX && (p.chain || []).length
+         ? '<button class="btn small ghost" data-act="rfx"' +
+           ' title="Écrit un fichier de chaîne pour Reaper">.RfxChain</button>' : "") +
+       '<span class="spacer"></span>' +
+       '<button class="btn small ghost" data-act="del">Supprimer</button></div>';
+  return h + "</article>";
+}
+
+function matches(p){
+  if (ui.kind !== "all" && p.kind !== ui.kind) return false;
+  if (!ui.q) return true;
+  var hay = [p.name, p.notes, p.tech, p.strings, (p.tags||[]).join(" "),
+             /* les deux langues, quelle que soit celle affichée */
+             EN[p.name] || "", EN[p.notes] || "", EN[p.tech] || "",
+             (p.tags||[]).map(function(x){ return EN[x] || ""; }).join(" "),
+             (p.kind === "reaper" || p.kind === "board" ? "" : gearName(gearOf(p))),
+             (p.slots||[]).map(function(x){ var g = allGear()[x.gear]; return g ? g.model : ""; }).join(" "),
+             p.song ? (p.song.title + " " + p.song.artist) : "",
+             (p.chain||[]).map(function(s){ return s.plugin + " " + s.role + " " + s.settings; }).join(" ")].join(" ").toLowerCase();
+  return hay.indexOf(ui.q.toLowerCase()) >= 0;
+}
+
+function render(){
+  var L = library(), shown = L.filter(matches);
+
+  var counts = {all:L.length, bass:0, amp:0, reaper:0};
+  L.forEach(function(p){ counts[p.kind] = (counts[p.kind] || 0) + 1; });
+  var tabs = [["all","Tout"],["bass","Basse"],["amp","Ampli"],["pedal","Pédale"],
+              ["board","Pédalier"],["reaper","Reaper"]];
+  document.getElementById("tabs").innerHTML = tHtml(tabs.map(function(t){
+    return '<button class="tab" role="tab" data-k="' + t[0] + '" aria-selected="' + (ui.kind === t[0]) + '">' +
+           t[1] + '<span class="n">' + (counts[t[0]] || 0) + '</span></button>';
+  }).join(""));
+
+  var host = document.getElementById("list");
+  if (!shown.length){
+    host.innerHTML = tHtml('<div class="empty">Aucun preset ne correspond.' +
+      (ui.q ? ' Essaie un autre mot-clé.' : ' Crée le premier avec « Nouveau preset ».') + '</div>');
+    return;
+  }
+
+  var groups = [];
+  if (ui.group === "song"){
+    var by = {};
+    shown.forEach(function(p){
+      var key = (p.song && p.song.title) ? p.song.title + (p.song.artist ? " — " + p.song.artist : "") : "Sans morceau";
+      (by[key] = by[key] || []).push(p);
+    });
+    Object.keys(by).sort(function(a,b){
+      if (a === "Sans morceau") return 1;
+      if (b === "Sans morceau") return -1;
+      return a.localeCompare(b, "fr");
+    }).forEach(function(k){ groups.push([k, by[k]]); });
+  } else {
+    var byGear = {}, order = [];
+    shown.forEach(function(p){
+      var key = (p.kind === "reaper" || p.kind === "board") ? KINDS[p.kind].full : gearName(gearOf(p));
+      if (!byGear[key]){ byGear[key] = []; order.push(key); }
+      byGear[key].push(p);
+    });
+    order.sort(function(a, b){
+      if (a === KINDS.reaper.full) return 1;
+      if (b === KINDS.reaper.full) return -1;
+      return byGear[b].length - byGear[a].length || a.localeCompare(b, "fr");
+    });
+    order.forEach(function(k){ groups.push([k, byGear[k]]); });
+  }
+
+  host.innerHTML = tHtml(groups.map(function(g){
+    return '<section class="grp"><div class="grp-h"><h2>' + esc(g[0]) + '</h2>' +
+           '<span class="c">' + g[1].length + '</span></div><div class="grid">' +
+           g[1].map(card).join("") + '</div></section>';
+  }).join(""));
+}
+
+/* ============================ éditeur ============================ */
+var draft = null, isNew = false, armDelete = false;
+
+function blank(kind, gear){
+  var id = "u-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36);
+  if (kind === "board"){
+    return {id:id, kind:"board", name:"", tags:[], slots:[], notes:"", song:{title:"",artist:""}};
+  }
+  if (kind === "reaper"){
+    return {id:id, kind:"reaper", name:"", tags:[], tempo:"", tuning:"", chain:[],
+            notes:"", song:{title:"",artist:""}};
+  }
+  return applyGearDefaults({
+    id:id, kind:kind, gear:gear || DEFAULT_GEAR[kind], name:"", tags:[],
+    eq:{}, notes:"", song:{title:"",artist:""}
+  });
+}
+
+function sl(key, label, value, min, max, step, fmt, dim){
+  return '<div class="sl' + (dim ? " dim" : "") + '"><span class="k">' + esc(label) + '</span>' +
+    '<input type="range" data-sl="' + key + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '"' +
+    (dim ? " disabled" : "") + ' aria-label="' + esc(label) + '">' +
+    '<span class="v" data-out="' + key + '">' + esc(fmt) + '</span></div>';
+}
+
+/* Une option par type du plugin. Un type dont l'entier de fichier n'est pas
+   établi reste visible mais non sélectionnable, sauf s'il est déjà en place. */
+function eqTypeOptions(def, current){
+  var known = window.RFX ? window.RFX.EQ_TYPE_IDS : {"Band":1,"Low Pass":1,"High Pass":1};
+  var list = (def.bands && def.bands.types) || [];
+  var out = "", i, nom, ok;                        /* pas « t » : c'est le nom de la fonction de traduction */
+  for (i=0;i<list.length;i++){
+    nom = list[i];
+    ok = known[nom] !== undefined;
+    out += '<option' + (nom === current ? " selected" : "") + (ok || nom === current ? "" : " disabled") +
+           '>' + esc(nom) + (ok ? "" : " — " + t("à établir")) + '</option>';
+  }
+  if (current && list.indexOf(current) < 0){
+    out = '<option selected>' + esc(current) + '</option>' + out;
+  }
+  return out;
+}
+
+/* ---- passerelle avec les chaînes d'effets de Reaper ---- */
+function hasRfxOrigin(p){
+  var rows = p.chain || [];
+  for (var i=0;i<rows.length;i++) if (rows[i].rfx) return true;
+  return false;
+}
+function importRfx(text){
+  var parsed = window.RFX.parse(text);
+  if (!parsed.fx.length){ toast("Aucun effet trouvé dans ce fichier."); return; }
+  draft.chain = window.RFX.toChain(parsed);
+  var connus = 0, i;
+  for (i=0;i<draft.chain.length;i++) if (PLUGINS[draft.chain[i].plugin]) connus++;
+  refreshBody();
+  toast(tf("{0} effets importés, {1} reconnus en détail.", draft.chain.length, connus));
+}
+function exportRfx(p){
+  p = p || draft;                                  /* depuis une carte, ou depuis l'éditeur */
+  var text;
+  try { text = window.RFX.fromChain(p.chain || []); }
+  catch (err){ toast(tf("Export impossible — {0}", err.message)); return; }
+  saveFile(fileName(p.name, ".RfxChain"), text, "text/plain",
+           "Chaîne exportée : à déposer dans le dossier FXChains de Reaper.");
+}
+
+/* Un maillon de chaîne : le plugin choisi décide des champs affichés. */
+function slotEditor(s, i){
+  var def = pluginDef(s.plugin);
+  var h = '<div class="slot-e" data-i="' + i + '">';
+
+  h += '<div class="slot-e-h">' +
+    '<select data-s="plugin" aria-label="Plugin">' +
+      Object.keys(PLUGINS).map(function(n){
+        return '<option value="' + esc(n) + '"' + (n === s.plugin ? " selected" : "") + '>' + esc(n) + '</option>';
+      }).join("") +
+    '</select>' +
+    '<input type="text" data-s="role" value="' + esc(s.role || "") + '" placeholder="Rôle dans la chaîne">' +
+    '<label class="ck"><input type="checkbox" data-son' + (s.on === false ? "" : " checked") + '> en circuit</label>' +
+    '<span class="tools">' +
+      '<button class="btn small ghost" data-slot="up" aria-label="Monter">↑</button>' +
+      '<button class="btn small ghost" data-slot="down" aria-label="Descendre">↓</button>' +
+      '<button class="btn small ghost" data-slot="rm" aria-label="Retirer">✕</button>' +
+    '</span></div>';
+
+  if (def.note) h += '<p class="hint">' + esc(def.note) + '</p>';
+
+  if (def.bands){
+    h += '<div class="bandsE">';
+    (s.bands || []).forEach(function(b, bi){
+      h += '<div class="bandE" data-bi="' + bi + '">' +
+        '<select data-sb="t" aria-label="Type de bande">' +
+          eqTypeOptions(def, b.t) +
+        '</select>' +
+        '<label class="mini">Fréq. <input type="number" data-sb="f" value="' + esc(b.f) + '" min="1" max="24000" step="1"><span class="u">Hz</span></label>' +
+        '<label class="mini">Gain <input type="number" data-sb="g" value="' + esc(b.g) + '" min="-30" max="30" step="0.1"><span class="u">dB</span></label>' +
+        '<label class="mini">BW <input type="number" data-sb="bw" value="' + esc(b.bw) + '" min="0.01" max="10" step="0.01"></label>' +
+        '<button class="btn small ghost" data-slot="band-rm" aria-label="Retirer la bande">✕</button>' +
+        '</div>';
+    });
+    h += '<button class="btn small" data-slot="band-add">+ Bande</button>';
+    h += '<p class="hint">Trois types seulement ont leur équivalent établi dans le fichier ' +
+         '(Band, Low Pass, High Pass). Les autres se choisissent dans Reaper : importés ici, ' +
+         'ils sont conservés et réécrits sans dommage.</p>';
+    h += '</div>';
+  }
+
+  if (def.params.length){
+    h += '<div class="pgridE">';
+    def.params.forEach(function(d){
+      var v = (s.p && s.p[d.k] !== undefined) ? s.p[d.k] : (d.d !== undefined ? d.d : "");
+      if (v === null) v = "";
+      if (d.t === "bool"){
+        h += '<label class="ck"><input type="checkbox" data-sp="' + d.k + '"' + (v ? " checked" : "") + '> ' + esc(d.l) + '</label>';
+      } else if (d.t === "enum"){
+        h += '<label class="mini">' + esc(d.l) + ' <select data-sp="' + d.k + '">' +
+          d.opts.map(function(o){ return '<option' + (o === v ? " selected" : "") + '>' + esc(o) + '</option>'; }).join("") +
+          '</select></label>';
+      } else {
+        h += '<label class="mini">' + esc(d.l) + ' <input type="number" data-sp="' + d.k + '" value="' + esc(v) +
+          '" min="' + d.min + '" max="' + d.max + '" step="' + d.step + '" placeholder="à régler">' +
+          (d.u ? '<span class="u">' + esc(d.u) + '</span>' : "") + '</label>';
+      }
+    });
+    h += '</div>';
+  }
+
+  h += '<input class="full" type="text" data-s="settings" value="' + esc(s.settings || "") +
+       '" placeholder="Note libre : ce que ce maillon apporte, ce qui reste à régler à l\'oreille">';
+  return h + '</div>';
+}
+
+/* ==================== créer et modifier une façade ====================
+   Les façades livrées ne sont pas modifiables : on les duplique. Celles
+   créées ici vivent dans les données de l'utilisateur, comme ses fiches. */
+var gdraft = null, gdraftId = null;
+
+var CTRL_KINDS = [
+  {t:"clock",   l:"Cadran cranté au milieu (lu en heures)"},
+  {t:"scale",   l:"Échelle bornée (par exemple 1 à 10)"},
+  {t:"balance", l:"Balance entre deux micros"},
+  {t:"switch",  l:"Interrupteur"},
+  {t:"slider",  l:"Curseur vertical (bande d'égaliseur)"}
+];
+var FACES = [
+  {f:"plain", l:"Neutre"},
+  {f:"bass",  l:"Bouton noir, repère laiton"},
+  {f:"amp",   l:"Bouton ivoire sur façade sombre"}
+];
+
+function slugKey(label, taken){
+  var base = String(label || "").toLowerCase()
+    .replace(/[àâä]/g,"a").replace(/[éèêë]/g,"e").replace(/[îï]/g,"i")
+    .replace(/[ôö]/g,"o").replace(/[ùûü]/g,"u").replace(/ç/g,"c")
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+  if (!base) base = "c";
+  var key = "c." + base, i = 2;
+  while (taken.indexOf(key) >= 0) key = "c." + base + "-" + (i++);
+  return key;
+}
+
+function openGearList(){
+  var veil = document.getElementById("veil");
+  function section(kind, title){
+    var rows = gearList(kind).map(function(x){
+      var used = gearUsage(x.id);
+      return '<div class="glrow" data-gid="' + esc(x.id) + '">' +
+        '<span class="gln">' + esc(gearName(x.g)) + '</span>' +
+        '<span class="glc">' + x.g.controls.length + ' ' + t("commandes") + ' · ' +
+          (used ? used + ' ' + t(used > 1 ? "fiches" : "fiche") : t("aucune fiche")) +
+          (x.own ? '' : ' · ' + t("livré")) + '</span>' +
+        '<span class="tools">' +
+          (x.own ? '<button class="btn small" data-gedit>Modifier</button>' : "") +
+          '<button class="btn small ghost" data-gdup>Dupliquer</button>' +
+          (x.own ? '<button class="btn small ghost" data-gdel>Supprimer</button>' : "") +
+        '</span></div>';
+    }).join("");
+    return '<fieldset><legend>' + title + '</legend>' + rows +
+      '<div class="acts" style="margin-top:9px">' +
+      '<button class="btn small" data-gnew="' + kind + '">+ Nouvelle façade</button></div></fieldset>';
+  }
+  veil.innerHTML =
+    tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Matériel">' +
+      '<div class="sheet-h"><h2>Matériel</h2><button class="btn small ghost" data-close>Fermer</button></div>' +
+      '<div class="sheet-b">' +
+        '<p class="hint">Une façade décrit les commandes d\'un instrument ou d\'un ampli. ' +
+        'Les façades livrées se dupliquent pour servir de point de départ.</p>' +
+        section("bass", "Instruments") + section("amp", "Amplis") + section("pedal", "Pédales") +
+      '</div></div>');
+  veil.classList.add("open");
+}
+
+function openGearEditor(id, kind, copyOf){
+  if (copyOf){
+    var src = allGear()[copyOf];
+    gdraft = clone(src);
+    gdraft.model = tf("{0} (copie)", src.model);
+    gdraftId = "g-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36);
+  } else if (id){
+    gdraft = clone(S.gear[id]);
+    gdraftId = id;
+  } else {
+    gdraft = {kind:kind, brand:"", model:"", face:"plain", note:"", controls:[],
+              extras: kind === "bass" ? [{k:"tech", l:"Main droite"},{k:"strings", l:"Cordes"}] : []};
+    if (kind === "pedal"){ gdraft.color = "#7A4FA8"; gdraft.style = "std"; gdraft.perRow = 2; }
+    gdraftId = "g-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36);
+  }
+  var veil = document.getElementById("veil");
+  veil.innerHTML =
+    tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Façade">' +
+      '<div class="sheet-h"><h2>' + (id ? "Modifier une façade" : "Nouvelle façade") + '</h2>' +
+        '<span class="kind ' + esc(gdraft.kind) + '">' + esc(KINDS[gdraft.kind].label) + '</span>' +
+        '<button class="btn small ghost" data-close>Fermer</button></div>' +
+      '<div class="sheet-b" id="gsheet-b">' + gearFormBody() + '</div>' +
+      '<div class="sheet-f"><button class="btn primary" data-gsave>Enregistrer</button>' +
+        '<button class="btn ghost" data-gback>Retour</button></div>' +
+    '</div>');
+  veil.classList.add("open");
+  var first = veil.querySelector('input[data-gf="model"]');
+  if (first) first.focus();
+}
+
+function gearFormBody(){
+  var g = gdraft, h = "", i, c;
+  h += '<div class="row">' +
+    '<label class="fld">Marque<input type="text" data-gf="brand" value="' + esc(g.brand || "") +
+      '" placeholder="laisser vide pour un gabarit"></label>' +
+    '<label class="fld">Modèle<input type="text" data-gf="model" value="' + esc(g.model || "") +
+      '" placeholder="Ex. Rumble 500"></label>' +
+    '</div>';
+  if (g.kind === "pedal"){
+    h += '<div class="row">' +
+      '<label class="fld">Couleur du boîtier' +
+        '<input type="color" data-gf="color" value="' + esc(g.color || "#7A4FA8") + '"></label>' +
+      '<label class="fld">Silhouette<select data-gf="style">' +
+        Object.keys(PEDAL_STYLES).map(function(k){
+          return '<option value="' + k + '"' + ((g.style || "std") === k ? " selected" : "") + '>' +
+                 esc(PEDAL_STYLES[k].l) + '</option>';
+        }).join("") + '</select></label>' +
+      '<label class="fld">Boutons par rangée<select data-gf="perRow">' +
+        ["", "1", "2", "3", "4"].map(function(v){
+          return '<option value="' + v + '"' + (String(g.perRow || "") === v ? " selected" : "") + '>' +
+                 (v === "" ? "selon la silhouette" : v) + '</option>';
+        }).join("") + '</select></label>' +
+      '</div>';
+    h += '<div class="preview"><div class="art">' + pedalArt(g, {}, {}) + '</div>' +
+         '<p class="hint">Aperçu : il suit la couleur, la silhouette et les commandes déclarées.</p></div>';
+  } else {
+  h += '<div class="row">' +
+    '<label class="fld">Aspect des boutons<select data-gf="face">' +
+      FACES.map(function(f){
+        return '<option value="' + f.f + '"' + (g.face === f.f ? " selected" : "") + '>' + esc(f.l) + '</option>';
+      }).join("") + '</select></label></div>';
+  }
+  h += '<label class="fld">Note<input type="text" data-gf="note" value="' + esc(g.note || "") +
+    '" placeholder="ce qu\'il faut savoir sur cette façade"></label>';
+
+  var hasModes = !!g.modes;
+  h += '<fieldset><legend>Modes</legend>' +
+    '<label class="ck"><input type="checkbox" data-gmodes' + (hasModes ? " checked" : "") + '> ' +
+    'cette façade a deux modes</label>';
+  if (hasModes){
+    h += '<div class="row" style="margin-top:8px">' +
+      '<label class="fld">Premier mode<input type="text" data-gmode="0" value="' +
+        esc(g.modes.options[0] || "") + '"></label>' +
+      '<label class="fld">Second mode<input type="text" data-gmode="1" value="' +
+        esc(g.modes.options[1] || "") + '"></label></div>' +
+      '<p class="hint">Sur la BB734A, le second mode est « passif » et met l\'égaliseur hors circuit.</p>';
+  }
+  h += '</fieldset>';
+
+  h += '<fieldset><legend>Commandes, dans l\'ordre de la façade</legend><div class="slots">';
+  for (i=0;i<g.controls.length;i++){
+    c = g.controls[i];
+    h += '<div class="slot-e" data-ci="' + i + '">' +
+      '<div class="slot-e-h">' +
+        '<input type="text" data-gc="l" value="' + esc(c.l || "") + '" placeholder="Libellé">' +
+        '<select data-gc="t">' + CTRL_KINDS.map(function(k){
+          return '<option value="' + k.t + '"' + (c.t === k.t ? " selected" : "") + '>' + esc(k.l) + '</option>';
+        }).join("") + '</select>' +
+        '<span class="tools">' +
+          '<button class="btn small ghost" data-cact="up" aria-label="Monter">↑</button>' +
+          '<button class="btn small ghost" data-cact="down" aria-label="Descendre">↓</button>' +
+          '<button class="btn small ghost" data-cact="rm" aria-label="Retirer">✕</button>' +
+        '</span></div>';
+    h += '<div class="pgridE">';
+    if (c.t === "scale"){
+      h += '<label class="mini">Min <input type="number" data-gc="min" value="' + esc(c.min) + '" step="0.1"></label>' +
+           '<label class="mini">Max <input type="number" data-gc="max" value="' + esc(c.max) + '" step="0.1"></label>' +
+           '<label class="mini">Pas <input type="number" data-gc="step" value="' + esc(c.step) + '" step="0.01" min="0.01"></label>' +
+           '<label class="mini">Défaut <input type="number" data-gc="d" value="' + esc(c.d) + '" step="0.1"></label>';
+    } else if (c.t === "clock"){
+      h += '<label class="mini">Défaut, en crans depuis midi ' +
+           '<input type="number" data-gc="d" value="' + esc(c.d === undefined ? 0 : c.d) +
+           '" min="-5" max="5" step="0.25"></label>';
+    } else if (c.t === "balance"){
+      h += '<label class="mini">Côté 0 <input type="text" data-gc="a" value="' + esc(c.a || "") + '"></label>' +
+           '<label class="mini">Côté 100 <input type="text" data-gc="b" value="' + esc(c.b || "") + '"></label>' +
+           '<label class="mini">Défaut <input type="number" data-gc="d" value="' + esc(c.d === undefined ? 50 : c.d) +
+           '" min="0" max="100" step="1"></label>';
+    }
+    if (c.t !== "switch"){
+      var switches = g.controls.filter(function(x){ return x.t === "switch"; });
+      if (switches.length){
+        h += '<label class="mini">Ne sert que si <select data-gc="needs">' +
+          '<option value=""' + (!c.needs ? " selected" : "") + '>toujours actif</option>' +
+          switches.map(function(x){
+            return '<option value="' + esc(x.k) + '"' + (c.needs === x.k ? " selected" : "") + '>' +
+                   esc(x.l) + '</option>';
+          }).join("") + '</select></label>';
+      }
+      if (hasModes){
+        var off = (g.modes.off && g.modes.off[g.modes.options[1]]) || [];
+        h += '<label class="ck"><input type="checkbox" data-goff' +
+             (off.indexOf(c.k) >= 0 ? " checked" : "") + '> hors circuit en ' +
+             esc(g.modes.options[1] || "second mode") + '</label>';
+      }
+    }
+    h += '<span class="mini" style="opacity:.6">' + t("clé") + ' ' + esc(c.k) + '</span>';
+    h += '</div></div>';
+  }
+  h += '</div><div class="chain-acts"><button class="btn small" data-cact="add">+ Commande</button></div>';
+  if (!g.controls.length) h += '<p class="hint">Ajoute au moins une commande.</p>';
+  h += '</fieldset>';
+  return h;
+}
+
+function commitGear(){
+  var g = gdraft;
+  if (!g.model || !String(g.model).trim()){ toast("Donne un modèle à cette façade."); return; }
+  if (!g.controls.length){ toast("Ajoute au moins une commande."); return; }
+  var i;
+  for (i=0;i<g.controls.length;i++){
+    if (!g.controls[i].l){ toast(tf("La commande {0} n'a pas de libellé.", i+1)); return; }
+  }
+  S.gear = S.gear || {};
+  S.gear[gdraftId] = clone(g);
+  gdraft = null;
+  render();
+  openGearList();
+  save().then(function(ok){ if (ok) toast("Façade enregistrée."); });
+}
+
+function removeGear(id){
+  var used = gearUsage(id);
+  if (used){
+    toast(tf(used > 1 ? "{0} fiches utilisent cette façade : change-les de matériel d'abord."
+                        : "{0} fiche utilise cette façade : change-la de matériel d'abord.", used));
+    return;
+  }
+  delete S.gear[id];
+  render();
+  openGearList();
+  save().then(function(ok){ if (ok) toast("Façade supprimée."); });
+}
+
+/* Éditeur d'un pédalier : l'ordre des pédales, et les réglages de chacune. */
+function boardEditor(p){
+  var reg = allGear(), pedals = gearList("pedal");
+  var h = '<fieldset style="--acc:var(--board)"><legend>Pédalier, dans l’ordre du signal</legend>';
+  h += '<div class="slots">';
+  (p.slots || []).forEach(function(sl0, i){
+    var g = reg[sl0.gear] || {model:"inconnue", controls:[]};
+    h += '<div class="slot-e" data-si="' + i + '">' +
+      '<div class="slot-e-h">' +
+        '<select data-bs="gear" aria-label="Pédale">' +
+          pedals.map(function(x){
+            return '<option value="' + esc(x.id) + '"' + (x.id === sl0.gear ? " selected" : "") + '>' +
+                   esc(x.g.model) + '</option>';
+          }).join("") +
+        '</select>' +
+        '<input type="text" data-bs="role" value="' + esc(sl0.role || "") + '" placeholder="Rôle dans la chaîne">' +
+        '<label class="ck"><input type="checkbox" data-bs="on"' + (sl0.on === false ? "" : " checked") +
+        '> en circuit</label>' +
+        '<span class="tools">' +
+          '<button class="btn small ghost" data-bact="up" aria-label="Avancer">↑</button>' +
+          '<button class="btn small ghost" data-bact="down" aria-label="Reculer">↓</button>' +
+          '<button class="btn small ghost" data-bact="rm" aria-label="Retirer">✕</button>' +
+        '</span></div>';
+    if (g.note) h += '<p class="hint">' + esc(g.note) + '</p>';
+    if (!g.controls.length) h += '<p class="hint">Aucun réglage sur cette pédale.</p>';
+    g.controls.forEach(function(c){
+      var v = slotValue(sl0.v, c);
+      var out = "b" + i + "-" + c.k;
+      h += '<div class="sl"><span class="k">' + esc(c.l) + '</span>' +
+        '<input type="range" data-bv="' + esc(c.k) + '" min="' + c.min + '" max="' + c.max +
+        '" step="' + c.step + '" value="' + v + '" aria-label="' + esc(c.l) + '">' +
+        '<span class="v" data-out="' + out + '">' + esc(ctrlText(c, v)) + '</span></div>';
+    });
+    h += '</div>';
+  });
+  h += '</div><div class="chain-acts">' +
+    '<button class="btn small" data-bact="add">+ Pédale</button></div>';
+  if (!(p.slots || []).length){
+    h += '<p class="hint">Un pédalier vide : ajoute la première pédale, puis règle-la ici même.</p>';
+  }
+  return h + '</fieldset>';
+}
+
+/* Éditeur d'un matériel : entièrement déduit de sa description. */
+function gearEditor(p){
+  var g = gearOf(p), acc = p.kind === "bass" ? "var(--bass)" : "var(--amp)";
+  var h = '<fieldset style="--acc:' + acc + '"><legend>Façade</legend>';
+
+  h += '<label class="fld">Matériel<select data-gear>' +
+    gearList(p.kind).map(function(x){
+      return '<option value="' + esc(x.id) + '"' + (x.id === gearId(p) ? " selected" : "") + '>' +
+             esc(gearName(x.g)) + '</option>';
+    }).join("") + '</select></label>';
+  if (g.note) h += '<p class="hint">' + esc(g.note) + '</p>';
+
+  if (g.modes){
+    h += '<div class="seg" data-seg="mode" role="tablist">' +
+      g.modes.options.map(function(o){
+        return '<button role="tab" data-v="' + esc(o) + '" aria-selected="' + (p.mode === o) + '">' +
+               esc(cap(o)) + '</button>';
+      }).join("") + '</div>';
+  }
+
+  var toggles = [], i, c, v, off;
+  for (i=0;i<g.controls.length;i++){
+    if (g.controls[i].t === "switch"){
+      c = g.controls[i];
+      toggles.push('<button class="tg" data-tg="' + esc(c.k) + '" aria-pressed="' +
+                   !!getPath(p, c.k) + '">' + esc(c.l) + '</button>');
+    }
+  }
+  if (toggles.length) h += '<div class="toggles">' + toggles.join("") + '</div>';
+
+  for (i=0;i<g.controls.length;i++){
+    c = g.controls[i];
+    if (c.t === "switch") continue;
+    v = ctrlValue(p, c);
+    off = ctrlOff(g, p, c);
+    if (c.t === "clock"){
+      h += sl(c.k, ctrlLabel(g, p, c), v, -5, 5, 0.25, off ? "hors circuit" : hourLabel(v), off);
+    } else if (c.t === "balance"){
+      h += sl(c.k, c.l + " " + (c.a || "1") + " ⇄ " + (c.b || "2"), v,
+              c.min || 0, c.max || 100, c.step || 2, balLabel(v), off);
+    } else {
+      h += sl(c.k, c.l, v, c.min, c.max, c.step, ctrlText(c, v), off);
+    }
+  }
+  h += '</fieldset>';
+
+  var ex = g.extras || [];
+  if (ex.length){
+    h += '<div class="row">';
+    for (i=0;i<ex.length;i++){
+      h += '<label class="fld">' + esc(ex[i].l) +
+           '<input type="text" data-f="' + esc(ex[i].k) + '" value="' + esc(p[ex[i].k] || "") + '"></label>';
+    }
+    h += '</div>';
+  }
+  return h;
+}
+
+/** Valeurs par défaut d'un matériel, sans toucher à ce qui existe déjà. */
+function applyGearDefaults(p){
+  var g = gearOf(p), i, c;
+  if (g.modes && !p.mode) p.mode = g.modes.options[0];
+  if (!g.modes) delete p.mode;
+  for (i=0;i<g.controls.length;i++){
+    c = g.controls[i];
+    if (getPath(p, c.k) === undefined){
+      setPath(p, c.k, c.t === "switch" ? false : (c.d !== undefined ? c.d : 0));
+    }
+  }
+  return p;
+}
+
+function editorBody(){
+  var p = draft, h = "";
+  h += '<div class="row">' +
+    '<label class="fld">Nom<input type="text" data-f="name" value="' + esc(p.name) + '" placeholder="Ex. Motown doux"></label>' +
+    '<label class="fld">Styles (séparés par des virgules)<input type="text" data-f="tags" value="' + esc((p.tags||[]).join(", ")) + '"></label>' +
+    '</div>';
+  h += '<div class="row">' +
+    '<label class="fld">Morceau<input type="text" data-f="song.title" value="' + esc(p.song ? p.song.title : "") + '" placeholder="Titre de la cover"></label>' +
+    '<label class="fld">Artiste<input type="text" data-f="song.artist" value="' + esc(p.song ? p.song.artist : "") + '"></label>' +
+    '</div>';
+
+  if (p.kind === "bass" || p.kind === "amp" || p.kind === "pedal"){
+    h += gearEditor(p);
+  } else if (p.kind === "board"){
+    h += boardEditor(p);
+  } else {
+    h += '<fieldset style="--acc:var(--reaper)"><legend>Chaîne Reaper</legend>';
+    h += '<div class="row">' +
+      '<label class="fld">Tempo (bpm)<input type="text" data-f="tempo" value="' + esc(p.tempo || "") + '"></label>' +
+      '<label class="fld">Accordage<input type="text" data-f="tuning" value="' + esc(p.tuning || "") + '" placeholder="E standard, Drop D…"></label>' +
+      '</div>';
+    h += '<div class="slots" data-slots>';
+    (p.chain || []).forEach(function(s, i){ h += slotEditor(s, i); });
+    h += '</div><div class="chain-acts"><button class="btn small" data-slot="add">+ Ajouter un plugin</button>';
+    if (window.RFX){
+      h += '<label class="btn small" style="cursor:pointer">Importer un .RfxChain' +
+           '<input type="file" accept=".RfxChain,.rfxchain,.txt" data-rfx-in hidden></label>' +
+           '<button class="btn small" data-rfx-out' +
+           ' title="Écrit un fichier de chaîne pour Reaper">Exporter en .RfxChain</button>';
+    }
+    h += '</div>';
+    if (window.RFX && !hasRfxOrigin(p) && (p.chain || []).length){
+      h += '<p class="hint">Chaîne saisie à la main : elle s\'exporte quand même, pour les plugins ' +
+           'dont le format est établi — ' + Object.keys(window.RFX.TEMPLATES).join(", ") +
+           '. Un autre plugin fait refuser l\'export en le nommant.</p>';
+    }
+    h += '</fieldset>';
+  }
+
+  h += '<label class="fld">Notes<textarea data-f="notes" rows="3" placeholder="À quoi sert ce preset, ce qu\'il faut surveiller…">' + esc(p.notes || "") + '</textarea></label>';
+  return h;
+}
+
+function openEditor(p, fresh){
+  draft = clone(p); isNew = !!fresh; armDelete = false;
+  var veil = document.getElementById("veil");
+  veil.innerHTML =
+    tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Éditer un preset">' +
+      '<div class="sheet-h"><h2>' + (isNew ? "Nouveau preset" : "Modifier") + '</h2>' +
+        '<span class="kind ' + draft.kind + '">' + esc(KINDS[draft.kind].full) + '</span>' +
+        '<button class="btn small ghost" data-close>Fermer</button></div>' +
+      '<div class="sheet-b" id="sheet-b">' + editorBody() + '</div>' +
+      '<div class="sheet-f">' +
+        '<button class="btn primary" data-save>Enregistrer</button>' +
+        '<button class="btn ghost" data-close>Annuler</button>' +
+        '<span class="spacer"></span>' +
+        (isNew ? "" : '<button class="btn ghost danger" data-del>Supprimer</button>') +
+      '</div>' +
+    '</div>');
+  veil.classList.add("open");
+  var first = veil.querySelector('input[data-f="name"]');
+  if (first) first.focus();
+}
+function closeEditor(){
+  document.getElementById("veil").classList.remove("open");
+  document.getElementById("veil").innerHTML = "";
+  draft = null;
+  gdraft = null;
+}
+function refreshGearForm(){
+  var b = document.getElementById("gsheet-b");
+  if (b) b.innerHTML = tHtml(gearFormBody());
+}
+function refreshBody(){
+  var b = document.getElementById("sheet-b");
+  if (b) b.innerHTML = tHtml(editorBody());
+}
+
+function getPath(o, path){
+  var parts = path.split("."), cur = o;
+  for (var i=0;i<parts.length;i++){ if (cur == null) return undefined; cur = cur[parts[i]]; }
+  return cur;
+}
+function setPath(o, path, val){
+  var parts = path.split("."), cur = o;
+  for (var i=0;i<parts.length-1;i++){ if (cur[parts[i]] == null) cur[parts[i]] = {}; cur = cur[parts[i]]; }
+  cur[parts[parts.length-1]] = val;
+}
+
+function commit(){
+  if (!draft.name){ toast("Donne un nom au preset."); return; }
+  var target = draft.id;
+  if (isSeed(target)) S.overrides[target] = clone(draft);
+  else {
+    var k = -1;
+    for (var i=0;i<S.custom.length;i++) if (S.custom[i].id === target) k = i;
+    if (k >= 0) S.custom[k] = clone(draft); else S.custom.push(clone(draft));
+  }
+  closeEditor(); render();
+  save().then(function(ok){ if (ok) toast("Preset enregistré."); });
+}
+function removePreset(id){
+  if (isSeed(id)){
+    if (S.hidden.indexOf(id) < 0) S.hidden.push(id);
+    delete S.overrides[id];
+  } else {
+    S.custom = S.custom.filter(function(p){ return p.id !== id; });
+  }
+  closeEditor(); render();
+  save().then(function(ok){ if (ok) toast("Preset supprimé."); });
+}
+function duplicate(id){
+  var p = findPreset(id); if (!p) return;
+  var c = clone(p);
+  c.id = "u-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36);
+  c.name = tf("{0} (copie)", p.name);
+  S.custom.push(c); render();
+  save().then(function(ok){ if (ok) toast("Copie créée."); });
+}
+
+/* ============================ sauvegarde / restauration ============================ */
+function openIO(){
+  var veil = document.getElementById("veil");
+  var dump = JSON.stringify({v:1, library:library(), mine:S}, null, 1);
+  veil.innerHTML =
+    tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Sauvegarde">' +
+      '<div class="sheet-h"><h2>Sauvegarde</h2><button class="btn small ghost" data-close>Fermer</button></div>' +
+      '<div class="sheet-b">' +
+        '<p class="hint">Le bloc ci-dessous contient tout : le catalogue tel qu\'il est affiché et tes modifications. ' +
+        'Garde-le quelque part — c\'est ton filet de sécurité.</p>' +
+        '<textarea id="io" rows="10" spellcheck="false">' + esc(dump) + '</textarea>' +
+        '<div class="acts"><button class="btn" data-copy>Copier</button>' +
+        '<button class="btn" data-dl>Télécharger le fichier</button>' +
+        '<button class="btn" data-import>Restaurer depuis ce bloc</button>' +
+        '<button class="btn ghost danger" data-reset>Réinitialiser mes modifications</button></div>' +
+        '<p class="hint">Pour restaurer : colle une sauvegarde dans le bloc, puis « Restaurer ». ' +
+        'Une fiche exportée seule se colle ici aussi : elle s\'ajoute à la bibliothèque ' +
+        'au lieu de la remplacer.</p>' +
+      '</div></div>');
+  veil.classList.add("open");
+}
+function doImport(){
+  var ta = document.getElementById("io");
+  var j;
+  try { j = JSON.parse(ta.value); } catch (e) { toast("Ce bloc n'est pas un JSON valide."); return; }
+  if (j && j.presetbook === "preset" && j.preset){ addPreset(j); return; }
+  var src = j && j.mine ? j.mine : j;
+  if (!src || typeof src !== "object"){ toast("Sauvegarde illisible."); return; }
+  S = normalize(src);
+  closeEditor(); render();
+  save().then(function(ok){ if (ok) toast("Sauvegarde restaurée."); });
+}
+function doReset(){
+  S = {v:1, custom:[], overrides:{}, gear:{}, hidden:[]};
+  closeEditor(); render();
+  save().then(function(ok){ if (ok) toast("Catalogue d'origine rétabli."); });
+}
+/* Écrit un fichier chez l'utilisateur. Les trois contextes d'exécution n'ont
+   pas les mêmes moyens, donc tout passe par ici pour ne pas diverger. */
+function saveFile(name, data, type, okMsg){
+  if (store.downloads){                       /* page publiée : le visiteur confirme l'enregistrement */
+    store.downloads.save({filename:name, data:data}).then(function(){ toast(okMsg); })
+      .catch(function(err){
+        var code = (err && err.code) || "unavailable";
+        if (code !== "declined") toast(tf("Téléchargement refusé ({0}) — copie le bloc à la main.", code));
+      });
+    return;
+  }
+  if (window.claude){                         /* bac à sable sans la capacité : le lien serait inerte */
+    toast("Téléchargement indisponible ici : copie le bloc à la main.");
+    return;
+  }
+  try {                                       /* déploiement autonome : téléchargement classique */
+    var url = URL.createObjectURL(new Blob([data], {type:type}));
+    var a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    window.setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    toast(okMsg);
+  } catch (e){
+    toast("Téléchargement impossible — copie le bloc à la main.");
+  }
+}
+
+/* Un nom de fichier tiré du nom de la fiche, sans surprise pour le système. */
+function fileName(base, suffix){
+  var net = String(base || "presetbook").replace(/[^\p{L}\p{N}._-]+/gu, "-").replace(/^-+|-+$/g, "");
+  return (net || "presetbook") + suffix;
+}
+
+function doDownload(){
+  saveFile("presetbook-presets.json", document.getElementById("io").value,
+           "application/json", "Fichier téléchargé.");
+}
+
+/* Une fiche seule, avec les façades qu'elle utilise si elles sont personnelles :
+   sans elles, la fiche serait illisible sur l'autre poste. */
+function presetFile(p){
+  var need = {}, ids = [], i;
+  if (p.kind === "board") (p.slots || []).forEach(function(x){ ids.push(x.gear); });
+  else if (p.gear) ids.push(p.gear);
+  for (i=0;i<ids.length;i++){
+    var g = (S.gear || {})[ids[i]];             /* seules les façades créées ici voyagent */
+    if (g) need[ids[i]] = g;
+  }
+  return JSON.stringify({v:1, presetbook:"preset", preset:p, gear:need}, null, 1);
+}
+
+function exportPreset(id){
+  var p = findPreset(id); if (!p) return;
+  saveFile(fileName(p.name, ".presetbook.json"), presetFile(p),
+           "application/json", "Fiche exportée.");
+}
+
+/* Une fiche exportée revient ici. Elle s'ajoute — jamais elle n'écrase — et
+   reçoit un nouvel identifiant si le sien est déjà pris. */
+function addPreset(env){
+  var p = clone(env.preset);
+  if (!p || !p.kind || !KINDS[p.kind]){ toast("Ce fichier ne contient pas de fiche."); return; }
+  var g = env.gear && typeof env.gear === "object" ? env.gear : {};
+  Object.keys(g).forEach(function(k){ if (!allGear()[k]) S.gear[k] = g[k]; });
+  if (findPreset(p.id)){
+    p.id = "u-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36);
+    p.name = tf("{0} (importée)", p.name);
+  }
+  var manque = (p.kind === "board" ? (p.slots || []).map(function(x){ return x.gear; })
+                                   : (p.gear ? [p.gear] : [])).filter(function(k){ return !allGear()[k]; });
+  if (manque.length){ toast(tf("Façade absente : {0}", manque.join(", "))); return; }
+  S.custom.push(p);
+  closeEditor(); render();
+  save().then(function(ok){ if (ok) toast(tf("Fiche importée : {0}", p.name)); });
+}
+
+/* ============================ événements ============================ */
+var toastTimer = null;
+function toast(msg){
+  var el = document.getElementById("toast");
+  el.textContent = t(msg); el.classList.add("show");
+  if (toastTimer) window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(function(){ el.classList.remove("show"); }, 3600);
+}
+
+document.getElementById("tabs").addEventListener("click", function(e){
+  var b = e.target.closest("[data-k]"); if (!b) return;
+  ui.kind = b.getAttribute("data-k"); render();
+});
+document.getElementById("grp").addEventListener("click", function(e){
+  var b = e.target.closest("[data-g]"); if (!b) return;
+  ui.group = b.getAttribute("data-g");
+  Array.prototype.forEach.call(this.querySelectorAll("[data-g]"), function(x){
+    x.setAttribute("aria-selected", String(x === b));
+  });
+  render();
+});
+document.getElementById("q").addEventListener("input", function(){ ui.q = this.value; render(); });
+
+document.getElementById("list").addEventListener("click", function(e){
+  var btn = e.target.closest("[data-act]"); if (!btn) return;
+  var id = btn.closest("[data-id]").getAttribute("data-id");
+  var act = btn.getAttribute("data-act");
+  if (act === "edit"){ var p = findPreset(id); if (p) openEditor(p, false); }
+  else if (act === "dup") duplicate(id);
+  else if (act === "rfx"){ var q = findPreset(id); if (q) exportRfx(q); }
+  else if (act === "exp") exportPreset(id);
+  else if (act === "del"){
+    if (btn.getAttribute("data-armed") === "1") removePreset(id);
+    else {
+      btn.setAttribute("data-armed", "1"); btn.textContent = "Confirmer ?"; btn.classList.add("danger");
+      window.setTimeout(function(){
+        if (btn.isConnected){ btn.removeAttribute("data-armed"); btn.textContent = "Supprimer"; btn.classList.remove("danger"); }
+      }, 4000);
+    }
+  }
+});
+
+document.getElementById("btn-new").addEventListener("click", function(){
+  var veil = document.getElementById("veil");
+  veil.innerHTML =
+    tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Choisir un type">' +
+      '<div class="sheet-h"><h2>Nouveau preset</h2><button class="btn small ghost" data-close>Fermer</button></div>' +
+      '<div class="sheet-b"><p class="hint">Pour quel maillon de la chaîne ?</p><div class="acts">' +
+        '<button class="btn" data-newkind="bass">Instrument</button>' +
+        '<button class="btn" data-newkind="amp">Ampli</button>' +
+        '<button class="btn" data-newkind="pedal">Pédale</button>' +
+        '<button class="btn" data-newkind="board">Pédalier</button>' +
+        '<button class="btn" data-newkind="reaper">Chaîne Reaper</button>' +
+      '</div></div></div>');
+  veil.classList.add("open");
+});
+document.getElementById("btn-io").addEventListener("click", openIO);
+document.getElementById("btn-gear").addEventListener("click", openGearList);
+document.getElementById("lang").addEventListener("click", function(e){
+  var b = e.target.closest("[data-lang]");
+  if (b) setLang(b.getAttribute("data-lang"));
+});
+
+document.getElementById("veil").addEventListener("click", function(e){
+  if (e.target === this){ closeEditor(); return; }
+  var t = e.target;
+
+  if (t.closest("[data-close]")){ closeEditor(); return; }
+
+  var gnew = t.closest("[data-gnew]");
+  if (gnew){ openGearEditor(null, gnew.getAttribute("data-gnew"), null); return; }
+  var grow = t.closest("[data-gid]");
+  if (grow){
+    var gid = grow.getAttribute("data-gid");
+    if (t.closest("[data-gedit]")){ openGearEditor(gid, null, null); return; }
+    if (t.closest("[data-gdup]")){ openGearEditor(null, null, gid); return; }
+    if (t.closest("[data-gdel]")){
+      var db = t.closest("[data-gdel]");
+      if (db.getAttribute("data-armed") === "1") removeGear(gid);
+      else { db.setAttribute("data-armed", "1"); db.textContent = "Confirmer ?"; db.classList.add("danger"); }
+      return;
+    }
+  }
+  if (t.closest("[data-gsave]")){ commitGear(); return; }
+  if (t.closest("[data-gback]")){ gdraft = null; openGearList(); return; }
+
+  if (draft && draft.kind === "board"){
+    var bact = t.closest("[data-bact]");
+    if (bact){
+      var act = bact.getAttribute("data-bact");
+      draft.slots = draft.slots || [];
+      if (act === "add"){
+        var first = gearList("pedal")[0];
+        draft.slots.push({gear: first ? first.id : "pd-od", on:true, role:"", v:{}});
+      } else {
+        var i = parseInt(bact.closest("[data-si]").getAttribute("data-si"), 10);
+        if (act === "rm") draft.slots.splice(i, 1);
+        else if (act === "up" && i > 0) draft.slots.splice(i-1, 0, draft.slots.splice(i,1)[0]);
+        else if (act === "down" && i < draft.slots.length-1) draft.slots.splice(i+1, 0, draft.slots.splice(i,1)[0]);
+      }
+      refreshBody();
+      return;
+    }
+  }
+
+  if (gdraft){
+    var cact = t.closest("[data-cact]");
+    if (cact){
+      var act = cact.getAttribute("data-cact");
+      if (act === "add"){
+        var keys = gdraft.controls.map(function(c){ return c.k; });
+        gdraft.controls.push({k:slugKey("", keys), t:"scale", l:"", min:1, max:10, step:0.5, d:5.5});
+      } else {
+        var ci = parseInt(cact.closest("[data-ci]").getAttribute("data-ci"), 10);
+        if (act === "rm") gdraft.controls.splice(ci, 1);
+        else if (act === "up" && ci > 0) gdraft.controls.splice(ci-1, 0, gdraft.controls.splice(ci,1)[0]);
+        else if (act === "down" && ci < gdraft.controls.length-1) gdraft.controls.splice(ci+1, 0, gdraft.controls.splice(ci,1)[0]);
+      }
+      refreshGearForm();
+      return;
+    }
+  }
+  var nk = t.closest("[data-newkind]");
+  if (nk){ openEditor(blank(nk.getAttribute("data-newkind")), true); return; }
+  if (t.closest("[data-save]")){ commit(); return; }
+  if (t.closest("[data-del]")){
+    var b = t.closest("[data-del]");
+    if (armDelete) removePreset(draft.id);
+    else { armDelete = true; b.textContent = "Confirmer la suppression"; }
+    return;
+  }
+  if (t.closest("[data-copy]")){
+    var ta = document.getElementById("io"); ta.select();
+    if (navigator.clipboard) navigator.clipboard.writeText(ta.value).then(function(){ toast("Copié."); },
+      function(){ toast("Copie refusée — sélectionne le bloc et fais Ctrl+C."); });
+    else toast("Sélectionne le bloc et fais Ctrl+C.");
+    return;
+  }
+  if (t.closest("[data-dl]")){ doDownload(); return; }
+  if (t.closest("[data-rfx-out]") && draft){ exportRfx(); return; }
+  if (t.closest("[data-import]")){ doImport(); return; }
+  if (t.closest("[data-reset]")){
+    var r = t.closest("[data-reset]");
+    if (r.getAttribute("data-armed") === "1") doReset();
+    else { r.setAttribute("data-armed","1"); r.textContent = "Confirmer la réinitialisation"; }
+    return;
+  }
+
+  if (!draft) return;
+
+  var seg = t.closest("[data-seg] [data-v]");
+  if (seg){ draft.mode = seg.getAttribute("data-v"); refreshBody(); return; }
+  var tg = t.closest("[data-tg]");
+  if (tg){
+    var key = tg.getAttribute("data-tg");
+    setPath(draft, key, !getPath(draft, key));
+    refreshBody(); return;
+  }
+  var sb = t.closest("[data-slot]");
+  if (sb){
+    var act = sb.getAttribute("data-slot");
+    draft.chain = draft.chain || [];
+    if (act === "add") draft.chain.push(slot("Autre plugin", "", {}));
+    else {
+      var i = parseInt(sb.closest("[data-i]").getAttribute("data-i"), 10);
+      var cur = draft.chain[i];
+      if (act === "rm") draft.chain.splice(i, 1);
+      else if (act === "up" && i > 0) draft.chain.splice(i-1, 0, draft.chain.splice(i,1)[0]);
+      else if (act === "down" && i < draft.chain.length-1) draft.chain.splice(i+1, 0, draft.chain.splice(i,1)[0]);
+      else if (act === "band-add"){
+        var bd = pluginDef(cur.plugin).bands;
+        cur.bands = cur.bands || [];
+        if (bd) cur.bands.push(clone(bd.dflt));
+      } else if (act === "band-rm"){
+        var bi = parseInt(sb.closest("[data-bi]").getAttribute("data-bi"), 10);
+        cur.bands.splice(bi, 1);
+      }
+    }
+    refreshBody(); return;
+  }
+});
+
+document.getElementById("veil").addEventListener("submit", function(e){
+  var f = e.target;
+  if (!f || f.id !== "acc-form") return;
+  e.preventDefault();
+  submitAccount(f);
+});
+document.getElementById("veil").addEventListener("change", function(e){
+  var f = e.target;
+  if (!draft || !f.hasAttribute || !f.hasAttribute("data-rfx-in")) return;
+  var file = f.files && f.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try { importRfx(String(reader.result)); }
+    catch (err){ toast(tf("Fichier illisible : {0}", err.message)); }
+  };
+  reader.onerror = function(){ toast("Lecture du fichier impossible."); };
+  reader.readAsText(file, "iso-8859-1");
+});
+
+document.getElementById("veil").addEventListener("input", function(e){
+  var t = e.target;
+
+  if (gdraft){
+    var gf = t.getAttribute("data-gf");
+    if (gf){
+      gdraft[gf] = (gf === "perRow" && t.value === "") ? undefined : t.value;
+      if (gf === "face" || gf === "color" || gf === "style" || gf === "perRow") refreshGearForm();
+      return;
+    }
+
+    if (t.hasAttribute("data-gmodes")){
+      if (t.checked){
+        gdraft.modes = gdraft.modes || {options:["actif","passif"], off:{}};
+      } else {
+        delete gdraft.modes;
+      }
+      refreshGearForm();
+      return;
+    }
+    var gm = t.getAttribute("data-gmode");
+    if (gm !== null && gdraft.modes){
+      var was = gdraft.modes.options[1];
+      gdraft.modes.options[Number(gm)] = t.value;
+      if (gm === "1" && gdraft.modes.off && gdraft.modes.off[was]){
+        gdraft.modes.off[t.value] = gdraft.modes.off[was];
+        delete gdraft.modes.off[was];
+      }
+      return;
+    }
+    var gc = t.getAttribute("data-gc");
+    if (gc){
+      var idx = parseInt(t.closest("[data-ci]").getAttribute("data-ci"), 10);
+      var c = gdraft.controls[idx];
+      if (gc === "l"){
+        c.l = t.value;
+        if (String(c.k).indexOf("c.") === 0){   /* clé encore automatique : elle suit le libellé */                     
+          var others = gdraft.controls.filter(function(x, i){ return i !== idx; }).map(function(x){ return x.k; });
+          c.k = slugKey(t.value, others);
+        }
+      } else if (gc === "t"){
+        c.t = t.value;
+        if (c.t === "scale"){ if (c.min === undefined) { c.min = 1; c.max = 10; c.step = 0.5; c.d = 5.5; } }
+        if (c.t === "clock" && c.d === undefined) c.d = 0;
+        if (c.t === "balance"){ c.a = c.a || "1"; c.b = c.b || "2"; if (c.d === undefined) c.d = 50; }
+        refreshGearForm();
+      } else if (gc === "needs"){
+        if (t.value) c.needs = t.value; else delete c.needs;
+      } else if (gc === "a" || gc === "b"){
+        c[gc] = t.value;
+      } else {
+        c[gc] = t.value === "" ? undefined : parseFloat(t.value);
+      }
+      return;
+    }
+    if (t.hasAttribute("data-goff") && gdraft.modes){
+      var ci2 = parseInt(t.closest("[data-ci]").getAttribute("data-ci"), 10);
+      var key = gdraft.controls[ci2].k, mode = gdraft.modes.options[1];
+      gdraft.modes.off = gdraft.modes.off || {};
+      var list = gdraft.modes.off[mode] || [];
+      if (t.checked){ if (list.indexOf(key) < 0) list.push(key); }
+      else list = list.filter(function(x){ return x !== key; });
+      gdraft.modes.off[mode] = list;
+      return;
+    }
+    return;
+  }
+
+  if (!draft) return;
+  var f = t.getAttribute("data-f");
+  if (f){
+    if (f === "tags") draft.tags = t.value.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+    else setPath(draft, f, t.value);
+    return;
+  }
+  var key = t.getAttribute("data-sl");
+  if (key){
+    var v = parseFloat(t.value);
+    setPath(draft, key, v);
+    var out = document.querySelector('[data-out="' + key + '"]');
+    if (out){
+      var c = findCtrl(draft, key);
+      out.textContent = c ? ctrlText(c, v) : String(v).replace(".", ",");
+    }
+    return;
+  }
+  if (t.hasAttribute("data-gear")){            /* changer de matériel : la façade suit */
+    draft.gear = t.value;
+    applyGearDefaults(draft);
+    refreshBody();
+    return;
+  }
+  if (draft.kind === "board"){
+    var bs = t.getAttribute("data-bs");
+    if (bs){
+      var bi = parseInt(t.closest("[data-si]").getAttribute("data-si"), 10);
+      var slot = draft.slots[bi];
+      if (bs === "on") slot.on = t.checked;
+      else if (bs === "gear"){ slot.gear = t.value; slot.v = {}; refreshBody(); }
+      else slot[bs] = t.value;
+      return;
+    }
+    var bv = t.getAttribute("data-bv");
+    if (bv){
+      var bi2 = parseInt(t.closest("[data-si]").getAttribute("data-si"), 10);
+      var slot2 = draft.slots[bi2];
+      var val = parseFloat(t.value);
+      slot2.v = slot2.v || {};
+      slot2.v[bv] = val;
+      var g2 = allGear()[slot2.gear];
+      var c2 = null, q;
+      if (g2) for (q=0;q<g2.controls.length;q++) if (g2.controls[q].k === bv) c2 = g2.controls[q];
+      var o2 = document.querySelector('[data-out="b' + bi2 + '-' + bv + '"]');
+      if (o2 && c2) o2.textContent = ctrlText(c2, val);
+      return;
+    }
+  }
+
+  function slotIndex(el){ return parseInt(el.closest("[data-i]").getAttribute("data-i"), 10); }
+
+  var sp = t.getAttribute("data-sp");                       /* paramètre d'un plugin */
+  if (sp){
+    var sl = draft.chain[slotIndex(t)];
+    sl.p = sl.p || {};
+    if (t.type === "checkbox") sl.p[sp] = t.checked;
+    else if (t.tagName === "SELECT") sl.p[sp] = t.value;
+    else sl.p[sp] = t.value === "" ? null : parseFloat(t.value);
+    return;
+  }
+  var band = t.getAttribute("data-sb");                     /* bande de ReaEQ */
+  if (band){
+    var bi = parseInt(t.closest("[data-bi]").getAttribute("data-bi"), 10);
+    var b = draft.chain[slotIndex(t)].bands[bi];
+    b[band] = (band === "t") ? t.value : (t.value === "" ? null : parseFloat(t.value));
+    return;
+  }
+  if (t.hasAttribute("data-son")){                          /* en circuit / hors circuit */
+    draft.chain[slotIndex(t)].on = t.checked;
+    return;
+  }
+  var s = t.getAttribute("data-s");
+  if (s){
+    var si = slotIndex(t);
+    if (s === "plugin"){                                    /* changer de plugin change les champs */
+      draft.chain[si].plugin = t.value;
+      draft.chain[si].p = {};
+      if (pluginDef(t.value).bands && !draft.chain[si].bands) draft.chain[si].bands = [];
+      refreshBody();
+      return;
+    }
+    draft.chain[si][s] = t.value;
+  }
+});
+
+document.addEventListener("keydown", function(e){
+  if (e.key === "Escape" && document.getElementById("veil").classList.contains("open")) closeEditor();
+});
+
+/* Une erreur d affichage doit se voir, pas laisser une page vide. */
+window.addEventListener("error", function(e){
+  var host = document.getElementById("list");
+  if (host && !host.querySelector(".card")){
+    host.innerHTML = tHtml("<div class=\"empty\">Affichage interrompu : " + esc(e.message) + "</div>");
+  }
+});
+
+/* Couture de test : expose le registre et ses fonctions pures, en lecture.
+   Sert à test/gear.test.js ; n'a aucun effet sur l'interface. */
+window.__pb = {
+  GEAR: GEAR, PLUGINS: PLUGINS, DEFAULT_GEAR: DEFAULT_GEAR,
+  gearOf: gearOf, gearId: gearId, gearName: gearName, gearList: gearList,
+  applyGearDefaults: applyGearDefaults, findCtrl: findCtrl,
+  allGear: allGear, gearUsage: gearUsage, slugKey: slugKey, normalize: normalize,
+  getState: function(){ return S; }, setState: function(x){ S = x; },
+  getPath: getPath, setPath: setPath,
+  EN: EN, t: t, tHtml: tHtml, getLang: function(){ return LANG; }, setLang: setLang,
+  hourLabel: hourLabel, balLabel: balLabel, ctrlText: ctrlText, dec: dec,
+  PEDALS: PEDALS, pedalArt: pedalArt, boardArt: boardArt, luma: luma, pedalValues: pedalValues,
+  openGearList: openGearList, openGearEditor: openGearEditor,
+  gearFormBody: gearFormBody, getGDraft: function(){ return gdraft; },
+  ctrlText: ctrlText, ctrlAngle: ctrlAngle, ctrlOff: ctrlOff,
+  hourLabel: hourLabel, balLabel: balLabel, pctToCrans: pctToCrans,
+  openEditor: openEditor, openIO: openIO, showGate: showGate, library: library,
+  tf: tf, renderChrome: renderChrome,
+  presetFile: presetFile, addPreset: addPreset, findPreset: findPreset, fileName: fileName,
+  openAccount: openAccount, submitAccount: submitAccount, renderWho: renderWho,
+  setSession: function(u){ session.user = u; },
+  mountKofi: mountKofi, kofiUser: function(){ return KOFI; },
+  kofiMounted: function(){ return kofiMounted; }
+};
+
+boot();
+})();
+</script>

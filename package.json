@@ -1,0 +1,20 @@
+{
+  "name": "presetbook",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Presets de basse, d'ampli, de pédales et chaînes de plugins, rangés et modifiables",
+  "license": "AGPL-3.0-or-later",
+  "repository": { "type": "git", "url": "git+https://github.com/fuzzinvaders/presetbook.git" },
+  "homepage": "https://github.com/fuzzinvaders/presetbook",
+  "bugs": { "url": "https://github.com/fuzzinvaders/presetbook/issues" },
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/harness.js && node test/gear.test.js && node test/gearcustom.test.js && node test/gearform.test.js && node test/pedals.test.js && node test/rfxchain.test.js && node test/eqtypes.test.js && node test/export.test.js && node test/licence.test.js && node test/comptes.test.js && node test/langue.test.js",
+    "import:rfx": "node tools/rfxchain-import.js",
+    "learn:eqtypes": "node tools/learn-eqtypes.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

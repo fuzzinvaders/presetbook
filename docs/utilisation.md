@@ -1,0 +1,305 @@
+# Utiliser Presetbook
+
+Presetbook range des réglages : ceux d'un instrument, d'un ampli, d'une pédale d'effet, d'un
+pédalier entier, et les chaînes de plugins d'un logiciel d'enregistrement. Une fiche décrit un réglage complet, et s'affiche telle qu'on la
+lirait sur le matériel — pas sur une échelle abstraite.
+
+## Les cinq sortes de fiches
+
+| Sorte | Ce qu'elle porte |
+| --- | --- |
+| **Instrument** | le matériel choisi, ses modes, la balance des micros, l'égaliseur, la main droite, les cordes |
+| **Ampli** | le matériel choisi, le gain, les interrupteurs de caractère, le canal saturé, l'égaliseur |
+| **Pédale** | l'effet choisi et ses réglages, avec le dessin du boîtier |
+| **Pédalier** | des pédales dans l'ordre du signal, chacune avec ses réglages et son état |
+| **Chaîne** | le tempo, l'accordage, et les plugins dans l'ordre, avec leurs vrais paramètres |
+
+Chaque fiche peut être rattachée à un **morceau** (titre et artiste). C'est ce qui permet de
+rassembler d'un côté la basse, l'ampli et la chaîne d'une même reprise.
+
+## L'écran principal
+
+En haut, à droite du titre :
+
+- une **pastille de stockage** qui dit où vont les enregistrements — voir plus bas ;
+- le **compte connecté** et sa déconnexion, en déploiement autonome ;
+- **Comptes**, pour ouvrir un compte à quelqu'un d'autre — voir plus bas ;
+- **Matériel**, pour gérer les façades ;
+- **Sauvegarde**, pour exporter ou restaurer ;
+- **Nouveau preset** ;
+- tout au coin, sous un petit globe, le **choix de la langue** : `FR` ou `EN`.
+
+Le **pied de page** reste collé au bas de l'écran pendant tout le défilement : il porte la licence,
+la gratuité, et le lien de soutien.
+
+Juste en dessous, la barre de tri :
+
+- les **onglets** Tout, Basse, Ampli, Pédale, Pédalier, Reaper, avec le nombre de fiches de chacun ;
+- la **recherche**, qui regarde le nom, les notes, les styles, le morceau, l'artiste, le nom du
+  matériel, les pédales d'un pédalier et les plugins d'une chaîne ;
+- le **regroupement**, par matériel ou par morceau.
+
+Trois paramètres d'URL sont lus au chargement, ce qui permet de mettre une vue en favori :
+`?q=motown`, `?kind=bass`, `?group=song`. Un quatrième, `?edit=<identifiant>`, ouvre directement une
+fiche.
+
+## Langue / Language
+
+Le bouton `FR` / `EN`, tout au coin haut-droit de la page sous un petit globe, bascule toute
+l'application, catalogue compris : les noms de fiches, les notes, les libellés de commandes et les
+familles de pédales sont traduits, mais **les noms propres ne le sont jamais** — « Yamaha BB734A »,
+« ReaComp » ou « TSE BOD » restent tels quels, comme les noms de morceaux et d'artistes.
+
+Deux détails suivent la langue : le séparateur décimal (`6,5` en français, `6.5` en anglais) et
+l'écriture des heures d'égaliseur (`12 h 30` contre `12:30`). La recherche, elle, accepte les deux
+langues quelle que soit celle affichée : `rehearsal` et `répétition` ramènent les mêmes fiches.
+
+Le choix se retient avec vos données, donc il vous suit d'un poste à l'autre sur un même compte. Au
+premier passage, la langue du navigateur décide ; `?lang=en` ou `?lang=fr` dans l'URL l'emporte, ce
+qui permet de partager un lien déjà dans la bonne langue.
+
+The `FR` / `EN` button in the page's top-right corner switches the whole application, catalogue
+included. Proper names — gear models, plugin names, song titles — are never translated. Your choice
+is remembered with your data, and `?lang=en` forces it from a link.
+
+## Lire une fiche
+
+Une carte montre le matériel concerné, les états qui ne sont pas des cadrans (mode, balance,
+interrupteurs) sous forme d'étiquettes, puis les cadrans dans **l'ordre de la façade**.
+
+Deux façons de lire un cadran, selon le matériel :
+
+- **en heures d'horloge**, pour un bouton cranté au milieu comme sur la Yamaha BB734A : midi est le
+  cran neutre, où le bouton ne fait rien. Une heure vaut un cran de correction, et l'affichage
+  descend au quart de cran — `12 h 15` est une position réelle, pas un arrondi ;
+- **sur son échelle**, pour un bouton gradué comme le 1 à 10 du Fender Rumble 40. Les décimales
+  suivent le pas du bouton.
+
+Deux mentions particulières :
+
+- **`—` et un cadran éteint** : la commande est hors circuit dans l'état courant. Sur la BB734A en
+  passif, l'égaliseur sort du circuit ; sur le Rumble, le Drive ne sert que si l'overdrive est
+  engagé ;
+- **« à régler »** : la valeur se règle à l'oreille et n'a pas de nombre. C'est le cas d'un seuil de
+  compresseur, qu'on descend jusqu'à obtenir la réduction voulue.
+
+La balance des micros s'affiche en pourcentage de course, `P 45 / J 55`, parce que c'est ainsi qu'on
+lit un balancer — et non par paliers approximatifs.
+
+## Modifier une fiche
+
+**Modifier** ouvre l'éditeur. En haut, le nom, les styles, le morceau et l'artiste. En dessous, le
+bloc **Façade** : le matériel choisi, une note sur ses particularités, puis ses commandes. Les
+curseurs affichent leur valeur dans l'unité du matériel pendant qu'on les déplace, et une commande
+hors circuit est grisée plutôt que masquée — pour qu'on sache qu'elle existe.
+
+**Dupliquer** crée une copie modifiable, ce qui est la bonne façon de partir d'une fiche du
+catalogue. **Supprimer** demande confirmation par un second clic.
+
+Changer de matériel en cours de route conserve les valeurs dont les commandes existent des deux
+côtés et complète le reste avec les défauts du nouveau modèle, sans rien effacer.
+
+## Le matériel
+
+Le bouton **Matériel** ouvre la liste des façades, avec pour chacune son nombre de commandes et le
+nombre de fiches qui l'utilisent.
+
+Les façades **livrées** — Yamaha BB734A et Fender Rumble 40, décrites d'après leurs façades réelles,
+plus des gabarits génériques — ne sont pas modifiables. On les **duplique** pour partir d'une base.
+
+Créer une façade demande un modèle, éventuellement une marque, l'aspect des boutons, puis les
+commandes dans l'ordre. Chaque commande a un libellé et un type :
+
+| Type | Pour quoi |
+| --- | --- |
+| Cadran cranté | un bouton neutre au milieu, lu en heures |
+| Échelle bornée | un bouton gradué, 1 à 10 par exemple |
+| Balance | un balancer entre deux micros |
+| Interrupteur | un bouton poussoir ou un sélecteur à deux états |
+| Curseur vertical | une bande d'égaliseur graphique, en décibels |
+
+Deux mécanismes rendent une façade fidèle sans code :
+
+- **deux modes**, dont le second peut mettre certaines commandes **hors circuit** — c'est ainsi que
+  fonctionne le passif de la BB734A ;
+- une commande qui **ne sert que si** un interrupteur est engagé — le Drive d'un canal saturé.
+
+Une façade utilisée par des fiches ne peut pas être supprimée : l'interface dit combien la
+retiennent.
+
+## Les pédales et les pédaliers
+
+Une **fiche de pédale** porte les réglages d'un effet. La pédale est dessinée avec ses boutons à la
+position réglée, puis les valeurs sont reprises en chiffres juste en dessous — le dessin pour
+reconnaître d'un coup d'œil, les chiffres pour reproduire.
+
+Un **pédalier** est une suite de pédales dans l'ordre du signal, chacune avec ses propres réglages et
+une case **en circuit**. Une pédale coupée reste visible, grisée, avec son témoin éteint : c'est une
+information utile, pas un vide.
+
+Les familles livrées couvrent l'essentiel : boost, overdrive, distorsion, fuzz, préampli et DI,
+compresseur, noise gate, égaliseur graphique, octaver, filtre à enveloppe, chorus, phaser, flanger,
+trémolo, delay, réverbe, synthé de basse, accordeur. Chacune porte le **jeu de commandes
+conventionnel de sa famille** — un overdrive a Gain, Tone et Level ; un flanger a Manual, Depth, Rate
+et Res — et non les réglages d'un modèle commercial précis.
+
+### Composer un pédalier
+
+**Modifier** sur un pédalier donne la liste des emplacements. Pour chacun : la pédale choisie, son
+rôle dans la chaîne, la case en circuit, les flèches pour la déplacer, et **ses réglages sur place**.
+Changer la pédale d'un emplacement remet les réglages à ceux de la nouvelle famille, puisque ses
+boutons ne sont pas les mêmes.
+
+L'ordre compte autant que les réglages, et c'est bien la raison d'être d'un pédalier : le
+compresseur avant le filtre à enveloppe, sinon la sensibilité du filtre suit les écarts de niveau du
+jeu au lieu de suivre l'attaque.
+
+### Dessiner ses propres pédales
+
+Le dessin n'est pas une image : il est **déduit de la description de la façade**. Créer une pédale
+depuis **Matériel** donne donc son boîtier sans travail supplémentaire, et le formulaire montre un
+**aperçu en direct** qui suit chaque changement.
+
+Trois réglages décident de l'allure :
+
+| Réglage | Effet |
+| --- | --- |
+| **Couleur du boîtier** | choisie librement ; la couleur du texte s'y adapte pour rester lisible |
+| **Silhouette** | boîtier standard, compacte à bascule, haute et étroite, grand boîtier, mini |
+| **Boutons par rangée** | 1, 2, 3, 4, ou au choix de la silhouette |
+
+Les silhouettes sont des **formats**, pas des marques : chacune correspond à un gabarit courant du
+marché. La compacte à bascule porte une grande commande au pied qui occupe le bas du boîtier ; la
+mini ne sérigraphie pas son nom, faute de place ; le grand boîtier laisse de la marge autour des
+boutons.
+
+Le nombre de boutons vient des commandes déclarées, leur disposition du nombre par rangée. **Une
+rangée incomplète est centrée** : trois boutons se placent donc deux en haut et un au milieu en
+dessous, comme sur la plupart des pédales à trois réglages.
+
+## Les chaînes de plugins
+
+Une fiche de chaîne liste les plugins dans l'ordre du signal. Chaque maillon porte son rôle, une case
+**en circuit** — un plugin laissé hors circuit reste documenté sans compter dans la chaîne — et ses
+paramètres tels que les nomme sa propre fenêtre.
+
+Les plugins connus affichent leurs vrais paramètres, avec leurs unités et leurs bornes. ReaEQ montre
+ses bandes en tableau : type, fréquence, gain, largeur. Un plugin non catalogué se décrit en texte
+libre.
+
+### Importer et exporter une chaîne de Reaper
+
+Le bouton **Exporter en .RfxChain** est directement sur la carte d'une chaîne, à côté de
+**Dupliquer** : pas besoin d'ouvrir l'éditeur. L'éditeur, lui, propose en plus **Importer un
+.RfxChain**, au bas de la section « Chaîne Reaper ». Le fichier exporté se dépose dans le dossier
+`FXChains` de Reaper, et se retrouve ensuite dans le navigateur d'effets, onglet *FX Chains*.
+
+Ces deux boutons n'apparaissent qu'en **déploiement autonome** : le codec est un fichier servi à
+part, absent de la page publiée. Si vous ne les voyez pas, c'est que vous regardez le miroir publié
+et non votre serveur.
+
+Il y a trois exports, à ne pas confondre : **Exporter** sur une carte donne *cette fiche* en JSON,
+**.RfxChain** sur une carte de chaîne donne un fichier *pour Reaper*, et **Sauvegarde** en haut donne
+*toute la bibliothèque* en JSON.
+
+L'export ne demande **pas** d'import préalable : une chaîne composée à la main ici s'écrit aussi,
+pour les cinq plugins dont le format est établi — TSE BOD, ReaEQ, ReaComp, ReaVerbate et le JSFX de
+saturation. Un plugin hors de cette liste fait refuser l'export **en le nommant**, plutôt que
+d'écrire un état inventé.
+
+
+Tout n'est pas lisible de la même façon dans un fichier de chaîne :
+
+| Plugin | Ce qu'on peut en faire ici |
+| --- | --- |
+| TSE BOD | tout est modifiable : son état est du XML nommé |
+| ReaEQ | bandes entièrement modifiables |
+| ReaComp, ReaVerbate | modifiables : leurs paramètres ont été établis |
+| JSFX | le premier curseur est repris, les autres conservés |
+| Autres plugins | **conservés à l'octet près**, mais non modifiables ici |
+
+Deux garde-fous. Un effet dont les valeurs n'ont pas changé est réécrit **à l'identique** : aucun
+arrondi d'affichage ne se glisse dans un réglage qu'on n'a pas touché. Et l'export **refuse** plutôt
+que d'inventer : sur ReaEQ, trois types de bande seulement ont leur équivalent établi dans le
+fichier, donc choisir les autres se fait dans Reaper — importés ici, ils sont conservés et réécrits
+sans dommage.
+
+## Le catalogue et vos données
+
+Presetbook est livré avec un catalogue de réglages de départ. Il fait partie de l'application, donc
+il s'enrichit avec elle. **Vos créations et vos modifications vivent à part.** Trois conséquences
+utiles :
+
+- enrichir le catalogue ne détruit jamais votre travail ;
+- une fiche du catalogue que vous avez modifiée peut être remise à sa valeur d'origine ;
+- une fiche du catalogue supprimée est masquée, pas détruite : la réinitialisation la fait revenir.
+
+**Sauvegarde** exporte l'ensemble en JSON — le catalogue tel qu'il s'affiche et vos modifications.
+Le bloc se copie, se télécharge, et se recolle pour restaurer. Le même écran propose de
+réinitialiser vos modifications, ce qui rétablit le catalogue d'origine sans toucher aux fiches que
+vous avez créées.
+
+### Exporter une fiche seule
+
+Le bouton **Exporter** de chaque carte écrit un fichier `.presetbook.json` qui ne contient que cette
+fiche — pour l'archiver, la transmettre, ou la déplacer d'un serveur à l'autre. Il vaut pour les cinq
+genres, contrairement à l'export `.RfxChain` qui n'a de sens que pour une chaîne de plugins.
+
+Le fichier **emporte les façades dont la fiche a besoin**, si ce sont les vôtres : une pédale que
+vous avez dessinée voyage avec le pédalier qui l'utilise, sans quoi la fiche serait illisible à
+l'arrivée. Les façades livrées, elles, ne sont pas recopiées puisqu'elles existent déjà de l'autre
+côté.
+
+Pour la reprendre : **Sauvegarde**, collez le fichier dans le bloc, puis **Restaurer**. Une fiche
+seule **s'ajoute** à la bibliothèque au lieu de la remplacer — c'est le contenu du fichier qui décide,
+donc il n'y a pas de bouton séparé à ne pas confondre. Si la fiche est déjà là, la nouvelle prend un
+identifiant neuf et son nom reçoit *(importée)*, pour que vous puissiez comparer avant de choisir. Et
+si une façade manque, l'import est **refusé en la nommant**, plutôt que d'ajouter une fiche qu'on ne
+pourrait pas afficher.
+
+## Où vont les enregistrements
+
+La pastille en haut à droite l'indique en permanence :
+
+| Couleur | Sens |
+| --- | --- |
+| **Vert** | enregistrement durable — serveur Presetbook, ou page publiée |
+| **Orange** | ce navigateur seulement, ou session à rouvrir |
+| **Rouge** | aucun stockage : exportez avant de fermer |
+
+En déploiement autonome, chaque compte a ses propres fiches. À la première ouverture, aucun compte
+n'existe : le premier créé est le vôtre, et les presets déjà enregistrés lui sont rattachés. La
+création de comptes se ferme ensuite d'elle-même — un utilisateur connecté peut toujours ouvrir un
+compte à quelqu'un d'autre.
+
+Il n'y a **pas de récupération de mot de passe par courriel** : un serveur auto-hébergé sans service
+de messagerie ne peut pas en offrir. Gardez le mot de passe dans un gestionnaire.
+
+### Ouvrir un compte à quelqu'un
+
+Une fois connecté, le bouton **Comptes** de l'en-tête ouvre un compte à quelqu'un d'autre :
+identifiant, mot de passe, et sa répétition. **Votre session ne change pas** — c'est le serveur qui
+le garantit, pas seulement l'écran : un compte créé par un utilisateur connecté ne reçoit pas de
+cookie de session.
+
+La personne se connecte ensuite elle-même, et ses fiches sont entièrement séparées des vôtres. Cela
+évite d'ouvrir `ALLOW_REGISTER` sur un serveur exposé à Internet : vous créez les comptes de votre
+groupe un par un, sans laisser la création ouverte à tout venant.
+
+Deux limites à connaître. Le mot de passe se transmet **de la main à la main** : il n'y a ni envoi
+par courriel, ni écran pour le changer ensuite — le remplacer demande de retirer l'entrée du compte
+dans `users.json` et de le recréer. Et il n'existe pas de liste des comptes dans l'interface : un
+identifiant déjà pris est signalé au moment de la création, c'est tout.
+
+## Licence et dons
+
+Presetbook est un **logiciel libre**, sous [AGPL-3.0-or-later](../LICENSE), et **gratuit**. Rien
+n'est bridé, rien n'expire, aucune fonction n'attend un paiement — c'est le pied de page qui le dit,
+et il dit vrai.
+
+Si l'outil vous sert, un don est **bienvenu, jamais demandé** : <https://ko-fi.com/talva>, ou le
+bouton flottant en bas de la page. Il est là pour être ignoré sans conséquence.
+
+Libre veut dire que vous pouvez utiliser, étudier, modifier et redistribuer l'application. La seule
+contrainte porte sur l'hébergement : **si vous en servez une version modifiée à d'autres personnes,
+vous devez leur proposer votre code source.** Chez vous, pour vous, rien ne vous est demandé.

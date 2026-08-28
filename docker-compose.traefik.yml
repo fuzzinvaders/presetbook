@@ -1,0 +1,72 @@
+# Déploiement derrière Traefik, en HTTPS, sur un réseau partagé.
+#
+#   docker compose -f docker-compose.traefik.yml pull
+#   docker compose -f docker-compose.traefik.yml up -d
+#
+# Deux valeurs viennent d'un fichier .env placé à côté de ce fichier, parce
+# qu'elles dépendent de la machine et n'ont rien à faire dans un dépôt public :
+#
+#   DOMAIN=presetbook.exemple.fr
+#   DATA_PATH=/srv/presetbook-data
+#
+# DATA_PATH est exigé plutôt que doté d'une valeur par défaut : un défaut ferait
+# démarrer le service sur un dossier vide, ce qui ressemble à une perte de toutes
+# les fiches alors que les données sont intactes ailleurs.
+#
+# Avant le premier démarrage, ce dossier doit appartenir à l'utilisateur du
+# conteneur (uid 1000), sinon le serveur démarre sans pouvoir écrire :
+#
+#   mkdir -p "$DATA_PATH" && sudo chown -R 1000:1000 "$DATA_PATH"
+
+services:
+  presetbook:
+    image: ghcr.io/fuzzinvaders/presetbook:latest
+    container_name: presetbook
+    restart: unless-stopped
+
+    # Aucun port publié : Traefik joint le conteneur par le réseau interne.
+    # Publier un port ici rendrait le site accessible en clair, sans TLS et en
+    # contournant Traefik. Pour un dépannage ponctuel, se limiter à la boucle
+    # locale de l'hôte :
+    # ports:
+    #   - "127.0.0.1:6598:8080"
+
+    environment:
+      PORT: "8080"
+      DATA_DIR: /data
+      # Traefik envoie X-Forwarded-Proto, dont le serveur déduit déjà le
+      # drapeau Secure du cookie ; cette ligne le garantit en toutes circonstances.
+      SECURE_COOKIES: "1"
+      # Mot de passe HTTP devant tout le site, sauf /healthz. Facultatif : les
+      # comptes de Presetbook protègent déjà les presets, et la création de
+      # comptes se ferme d'elle-même dès que le premier existe. Si tu le gardes,
+      # mets la valeur dans le .env à côté de ce fichier — jamais ici,
+      # ce fichier est suivi par git.
+      # BASIC_AUTH: "${BASIC_AUTH:?renseigne BASIC_AUTH dans .env}"
+
+    volumes:
+      - ${DATA_PATH:?renseigne DATA_PATH dans .env}:/data
+
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+
+    networks:
+      - proxy
+
+    labels:
+      - traefik.enable=true
+      # Utile dès qu'un conteneur voit plusieurs réseaux : indique lequel joindre.
+      - traefik.docker.network=proxy
+      # La règle attend des accents graves autour de l'hôte, pas des guillemets.
+      - 'traefik.http.routers.presetbook.rule=Host(`${DOMAIN:?renseigne DOMAIN dans .env}`)'
+      - traefik.http.routers.presetbook.entrypoints=websecure
+      - traefik.http.routers.presetbook.tls=true
+      - traefik.http.services.presetbook.loadbalancer.server.port=8080
+
+networks:
+  proxy:
+    external: true
