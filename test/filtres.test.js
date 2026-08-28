@@ -89,6 +89,24 @@ check("les filtres actifs sont comptés", pb.activeFilters() === 2, String(pb.ac
 reset();
 check("aucun filtre après effacement", pb.activeFilters() === 0);
 
+/* --- la recherche ignore la casse et les accents --- */
+reset();
+check("les accents sont retirés", pb.plat("Pédalier Crémeux") === "pedalier cremeux",
+  pb.plat("Pédalier Crémeux"));
+check("les ligatures aussi", pb.plat("cœur") === "coeur", pb.plat("cœur"));
+check("un texte vide ne casse rien", pb.plat(null) === "" && pb.plat(undefined) === "");
+
+function cherche(q) {
+  const w2 = run(page, { search: "?q=" + encodeURIComponent(q) });
+  return (w2.__nodes.get("list").innerHTML.match(/<article/g) || []).length;
+}
+[["pédalier", "pedalier"], ["répétition", "repetition"], ["crémeux", "cremeux"]].forEach((p) => {
+  const avec = cherche(p[0]), sans = cherche(p[1]);
+  check("« " + p[1] + " » trouve autant que « " + p[0] + " »",
+    sans === avec && avec > 0, avec + " contre " + sans);
+});
+check("la casse n'y change rien", cherche("PEDALIER") === cherche("pédalier"));
+
 /* --- l'URL --- */
 const parUrl = run(page, { search: "?gear=lionheart20&tag=blues,rock" });
 check("l'URL pose les filtres",

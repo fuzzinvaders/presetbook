@@ -40,7 +40,8 @@ Juste en dessous, la barre de tri :
 
 - les **onglets** Tout, Basse, Ampli, Pédale, Pédalier, Reaper, avec le nombre de fiches de chacun ;
 - la **recherche**, qui regarde le nom, les notes, les styles, le morceau, l'artiste, le nom du
-  matériel, les pédales d'un pédalier et les plugins d'une chaîne ;
+  matériel, les pédales d'un pédalier et les plugins d'une chaîne. Elle ignore la casse **et les
+  accents** : `pedalier` trouve « Pédalier », ce qui compte quand on tape sur un téléphone ;
 - le **regroupement**, par matériel ou par morceau ;
 - les **filtres**, par modèle de matériel et par style — voir plus bas ;
 - **Imprimer**, qui met sur papier ce qui est affiché.

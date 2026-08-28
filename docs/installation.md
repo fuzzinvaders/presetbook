@@ -135,6 +135,24 @@ service derrière un reverse proxy en **HTTPS** : l'authentification transmet le
 corps de la requête, ce qui n'a de sens que sous TLS. `BASIC_AUTH` peut servir de barrière
 supplémentaire pour masquer entièrement l'existence du site.
 
+### Ce qui part sur le fil
+
+Le serveur compresse en **gzip** ce qui y gagne — HTML, JavaScript, JSON, SVG, manifeste — au-dessus
+de 1400 octets et seulement si le client l'accepte. La page passe de **198 Ko à 58 Ko**, ce qui se
+voit sur la 4G d'une salle de répétition bien plus que sur un réseau local.
+
+Trois précautions, chacune pour un défaut précis :
+
+- `Vary: Accept-Encoding` accompagne toute réponse concernée. Sans lui, un intermédiaire peut servir
+  la version compressée à un client qui ne sait pas la lire ;
+- l'**ETag change avec l'encodage** (suffixe `-gz`), pour la même raison, et les deux formes sont
+  reconnues en requête conditionnelle ;
+- les images et les polices sont **laissées telles quelles** : déjà compressées, les repasser en gzip
+  coûterait du temps pour grossir de quelques octets.
+
+Les fichiers statiques sont compressés une fois puis mémorisés, indexés par leur ETag — inutile de
+refaire le travail à chaque visite sur une machine modeste.
+
 ### Le compte de démonstration
 
 `DEMO_LOGIN=demo:demo` ouvre un compte public, pour laisser regarder l'application sans inscription.
