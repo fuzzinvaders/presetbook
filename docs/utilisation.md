@@ -41,11 +41,49 @@ Juste en dessous, la barre de tri :
 - les **onglets** Tout, Basse, Ampli, Pédale, Pédalier, Reaper, avec le nombre de fiches de chacun ;
 - la **recherche**, qui regarde le nom, les notes, les styles, le morceau, l'artiste, le nom du
   matériel, les pédales d'un pédalier et les plugins d'une chaîne ;
-- le **regroupement**, par matériel ou par morceau.
+- le **regroupement**, par matériel ou par morceau ;
+- les **filtres**, par modèle de matériel et par style — voir plus bas ;
+- **Imprimer**, qui met sur papier ce qui est affiché.
 
-Trois paramètres d'URL sont lus au chargement, ce qui permet de mettre une vue en favori :
-`?q=motown`, `?kind=bass`, `?group=song`. Un quatrième, `?edit=<identifiant>`, ouvre directement une
-fiche.
+## Filtrer
+
+Le bouton **Filtres** ouvre deux listes de pastilles : **Matériel** et **Styles**. Cliquer une
+pastille l'active, recliquer la retire, et le bouton affiche le nombre de filtres en cours.
+
+La règle est celle qu'on attend : **plusieurs choix dans une même liste s'additionnent** (Laney *ou*
+Rumble), **les deux listes se croisent** (un Laney *et* du blues). Les nombres portés par chaque
+pastille tiennent compte des autres filtres déjà posés, sans se compter eux-mêmes — c'est ce qui
+évite de cliquer sur un choix qui ne ramène rien.
+
+Filtrer sur une **pédale** ramène aussi les **pédaliers** qui l'emploient : c'est le bon moyen de
+retrouver où sert un effet donné.
+
+Cinq paramètres d'URL sont lus au chargement, ce qui permet de mettre une vue en favori ou de
+l'envoyer à quelqu'un : `?q=motown`, `?kind=bass`, `?group=song`, `?gear=lionheart20,rumble40` et
+`?tag=blues,rock` — les deux derniers en listes séparées par des virgules. Un sixième,
+`?edit=<identifiant>`, ouvre directement une fiche.
+
+## Imprimer
+
+Le bouton **Imprimer** envoie au papier **exactement ce qui est à l'écran** : les mêmes fiches, dans
+le même ordre, filtres compris. Tout ce sur quoi on ne peut pas cliquer sur une feuille disparaît —
+en-tête, barre de tri, panneau de filtres, boutons des cartes, pied de page.
+
+En haut de la première page, une ligne dit ce que la feuille contient : le titre, les filtres actifs,
+le nombre de fiches et la date. Une feuille retrouvée dans un étui de basse reste ainsi
+compréhensible.
+
+Deux détails qui comptent :
+
+- **le thème sombre est forcé en clair** à l'impression. Imprimer un fond noir gâche l'encre et rend
+  les cadrans illisibles ;
+- **les aplats des cadrans sont conservés.** Les navigateurs suppriment les fonds à l'impression par
+  défaut, ce qui effacerait les repères — et un cadran sans repère ne dit plus rien. La règle
+  l'interdit explicitement, donc pensez à laisser « graphiques d'arrière-plan » coché si votre
+  navigateur pose la question.
+
+Une fiche n'est **jamais coupée entre deux pages**. Sur une A4, la mise en page tombe sur deux
+colonnes.
 
 ## Langue / Language
 

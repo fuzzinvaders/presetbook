@@ -14,6 +14,7 @@
 "use strict";
 const { execFileSync } = require("node:child_process");
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 
 const RACINE = path.join(__dirname, "..");
@@ -36,7 +37,12 @@ const VUES = [
   { nom: "basse",       url: "?kind=bass",               taille: "1280,760" },
   { nom: "pedalier",    url: "?kind=board",              taille: "1280,760" },
   { nom: "chaine",      url: "?edit=r-allstar",          taille: "1280,900" },
+  { nom: "filtres",     url: "?kind=amp&gear=lionheart20&tag=blues", taille: "1280,700" },
   { nom: "anglais",     url: "?lang=en&kind=amp",        taille: "1280,760" },
+  /* La feuille imprimée : la même page, avec la règle @media print rendue à
+     l'écran sur une copie jetable. La largeur est celle d'une A4 moins ses
+     marges (186 mm à 96 ppp), donc c'est bien la mise en page qui sortira. */
+  { nom: "impression",  url: "?gear=lionheart20", taille: "703,980", print: true },
 ];
 
 const navigateur = CANDIDATS.find((c) => fs.existsSync(c));
@@ -48,6 +54,20 @@ if (!navigateur) {
 console.log("navigateur : " + navigateur);
 fs.mkdirSync(SORTIE, { recursive: true });
 
+/* Pour la feuille imprimée : une copie où @media print devient @media screen,
+   seule façon de photographier une mise en page qui n'existe qu'au papier. */
+let copiePrint = null;
+function pageDe(v) {
+  if (!v.print) return PAGE;
+  if (!copiePrint) {
+    const src = fs.readFileSync(path.join(RACINE, "public", "index.html"), "utf8");
+    if (src.indexOf("@media print{") < 0) throw new Error("aucune règle @media print à rendre");
+    copiePrint = path.join(os.tmpdir(), "presetbook-apercu-impression.html");
+    fs.writeFileSync(copiePrint, src.replace("@media print{", "@media screen{"), "utf8");
+  }
+  return "file:///" + copiePrint.replace(/\\/g, "/");
+}
+
 let rates = 0;
 VUES.forEach(function (v) {
   const fichier = path.join(SORTIE, v.nom + ".png");
@@ -58,7 +78,7 @@ VUES.forEach(function (v) {
       "--virtual-time-budget=5000",          /* laisse les polices et le widget arriver */
       "--window-size=" + v.taille,
       "--screenshot=" + fichier,
-      PAGE + v.url,
+      pageDe(v) + v.url,
     ], { stdio: "pipe", timeout: 90000 });
   } catch (e) { /* ces navigateurs écrivent sur stderr même quand tout va bien */ }
 

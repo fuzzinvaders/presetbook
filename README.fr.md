@@ -45,6 +45,25 @@ circuit dans le mode courant est grisée avec un `—` plutôt que masquée, pou
 existe. Et une valeur qui n'a pas de nombre — un seuil de compresseur qu'on descend à l'oreille — dit
 **à régler** au lieu d'inventer un chiffre.
 
+## Filtrer, puis imprimer
+
+Deux listes de pastilles — **Matériel** et **Styles** — avec les nombres qui tiennent compte des
+autres filtres déjà posés. Plusieurs choix dans une liste s'additionnent, les deux listes se
+croisent. Filtrer sur une pédale ramène aussi les pédaliers qui l'emploient.
+
+![Le panneau de filtres ouvert : Laney Lionheart et blues sélectionnés, les deux fiches
+correspondantes en dessous](docs/images/filtres.png)
+
+Le bouton **Imprimer** met sur papier exactement ce qui est affiché, filtres compris. L'en-tête dit
+ce que la feuille contient — les filtres actifs, le nombre de fiches, la date — et une fiche n'est
+jamais coupée entre deux pages.
+
+![La même vue imprimée : fond blanc, deux colonnes, sans en-tête ni boutons, avec les cadrans
+lisibles](docs/images/impression.png)
+
+Le thème sombre est forcé en clair, et les aplats des cadrans sont conservés : les navigateurs les
+suppriment par défaut à l'impression, or un cadran sans repère ne dit plus rien.
+
 ## Pédales et pédaliers
 
 Un pédalier est une suite de pédales dans l'ordre du signal, chacune avec ses réglages et une case
@@ -110,7 +129,7 @@ serveur du tout — publiée en statique, ou ouverte depuis le disque.
 
 | | |
 | --- | --- |
-| [Utiliser Presetbook](docs/utilisation.md) | lire et modifier une fiche, composer un pédalier, créer une façade, importer une chaîne de Reaper, changer de langue, exporter, sauvegarder |
+| [Utiliser Presetbook](docs/utilisation.md) | lire et modifier une fiche, composer un pédalier, créer une façade, importer une chaîne de Reaper, changer de langue, filtrer, imprimer, exporter, sauvegarder |
 | [Installer et exploiter](docs/installation.md) | Docker, reverse proxy, mise à jour, comptes, compte de démonstration, sécurité, script tiers |
 | [Développer](docs/developpement.md) | architecture, modèle de données, registres, codec `.RfxChain`, les deux langues, tests |
 
@@ -120,12 +139,12 @@ serveur du tout — publiée en statique, ou ouverte depuis le disque.
 npm test
 ```
 
-Douze suites, 373 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
+Treize suites, 409 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
 minimal, le registre des façades, celles créées depuis l'interface, le formulaire qui les crée, les
 pédales et leur dessin, le codec des chaînes d'effets sur une chaîne réelle, les types de bande de
 ReaEQ, l'export d'une fiche et son retour dans une autre bibliothèque, la licence et le widget de
-dons, la création de comptes, le compte de démonstration éprouvé contre un vrai serveur, et la
-version anglaise — treize écrans rendus en anglais, qui échouent si un mot français y subsiste.
+dons, la création de comptes, le compte de démonstration éprouvé contre un vrai serveur, les filtres et la
+feuille d'impression, et la version anglaise — treize écrans rendus en anglais, qui échouent si un mot français y subsiste.
 
 ## Licence et dons
 
