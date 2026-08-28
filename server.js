@@ -8,6 +8,7 @@
  *
  * Statique      : public/
  * Session       : GET /api/session, POST /api/register, /api/login, /api/logout, /api/password
+ * Comptes       : GET /api/users, POST /api/account/delete — réservés ou restreints à l'admin
  * Presets       : GET/PUT /api/presets — propres à l'utilisateur connecté
  * Santé         : GET /healthz — jamais protégé
  *
@@ -253,6 +254,45 @@ function isDemo(user) {
 /** Les vrais comptes : ceux qui décident si le serveur a un propriétaire. */
 function realUsers(db) {
   return db.users.filter((u) => !isDemo(u));
+}
+
+/**
+ * L'administrateur est le premier compte créé sur l'instance, et le drapeau est
+ * écrit dans le fichier plutôt que déduit à chaque lecture : déduire de l'ordre
+ * du tableau rendrait le droit dépendant d'un détail de stockage, et une
+ * suppression pourrait le déplacer sans qu'on l'ait voulu.
+ */
+function isAdmin(user) {
+  return !!user && user.admin === true;
+}
+
+/** Le plus ancien des vrais comptes. Le tableau est en ordre de création, mais
+    on s'appuie d'abord sur la date, qui ne dépend pas de l'ordre du fichier. */
+function premierCompte(db) {
+  const vrais = realUsers(db);
+  if (!vrais.length) return null;
+  return vrais.slice().sort((a, b) =>
+    String(a.created || "").localeCompare(String(b.created || "")) ||
+    db.users.indexOf(a) - db.users.indexOf(b))[0];
+}
+
+/**
+ * Les instances existantes n'ont pas de drapeau : on le pose une fois, sur le
+ * plus ancien compte. Sans cette reprise, une mise à jour laisserait un serveur
+ * déjà peuplé sans aucun administrateur — donc sans personne pour ouvrir un
+ * compte.
+ */
+async function ensureAdmin() {
+  const db = await readUsers();
+  if (!db.users.length) return null;
+  const dejaLa = db.users.find((u) => u.admin === true && !isDemo(u));
+  if (dejaLa) return dejaLa;
+  const premier = premierCompte(db);
+  if (!premier) return null;
+  premier.admin = true;
+  await writeJsonFile(USERS_FILE, db);
+  console.log(`[presetbook] administrateur : « ${premier.name} » (premier compte créé)`);
+  return premier;
 }
 
 function findUser(db, name) {
@@ -647,7 +687,8 @@ async function handleSession(req, res) {
        fermerait la création de comptes avant que le propriétaire ait le sien. */
     /* Jamais pour la démo : le serveur refuserait, l'interface ne doit pas
        proposer ce qu'elle n'obtiendra pas. */
-    canRegister: isDemo(user) ? false : (vrais.length === 0 || ALLOW_REGISTER || !!user),
+    canRegister: isDemo(user) ? false : (vrais.length === 0 || ALLOW_REGISTER || isAdmin(user)),
+    isAdmin: isAdmin(user),
     firstRun: vrais.length === 0,
     demo: DEMO_NAME ? { name: DEMO_NAME } : null,
     isDemo: isDemo(user),
@@ -662,8 +703,12 @@ async function handleRegister(req, res) {
        ouvrirait la création de comptes à tout Internet. */
     return sendJson(res, 403, { error: "Le compte de démonstration ne peut pas créer de compte." });
   }
-  if (!(realUsers(db).length === 0 || ALLOW_REGISTER || asUser)) {
-    return sendJson(res, 403, { error: "La création de comptes est fermée sur ce serveur." });
+  /* Ouvrir un compte est une action d'administration : un utilisateur ordinaire
+     ne peut que changer son mot de passe et supprimer son propre compte. */
+  if (!(realUsers(db).length === 0 || ALLOW_REGISTER || isAdmin(asUser))) {
+    return sendJson(res, 403, asUser
+      ? { error: "Seul l'administrateur peut ouvrir un compte." }
+      : { error: "La création de comptes est fermée sur ce serveur." });
   }
 
   let body;
@@ -683,8 +728,14 @@ async function handleRegister(req, res) {
   }
   if (findUser(db, name)) return sendJson(res, 409, { error: "Cet identifiant est déjà pris." });
 
+  /* Le premier vrai compte de l'instance est l'administrateur. */
+  const premier = realUsers(db).length === 0;
   const user = await createUser(db, name, password);
-  if (realUsers(db).length === 1) await adoptLegacyPresets(user);
+  if (premier) {
+    user.admin = true;
+    await writeJsonFile(USERS_FILE, db);
+    await adoptLegacyPresets(user);
+  }
   console.log(`[presetbook] compte créé : ${user.name}`);
 
   // Un compte créé par un utilisateur déjà connecté ne change pas sa session.
@@ -719,6 +770,77 @@ async function handleDemo(req, res) {
   const token = newSession(user.id);
   return sendJson(res, 200, { user: { id: user.id, name: user.name } },
     { "Set-Cookie": sessionCookie(token, req) });
+}
+
+/** La liste des comptes. Réservée à l'administrateur : savoir qui existe sur
+    un serveur n'a pas à être public, ni même partagé entre utilisateurs. */
+async function handleUsers(req, res) {
+  const user = await currentUser(req);
+  if (!isAdmin(user)) return sendJson(res, 403, { error: "Réservé à l'administrateur." });
+  const db = await readUsers();
+  return sendJson(res, 200, {
+    users: db.users.map((u) => ({
+      id: u.id, name: u.name, created: u.created || null,
+      admin: u.admin === true, demo: isDemo(u),
+    })),
+  });
+}
+
+/**
+ * Supprimer un compte : le sien, ou celui d'un autre si l'on est administrateur.
+ *
+ * Le mot de passe de qui demande est exigé dans les deux cas : c'est
+ * irréversible, et les fiches partent avec.
+ */
+async function handleDeleteAccount(req, res) {
+  if (throttled(req)) {
+    return sendJson(res, 429, { error: "Trop de tentatives. Réessaie dans un quart d'heure." });
+  }
+  const user = await currentUser(req);
+  if (!user) return sendJson(res, 401, { error: "Connexion requise." });
+  if (isDemo(user)) {
+    return sendJson(res, 403, { error: "Le compte de démonstration ne se supprime pas." });
+  }
+
+  let body;
+  try { body = await readJsonBody(req); }
+  catch { return sendJson(res, 400, { error: "Requête invalide." }); }
+
+  if (!(await passwordMatches(user, String(body.password || "")))) {
+    noteFailure(req);
+    return sendJson(res, 401, { error: "Mot de passe incorrect." });
+  }
+  fails.delete(clientIp(req));
+
+  const db = await readUsers();
+  const cibleId = body.id ? String(body.id) : user.id;
+  const soi = cibleId === user.id;
+  if (!soi && !isAdmin(user)) {
+    return sendJson(res, 403, { error: "Seul l'administrateur peut supprimer un autre compte." });
+  }
+
+  const cible = db.users.find((u) => u.id === cibleId);
+  if (!cible) return sendJson(res, 404, { error: "Compte introuvable." });
+  if (isDemo(cible)) {
+    return sendJson(res, 403, { error: "Le compte de démonstration ne se supprime pas." });
+  }
+  if (cible.admin === true) {
+    /* Sinon l'instance se retrouverait sans personne pour ouvrir un compte, et
+       la seule issue serait d'éditer users.json à la main. */
+    return sendJson(res, 409, {
+      error: "Le compte administrateur ne se supprime pas depuis l'application.",
+    });
+  }
+
+  db.users = db.users.filter((u) => u.id !== cibleId);
+  await writeJsonFile(USERS_FILE, db);
+  dropSessions(cibleId);
+  try { await fsp.unlink(presetsFile(cible)); } catch { /* pas de fiches : rien à retirer */ }
+  try { await fsp.unlink(presetsFile(cible).replace(/\.json$/, ".bak.json")); } catch { /* idem */ }
+  console.log(`[presetbook] compte supprimé : ${cible.name}` + (soi ? " (par lui-même)" : ` (par ${user.name})`));
+
+  const entetes = soi ? { "Set-Cookie": sessionCookie("", req) } : {};
+  return sendJson(res, 200, { ok: true, deleted: cible.name, self: soi }, entetes);
 }
 
 async function handleLogin(req, res) {
@@ -782,6 +904,8 @@ const server = http.createServer(async (req, res) => {
     if (pathname === "/api/login" && req.method === "POST") return await handleLogin(req, res);
     if (pathname === "/api/demo" && req.method === "POST") return await handleDemo(req, res);
     if (pathname === "/api/password" && req.method === "POST") return await handlePassword(req, res);
+    if (pathname === "/api/users" && req.method === "GET") return await handleUsers(req, res);
+    if (pathname === "/api/account/delete" && req.method === "POST") return await handleDeleteAccount(req, res);
     if (pathname === "/api/logout" && req.method === "POST") return handleLogout(req, res);
 
     if (pathname === "/api/presets") {
@@ -829,6 +953,9 @@ loadSessions()
   .catch((err) => console.error("[presetbook] sessions illisibles", err.message))
   .then(() =>
     server.listen(PORT, HOST, async () => {
+      await ensureAdmin().catch((err) =>
+        console.error("[presetbook] administrateur indéterminé :", err.message)
+      );
       await ensureDemoUser().catch((err) =>
         console.error("[presetbook] compte de démonstration indisponible :", err.message)
       );
@@ -840,7 +967,7 @@ loadSessions()
       console.log(`[presetbook] comptes : ${vrais}` + (vrais ? "" : " — le premier créé sera le tien"));
       console.log(
         `[presetbook] création de comptes : ${
-          vrais === 0 ? "ouverte (aucun compte)" : ALLOW_REGISTER ? "ouverte" : "réservée aux connectés"
+          vrais === 0 ? "ouverte (aucun compte)" : ALLOW_REGISTER ? "ouverte" : "réservée à l'administrateur"
         }`
       );
       if (DEMO_NAME) {
