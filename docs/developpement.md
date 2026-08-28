@@ -7,8 +7,8 @@
 | `public/index.html` | l'application entière : styles, catalogue, registres, interface |
 | `public/rfxchain.js` | lecture et écriture des chaînes d'effets de Reaper |
 | `server.js` | serveur sans dépendance : statique, comptes, API de persistance |
-| `test/` | treize suites, exécutables sans rien installer |
-| `tools/` | deux outils en ligne de commande |
+| `test/` | quatorze suites, exécutables sans rien installer |
+| `tools/` | quatre outils en ligne de commande |
 
 Deux partis pris tiennent tout le reste. **L'application est une page unique et autonome**, ce qui
 lui permet de fonctionner servie par ce serveur, publiée comme page statique, ou ouverte depuis le
@@ -236,7 +236,28 @@ npm run import:rfx -- 90srock.RfxChain          # résumé lisible d'une chaîne
 node tools/rfxchain-import.js chaine.RfxChain --json
 npm run learn:eqtypes -- temoin.RfxChain
 npm run captures                                # refait les images du README
+npm run icones                                  # refait les PNG depuis public/icone.svg
 ```
+
+### L'installation et le hors-ligne
+
+`public/manifest.webmanifest`, `public/sw.js` et `public/icone.svg` suffisent à rendre l'application
+installable. Les PNG sont engendrés depuis le SVG par `npm run icones` : le dessin a une seule source.
+
+Le service worker va **au réseau d'abord**, et ne se sert du cache que si le réseau ne répond pas.
+C'est l'inverse du réflexe habituel, et c'est délibéré : un service worker qui sert le cache en
+premier fait tourner une version périmée après chaque mise à jour, sans que rien ne le signale. Sur
+une page qu'on met à jour souvent, c'est le pire défaut possible — et il est déjà arrivé ici sans
+service worker, ce qui a valu la sonde `/healthz`.
+
+Deux chemins ne sont jamais mis en cache : `/api/` et `/healthz`. Le premier porte l'état du compte,
+le second sert justement à savoir quelle version tourne. Et l'enregistrement passe
+`updateViaCache:"none"`, sans quoi le `max-age=3600` des fichiers `.js` garderait un worker périmé
+une heure avant même de vérifier.
+
+Le service worker ne s'enregistre pas depuis un `file://` ni dans la page publiée. Attention si vous
+le testez : **le volet de navigation intégré à Claude Code refuse les service workers** — la
+vérification demande un vrai navigateur.
 
 ### Les captures du README
 

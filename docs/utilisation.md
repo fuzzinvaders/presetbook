@@ -45,6 +45,26 @@ Juste en dessous, la barre de tri :
 - les **filtres**, par modèle de matériel et par style — voir plus bas ;
 - **Imprimer**, qui met sur papier ce qui est affiché.
 
+## Sur un téléphone, et hors ligne
+
+L'application s'adapte à un écran de poche : les rangées passent à la ligne, les cibles tactiles
+s'agrandissent, les champs passent à 16 px pour qu'iOS ne zoome pas dessus, et le pied de page se
+réduit à la licence et au lien de soutien pour ne pas manger l'écran.
+
+Elle s'**installe** : sur Android, le bouton **Installer** apparaît dans l'en-tête dès que le
+navigateur le propose, et sur iPhone c'est *Partager → Sur l'écran d'accueil*. Elle s'ouvre alors dans
+sa propre fenêtre, sans barre d'adresse, avec son icône.
+
+Une fois installée, elle **s'ouvre sans réseau** — vérifié serveur éteint : le catalogue s'affiche
+entièrement. Mais soyez au clair sur ce que cela veut dire : hors ligne, vous voyez la dernière
+version chargée et vos **modifications ne partent pas au serveur**. Le stockage passe alors en orange
+ou en rouge dans la pastille, et la sauvegarde vous revient.
+
+Le contraire est vrai aussi, et c'est délibéré : **en ligne, l'application ne sert jamais une version
+en cache.** Le service worker va au réseau d'abord et ne se replie sur sa copie que si le réseau ne
+répond pas. Une mise à jour se voit donc au premier rechargement, sans vider quoi que ce soit — c'est
+l'inverse du réflexe habituel, et c'est pour éviter de tourner sur une version périmée sans le savoir.
+
 ## Filtrer
 
 Le bouton **Filtres** ouvre deux listes de pastilles : **Matériel** et **Styles**. Cliquer une

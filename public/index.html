@@ -3,6 +3,19 @@
      Copyright (C) 2026 fuzzinvaders
      SPDX-License-Identifier: AGPL-3.0-or-later
      Logiciel libre et gratuit. Le texte complet est dans le fichier LICENSE. -->
+<meta charset="utf-8">
+<!-- Sans cette ligne, un téléphone rend la page dans une fenêtre virtuelle de
+     980 px puis réduit le tout : lisible à la loupe seulement. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Presetbook : les réglages d'un instrument, d'un ampli, d'une pédale, d'un pédalier et des chaînes de plugins, affichés comme sur le matériel.">
+<meta name="theme-color" content="#E4E4E0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121412" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icone-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Presetbook">
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 
@@ -41,7 +54,13 @@ body{
 }
 /* Aucune marge sous le pied de page : elle le décollerait du bas de l ecran
    des que le bas du conteneur entre dans la vue. */
-.wrap{max-width:1240px; margin:0 auto; padding:clamp(16px,3vw,32px) clamp(14px,3vw,28px) 0}
+.wrap{
+  max-width:1240px; margin:0 auto;
+  padding:clamp(16px,3vw,32px) clamp(14px,3vw,28px) 0;
+  padding-left:max(clamp(14px,3vw,28px), env(safe-area-inset-left));
+  padding-right:max(clamp(14px,3vw,28px), env(safe-area-inset-right));
+}
+body{overflow-wrap:break-word}
 h1,h2,h3{font-family:Archivo,system-ui,sans-serif; margin:0; text-wrap:balance}
 h1{font-size:clamp(26px,4vw,38px); font-weight:700; letter-spacing:-.015em; text-transform:uppercase; line-height:1}
 h2{font-size:15px; font-weight:700; text-transform:uppercase; letter-spacing:.06em}
@@ -124,7 +143,7 @@ button{font-family:inherit; font-size:13.5px; cursor:pointer}
 
 /* ---- toolbar ---- */
 .bar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:18px 0 6px}
-.tabs{display:flex; gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:4px; padding:3px}
+.tabs{display:flex; flex-wrap:wrap; gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:4px; padding:3px}
 .tab{border:0; background:transparent; color:var(--ink-2); padding:6px 12px; border-radius:2px; font-size:13px; font-weight:600}
 .tab[aria-selected="true"]{background:var(--panel); color:var(--ink); box-shadow:var(--shadow)}
 .tab .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3); margin-left:5px}
@@ -189,7 +208,10 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
   text-transform:uppercase; color:var(--ink-3); margin-top:-4px}
 
 /* ---- cards ---- */
-.grid{display:grid; gap:13px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); margin-top:16px}
+/* min() plutôt que 300px seul : sous 300 px de large, la colonne suivrait
+   l'écran au lieu de le déborder. */
+.grid{display:grid; gap:13px; grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr)); margin-top:16px}
+.grid > *{min-width:0}
 .card{
   background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--line-2);
   border-radius:4px; padding:14px 15px 12px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--shadow);
@@ -235,7 +257,7 @@ table.bands th{text-align:left; font-size:9px; letter-spacing:.08em; text-transf
 table.bands td{padding:2px 8px 2px 0; white-space:nowrap}
 table.bands tr.bx td{opacity:.5; text-decoration:line-through}
 .slot .sn{font-size:12px; color:var(--ink-2); font-style:italic; margin-top:5px}
-.card-f{display:flex; gap:6px; margin-top:auto; padding-top:10px; border-top:1px solid var(--line)}
+.card-f{display:flex; flex-wrap:wrap; gap:6px; margin-top:auto; padding-top:10px; border-top:1px solid var(--line)}
 .card-f .btn{padding:4px 10px; font-size:12px}
 .card-f .spacer{margin-left:auto}
 .empty{border:1px dashed var(--line-2); border-radius:5px; padding:34px 20px; text-align:center; color:var(--ink-2); font-size:14px}
@@ -267,7 +289,7 @@ legend{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.11
 .tg{border:1px solid var(--line-2); background:var(--panel); color:var(--ink-3); padding:5px 11px; border-radius:3px;
   font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase}
 .tg[aria-pressed="true"]{background:var(--acc,var(--ink)); border-color:var(--acc,var(--ink)); color:#fff}
-.seg{display:flex; gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:4px; padding:3px; width:fit-content}
+.seg{display:flex; flex-wrap:wrap; gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:4px; padding:3px; width:fit-content; max-width:100%}
 .seg button{border:0; background:transparent; color:var(--ink-2); padding:5px 12px; border-radius:2px; font-size:12.5px; font-weight:600}
 .seg button[aria-selected="true"]{background:var(--panel); color:var(--ink)}
 .slots{display:flex; flex-direction:column; gap:10px}
@@ -332,6 +354,48 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
 #lang{padding:2px 2px 2px 7px; gap:1px; align-items:center}
 #lang .globe{color:var(--ink-3); flex:none; margin-right:4px}
 #lang .tab{padding:5px 7px; font-size:11px; font-family:"IBM Plex Mono",monospace; letter-spacing:.06em}
+
+/* ============================ téléphone ============================
+   Mesuré à 390 px : la rangée d'onglets débordait de 118 px. Le reste tient
+   surtout à rendre de la hauteur — sur un écran de poche, chaque bandeau fixe
+   est pris sur les fiches. */
+@media (max-width:620px){
+  .top{gap:10px 12px; padding-bottom:12px; border-bottom-width:2px}
+  .top h1{font-size:26px}
+  .eyebrow{font-size:10px; letter-spacing:.1em}
+  .acts{gap:6px; width:100%}
+  .acts .btn{padding:7px 10px; font-size:13px}
+  #lang{margin-left:auto}
+  .bar{gap:8px; margin:12px 0 4px}
+  #q{flex:1 1 100%; max-width:none}
+  .tab{padding:5px 8px}
+  .grid{gap:10px; margin-top:12px}
+  .card{padding:12px}
+  .grp{margin-top:18px}
+
+  /* Le pied de page est collant : sur un téléphone, trois lignes prendraient
+     un sixième de l'écran. On garde la licence et le lien, on retire la phrase. */
+  .foot{font-size:11.5px; gap:3px 10px; padding:8px 0}
+  .foot .sep, .foot .gratuit{display:none}
+  .foot.kofi{padding-left:0; padding-bottom:72px}
+
+  .sheet{max-height:94vh}
+  .sheet-h h2{font-size:16px}
+  .row{grid-template-columns:1fr}
+}
+
+/* Les cibles tactiles : 40 px, sinon on vise mal avec un pouce. */
+@media (pointer:coarse){
+  .btn{min-height:40px}
+  .tab, .seg button{min-height:36px}
+  .chip{min-height:34px}
+}
+
+/* Le clavier iOS zoome sur tout champ sous 16 px : on le lui interdit. */
+@media (max-width:620px){
+  input[type="text"], input[type="search"], input[type="number"],
+  input[type="password"], textarea, select, label.fld input{ font-size:16px; }
+}
 
 /* ============================ impression ============================
    Ce qui est à l'écran part sur le papier : les mêmes fiches, dans le même
@@ -402,6 +466,7 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
       <span id="who"></span>
       <button class="btn" id="btn-gear"></button>
       <button class="btn" id="btn-io"></button>
+      <button class="btn" id="btn-install" hidden></button>
       <button class="btn primary" id="btn-new"></button>
       <span class="tabs" id="lang" role="group" aria-label="Langue / Language"></span>
     </div>
@@ -452,6 +517,8 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Installer": "Install",
+  "Presetbook est installé.": "Presetbook is installed.",
   "Filtres": "Filters",
   "Imprimer": "Print",
   "Matériel": "Gear",
@@ -999,6 +1066,7 @@ function renderChrome(){
   setHtml(el("btn-io"), "Sauvegarde");
   setHtml(el("btn-new"), "Nouveau preset");
   setHtml(el("btn-print"), "Imprimer");
+  setHtml(el("btn-install"), "Installer");
   var q = document.getElementById("q");
   q.setAttribute("placeholder", t("Chercher un style, un morceau, un plugin…"));
   q.setAttribute("aria-label", t("Chercher"));
@@ -1009,7 +1077,7 @@ function renderChrome(){
     ' href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">' +
     'logiciel libre sous AGPL-3.0</a></span>' +
     '<span class="sep">·</span>' +
-    '<span>Gratuit, et le restera. Les dons sont bienvenus, jamais demandés.</span>' +
+    '<span class="gratuit">Gratuit, et le restera. Les dons sont bienvenus, jamais demandés.</span>' +
     (KOFI ? '<span class="sep">·</span><a href="https://ko-fi.com/' + esc(KOFI) + '"' +
             ' target="_blank" rel="noopener noreferrer">Me soutenir</a>' : ""));
   var grp = document.getElementById("grp");
@@ -2004,11 +2072,60 @@ document.getElementById("gate").addEventListener("submit", function(e){
 /* ?edit=<id> ouvre directement une fiche : pratique pour envoyer un lien vers un réglage précis. */
 function openFromUrl(){
   try {
-    var id = new URLSearchParams(window.location.search).get("edit");
+    var qp = new URLSearchParams(window.location.search);
+    if (qp.get("new")){ openNewSheet(); return; }     /* raccourci du manifeste */
+    var id = qp.get("edit");
     if (!id) return;
     var p = findPreset(id);
     if (p) openEditor(p, false);
   } catch (e) { /* rien à ouvrir */ }
+}
+
+/* ============================ installation ============================
+   Deux choses distinctes : le service worker, qui rend l'application ouvrable
+   sans réseau, et l'invite d'installation, que le navigateur ne propose qu'à
+   ses conditions. On n'insiste pas : le bouton n'apparaît que si le navigateur
+   a lui-même signalé que c'était possible.                                  */
+var invitation = null;
+
+function installable(){
+  var b = document.getElementById("btn-install");
+  if (b) b.hidden = !invitation;
+}
+
+function setupInstall(){
+  /* Pas de service worker hors d'un vrai serveur : ni depuis un fichier local,
+     ni dans la page publiée, où la politique de sécurité l'interdirait. */
+  if (window.claude) return;
+  try {
+    if (window.location.protocol.indexOf("http") === 0 && navigator.serviceWorker){
+      /* updateViaCache:"none" : le serveur sert les .js avec une heure de cache,
+         et sans cette option le navigateur garderait un service worker périmé
+         aussi longtemps avant même de vérifier s il a changé. */
+      navigator.serviceWorker.register("sw.js", {updateViaCache: "none"}).catch(function(){
+        /* Refusé — l'application marche pareil, elle ne s'ouvrira pas hors ligne. */
+      });
+    }
+  } catch (e) { /* sans objet */ }
+
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();               /* on garde la main sur le moment */
+    invitation = e;
+    installable();
+  });
+  window.addEventListener("appinstalled", function(){
+    invitation = null;
+    installable();
+    toast("Presetbook est installé.");
+  });
+}
+
+function doInstall(){
+  if (!invitation) return;
+  var e = invitation;
+  invitation = null;
+  installable();
+  e.prompt();
 }
 
 /* ============================ soutien ============================
@@ -2045,6 +2162,7 @@ function mountKofi(){
 
 function boot(){
   readUrlFilter();
+  setupInstall();
   applyLang();
   render();                                        /* le catalogue livré s'affiche tout de suite */
   openFromUrl();
@@ -3357,6 +3475,7 @@ document.getElementById("btn-filters").addEventListener("click", function(){
   ui.open = !ui.open;
   renderFilters();
 });
+document.getElementById("btn-install").addEventListener("click", doInstall);
 document.getElementById("btn-print").addEventListener("click", function(){
   try { window.print(); } catch (e) { toast("L'impression n'est pas disponible ici."); }
 });
@@ -3391,7 +3510,9 @@ document.getElementById("list").addEventListener("click", function(e){
   }
 });
 
-document.getElementById("btn-new").addEventListener("click", function(){
+/* Le choix du genre. Extrait du gestionnaire de clic pour que le raccourci
+   « ?new=1 » du manifeste ouvre exactement le même écran. */
+function openNewSheet(){
   var veil = document.getElementById("veil");
   veil.innerHTML =
     tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Choisir un type">' +
@@ -3404,7 +3525,8 @@ document.getElementById("btn-new").addEventListener("click", function(){
         '<button class="btn" data-newkind="reaper">Chaîne Reaper</button>' +
       '</div></div></div>');
   veil.classList.add("open");
-});
+}
+document.getElementById("btn-new").addEventListener("click", openNewSheet);
 document.getElementById("btn-io").addEventListener("click", openIO);
 document.getElementById("btn-gear").addEventListener("click", openGearList);
 document.getElementById("lang").addEventListener("click", function(e){
@@ -3743,6 +3865,8 @@ window.__pb = {
   setSession: function(u, demo){ session.user = u; session.isDemo = !!demo; },
   setDemo: function(d){ session.demo = d; },
   getSession: function(){ return session; },
+  setupInstall: setupInstall, doInstall: doInstall, installable: installable,
+  setInvitation: function(e){ invitation = e; },
   mountKofi: mountKofi, kofiUser: function(){ return KOFI; },
   kofiMounted: function(){ return kofiMounted; }
 };
