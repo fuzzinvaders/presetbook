@@ -2,9 +2,13 @@
 
 *[Version française](README.fr.md) — the documentation in `docs/` is in French for now.*
 
-**A settings notebook for bass players.** The presets of an instrument, an amp, a single pedal, a
-whole pedalboard, and the plugin chains of a recording program — kept in one page you can search,
-duplicate and edit.
+**A settings notebook.** The presets of an instrument, an amp, a single pedal, a whole pedalboard,
+and the plugin chains of a recording program — kept in one page you can search, duplicate and edit.
+
+It was born for bass, and the shipped catalogue shows it: a Yamaha BB734A, a Fender Rumble 40. But
+**nothing in the tool is specific to bass.** A front panel is described — its knobs, its modes, which
+controls leave the circuit — and the interface follows. Guitar, keys, a modular synth, electronic
+drums: if it has knobs, it belongs here.
 
 ![The All Star cover, grouped by song: the bass preset with its clock-hour dials next to the Reaper
 chain, showing TSE BOD parameters and a ReaEQ band table](docs/images/par-morceau.png)

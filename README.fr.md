@@ -2,9 +2,14 @@
 
 *[English version](README.md)*
 
-**Le carnet de réglages du bassiste.** Les presets d'un instrument, d'un ampli, d'une pédale, d'un
-pédalier entier, et les chaînes de plugins d'un logiciel d'enregistrement — rangés dans une seule
-page qu'on peut chercher, dupliquer et modifier.
+**Le carnet de réglages.** Les presets d'un instrument, d'un ampli, d'une pédale, d'un pédalier
+entier, et les chaînes de plugins d'un logiciel d'enregistrement — rangés dans une seule page qu'on
+peut chercher, dupliquer et modifier.
+
+Né pour la basse, et le catalogue livré s'en ressent : une Yamaha BB734A, un Fender Rumble 40. Mais
+**rien dans l'outil n'est propre à la basse.** Une façade se décrit — ses boutons, ses modes, ses
+commandes hors circuit — et l'interface en découle. Guitare, clavier, synthé modulaire, batterie
+électronique : si ça a des boutons, ça se range ici.
 
 ![La reprise d'All Star, regroupée par morceau : la fiche de basse et ses cadrans en heures
 d'horloge, à côté de la chaîne Reaper avec les paramètres du TSE BOD et le tableau des bandes de
