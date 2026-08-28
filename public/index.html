@@ -87,6 +87,11 @@ p{margin:0}
   text-transform:uppercase; color:var(--ink-3); margin:0;
 }
 .chips{display:flex; flex-wrap:wrap; gap:6px}
+.ulist{display:flex; flex-direction:column; gap:4px; width:100%}
+.urow{display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--line)}
+.urow:last-child{border-bottom:0}
+.uname{font-weight:600}
+.urow .spacer{margin-left:auto}
 .chip{
   display:inline-flex; align-items:center; gap:6px;
   border:1px solid var(--line-2); background:var(--panel-2); color:var(--ink-2);
@@ -517,6 +522,31 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Les comptes de ce serveur": "The accounts on this server",
+  "Ce compte": "This account",
+  "Supprimer mon compte": "Delete my account",
+  "Supprimer définitivement": "Delete permanently",
+  "Confirmer la suppression": "Confirm deletion",
+  "Encore un clic, et c'est définitif.": "One more click, and it is permanent.",
+  "Ton mot de passe": "Your password",
+  "administrateur": "administrator",
+  "Chargement…": "Loading…",
+  "Liste indisponible.": "List unavailable.",
+  "Compte supprimé : {0}": "Account deleted: {0}",
+  "Renseigne ton mot de passe actuel, en haut, pour confirmer.":
+    "Fill in your current password, above, to confirm.",
+  "Le compte et <b>toutes ses fiches</b> sont effacés, sans retour possible. Pense à passer par « Sauvegarde » avant, si tu veux en garder une copie.":
+    "The account and <b>all its presets</b> are erased, with no way back. Consider going through “Backup” first if you want to keep a copy.",
+  "Tu es l'administrateur de cette instance : c'est le premier compte créé. Il ne se supprime pas depuis l'application, pour qu'il reste toujours quelqu'un pour ouvrir un compte. Cela se fait depuis la machine.":
+    "You are this instance's administrator: the first account created. It cannot be deleted from the application, so that there is always someone able to open an account. That is done from the machine.",
+  "Seul l'administrateur peut ouvrir un compte.": "Only the administrator can open an account.",
+  "Seul l'administrateur peut supprimer un autre compte.":
+    "Only the administrator can delete another account.",
+  "Le compte administrateur ne se supprime pas depuis l'application.":
+    "The administrator account cannot be deleted from the application.",
+  "Le compte de démonstration ne se supprime pas.": "The demo account cannot be deleted.",
+  "Réservé à l'administrateur.": "Administrator only.",
+  "Mot de passe incorrect.": "Incorrect password.",
   "Mon mot de passe": "My password",
   "Mot de passe actuel": "Current password",
   "Nouveau mot de passe": "New password",
@@ -1877,7 +1907,7 @@ function readUrlFilter(){
 /* ============================ comptes ============================
    Uniquement en déploiement autonome : la page publiée n'a pas de
    serveur, donc aucun écran de connexion n'apparaît là-bas.        */
-var session = {user:null, canRegister:false, firstRun:false, demo:null, isDemo:false};
+var session = {user:null, canRegister:false, firstRun:false, demo:null, isDemo:false, isAdmin:false};
 var gateMode = "login";
 
 function post(url, body){
@@ -1933,6 +1963,7 @@ function openAccount(){
           '<div class="acts"><button class="btn" type="submit">Changer le mot de passe</button></div>' +
         '</form>' +
       '</fieldset>' +
+      (session.isAdmin ?
       '<fieldset><legend>Nouveau compte</legend>' +
       '<p class="hint">Ouvre un compte à quelqu\'un d\'autre sur ce serveur. ' +
       'Ta session ne change pas, et ses fiches seront séparées des tiennes.</p>' +
@@ -1956,10 +1987,118 @@ function openAccount(){
         '</div>' +
       '</form>' +
       '</fieldset>' +
+      '<fieldset><legend>Les comptes de ce serveur</legend>' +
+        '<div id="acc-list"><p class="hint">Chargement…</p></div>' +
+      '</fieldset>' : "") +
+      dangerZone() +
     '</div></div>');
   veil.classList.add("open");
+  if (session.isAdmin) loadUsers();
   var first = veil.querySelector('input[name="name"]');
   if (first) first.focus();
+}
+
+/**
+ * Supprimer son propre compte. Réservé aux comptes ordinaires : l'administrateur
+ * ne peut pas partir par cette porte, sans quoi l'instance se retrouverait sans
+ * personne pour ouvrir un compte.
+ */
+function dangerZone(){
+  if (session.isAdmin){
+    return '<fieldset><legend>Ce compte</legend>' +
+      '<p class="hint">Tu es l\'administrateur de cette instance : c\'est le premier compte créé. ' +
+      'Il ne se supprime pas depuis l\'application, pour qu\'il reste toujours quelqu\'un pour ouvrir ' +
+      'un compte. Cela se fait depuis la machine.</p></fieldset>';
+  }
+  return '<fieldset><legend>Supprimer mon compte</legend>' +
+    '<form id="del-form" autocomplete="off">' +
+      '<p class="hint">Le compte et <b>toutes ses fiches</b> sont effacés, sans retour possible. ' +
+      'Pense à passer par « Sauvegarde » avant, si tu veux en garder une copie.</p>' +
+      '<label class="fld">Ton mot de passe' +
+        '<input type="password" name="password" required autocomplete="current-password"></label>' +
+      '<p class="gate-err" id="del-err"></p>' +
+      '<div class="acts"><button class="btn ghost danger" type="submit" data-del-self>' +
+        'Supprimer définitivement</button></div>' +
+    '</form></fieldset>';
+}
+
+function deleteError(msg){
+  var el = document.getElementById("del-err");
+  if (!el) return;
+  el.textContent = t(msg);
+  el.classList.add("show");
+}
+
+var delArme = false;
+function submitDelete(f){
+  var btn = f.querySelector('button[type="submit"]');
+  if (!delArme){
+    /* Deux clics : la première pression arme, la seconde exécute. */
+    delArme = true;
+    setHtml(btn, "Confirmer la suppression");
+    btn.classList.add("danger");
+    deleteError("Encore un clic, et c'est définitif.");
+    return;
+  }
+  btn.disabled = true;
+  post("api/account/delete", {password: f.elements.password.value}).then(function(){
+    window.location.reload();      /* plus de session : on repart de l'écran d'accueil */
+  }, function(err){
+    btn.disabled = false;
+    delArme = false;
+    setHtml(btn, "Supprimer définitivement");
+    deleteError(err.message);
+  });
+}
+
+/** La liste des comptes, pour l'administrateur seul. */
+function loadUsers(){
+  var host = document.getElementById("acc-list");
+  if (!host) return;
+  fetchJson("api/users").then(function(j){
+    var l = (j && j.users) || [];
+    host.innerHTML = tHtml('<div class="ulist">' + l.map(function(u){
+      return '<div class="urow"><span class="uname">' + esc(u.name) + '</span>' +
+        (u.admin ? '<span class="tag on">administrateur</span>' : "") +
+        (u.demo ? '<span class="tag">démonstration</span>' : "") +
+        '<span class="spacer"></span>' +
+        (u.admin || u.demo ? "" :
+          '<button class="btn small ghost danger" data-udel="' + esc(u.id) +
+          '" data-uname="' + esc(u.name) + '">Supprimer</button>') +
+        '</div>';
+    }).join("") + '</div>');
+  }, function(){
+    setHtml(host, "Liste indisponible.");
+  });
+}
+
+/** L'administrateur supprime un autre compte : mot de passe exigé, deux clics. */
+function adminDelete(btn){
+  var id = btn.getAttribute("data-udel"), nom = btn.getAttribute("data-uname");
+  if (btn.getAttribute("data-armed") !== "1"){
+    btn.setAttribute("data-armed", "1");
+    setHtml(btn, "Confirmer ?");
+    window.setTimeout(function(){
+      if (btn.isConnected){ btn.removeAttribute("data-armed"); setHtml(btn, "Supprimer"); }
+    }, 4000);
+    return;
+  }
+  var mdp = document.querySelector('#pw-form input[name="current"]');
+  var pass = mdp ? mdp.value : "";
+  if (!pass){
+    toast("Renseigne ton mot de passe actuel, en haut, pour confirmer.");
+    return;
+  }
+  btn.disabled = true;
+  post("api/account/delete", {id:id, password:pass}).then(function(){
+    toast(tf("Compte supprimé : {0}", nom));
+    loadUsers();
+  }, function(err){
+    btn.disabled = false;
+    btn.removeAttribute("data-armed");
+    setHtml(btn, "Supprimer");
+    toast(err.message);
+  });
 }
 
 function passwordError(msg){
@@ -3607,6 +3746,9 @@ document.getElementById("veil").addEventListener("click", function(e){
   if (e.target === this){ closeEditor(); return; }
   var t = e.target;
 
+  var udel = t.closest && t.closest("[data-udel]");
+  if (udel){ adminDelete(udel); return; }
+
   if (t.closest("[data-close]")){ closeEditor(); return; }
 
   var gnew = t.closest("[data-gnew]");
@@ -3727,6 +3869,7 @@ document.getElementById("veil").addEventListener("submit", function(e){
   if (!f) return;
   if (f.id === "acc-form"){ e.preventDefault(); submitAccount(f); return; }
   if (f.id === "pw-form"){ e.preventDefault(); submitPassword(f); return; }
+  if (f.id === "del-form"){ e.preventDefault(); submitDelete(f); return; }
 });
 document.getElementById("veil").addEventListener("change", function(e){
   var f = e.target;
@@ -3932,7 +4075,8 @@ window.__pb = {
   renderFilters: renderFilters, filterLabel: filterLabel, activeFilters: activeFilters,
   ui: function(){ return ui; }, printDate: printDate,
   openAccount: openAccount, submitAccount: submitAccount, renderWho: renderWho,
-  submitPassword: submitPassword,
+  submitPassword: submitPassword, submitDelete: submitDelete, dangerZone: dangerZone,
+  setAdmin: function(v){ session.isAdmin = !!v; },
   setSession: function(u, demo){ session.user = u; session.isDemo = !!demo; },
   setDemo: function(d){ session.demo = d; },
   getSession: function(){ return session; },

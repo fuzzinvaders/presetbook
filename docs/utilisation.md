@@ -27,7 +27,8 @@ En haut, à droite du titre :
 
 - une **pastille de stockage** qui dit où vont les enregistrements — voir plus bas ;
 - le **compte connecté** et sa déconnexion, en déploiement autonome ;
-- **Comptes**, pour ouvrir un compte à quelqu'un d'autre — voir plus bas ;
+- **Comptes**, pour changer son mot de passe ou supprimer son compte — et, pour l'administrateur,
+  ouvrir un compte et gérer les autres. Voir plus bas ;
 - **Matériel**, pour gérer les façades ;
 - **Sauvegarde**, pour exporter ou restaurer ;
 - **Nouveau preset** ;
@@ -358,6 +359,30 @@ droite rappelle en permanence qu'on est en démonstration.
 Pour garder son travail, il faut un vrai compte. En attendant, **Exporter** sur une carte et
 **Sauvegarde** fonctionnent normalement : rien n'empêche d'emporter ce qu'on a fait dans la démo.
 
+### Qui a le droit de quoi
+
+Deux rôles, et un seul critère : **l'administrateur est le premier compte créé sur l'instance.**
+
+| | Utilisateur | Administrateur |
+| --- | --- | --- |
+| Ses fiches, son matériel, ses sauvegardes | oui | oui |
+| Changer **son** mot de passe | oui | oui |
+| Supprimer **son** compte | oui | non — voir plus bas |
+| Ouvrir un compte à quelqu'un | non | oui |
+| Voir la liste des comptes | non | oui |
+| Supprimer le compte d'un autre | non | oui |
+
+Personne ne peut changer le mot de passe d'un autre, **pas même l'administrateur** : il peut
+supprimer un compte, pas s'y introduire. Un mot de passe oublié se redonne depuis la machine, ce qui
+laisse une trace dans le journal du serveur.
+
+L'administrateur **ne peut pas supprimer son propre compte** depuis l'application : l'instance se
+retrouverait sans personne pour ouvrir un compte, et la seule issue serait d'éditer `users.json` à la
+main.
+
+Sur une instance qui existait avant cette version, le rôle est attribué au **compte le plus ancien**
+au premier démarrage, et le journal l'annonce.
+
 ### Changer son mot de passe
 
 Le bouton **Comptes** ouvre deux formulaires. Le premier change **votre** mot de passe : l'actuel, le
@@ -365,9 +390,9 @@ nouveau, sa répétition. Vos **autres sessions sont fermées** au passage — c
 changement reste ouverte. C'est le geste à faire dès qu'on vous a transmis un mot de passe par
 message.
 
-Personne ne peut changer le mot de passe de quelqu'un d'autre depuis l'application, même connecté, et
-ce n'est pas un oubli : ce serveur n'a pas d'administrateur, tout utilisateur connecté pouvant ouvrir
-un compte. Ajouter ce droit reviendrait à permettre à n'importe qui de prendre n'importe quel compte.
+Personne ne peut changer le mot de passe de quelqu'un d'autre depuis l'application, **pas même
+l'administrateur**, et ce n'est pas un oubli : il peut supprimer un compte, il ne peut pas s'y
+introduire. Sinon son rôle donnerait accès aux fiches de tout le monde.
 
 Le compte de démonstration fait exception dans l'autre sens : il **garde** son mot de passe, qui est
 public et affiché. Le changer fermerait la porte à tout le monde jusqu'au redémarrage.
@@ -377,7 +402,7 @@ Un mot de passe **oublié** se répare depuis la machine qui héberge, pas depui
 
 ### Ouvrir un compte à quelqu'un
 
-Une fois connecté, le bouton **Comptes** de l'en-tête ouvre un compte à quelqu'un d'autre :
+**Réservé à l'administrateur.** Le bouton **Comptes** de l'en-tête ouvre un compte à quelqu'un d'autre :
 identifiant, mot de passe, et sa répétition. **Votre session ne change pas** — c'est le serveur qui
 le garantit, pas seulement l'écran : un compte créé par un utilisateur connecté ne reçoit pas de
 cookie de session.

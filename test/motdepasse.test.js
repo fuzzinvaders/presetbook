@@ -113,11 +113,98 @@ const NOUVEAU = "un-nouveau-mot-de-passe";
     const inviteIntact = await appel("/api/login", {
       method: "POST", body: { name: "invite", password: "mot-de-passe-invite" } });
     check("le compte visé est intact", inviteIntact.code === 200, String(inviteIntact.code));
+    /* L'appel ci-dessus a bien changé le mot de passe de l'administrateur, et
+       pas celui d'« invite » : c'était le but. On suit donc la valeur en cours. */
+    let mdpAdmin = "detourne-le-compte";
+    check("l'administrateur a bien son nouveau mot de passe",
+      (await appel("/api/login", { method: "POST", body: { name: "remi", password: mdpAdmin } })).code === 200);
+
+    /* --- les droits : qui peut ouvrir un compte, qui peut supprimer --- */
+    const sess = await appel("/api/session", { cookie: ici });
+    check("le premier compte est administrateur", sess.corps.isAdmin === true,
+      JSON.stringify(sess.corps));
+
+    const cookieInvite = (await appel("/api/login", {
+      method: "POST", body: { name: "invite", password: "mot-de-passe-invite" } })).cookie;
+    const sessInvite = await appel("/api/session", { cookie: cookieInvite });
+    check("le second ne l'est pas", sessInvite.corps.isAdmin === false,
+      JSON.stringify(sessInvite.corps));
+    check("et l'interface ne lui proposera pas d'ouvrir un compte",
+      sessInvite.corps.canRegister === false, String(sessInvite.corps.canRegister));
+
+    const tentative = await appel("/api/register", {
+      method: "POST", cookie: cookieInvite, body: { name: "intrus", password: "un-mot-de-passe-long" } });
+    check("un compte ordinaire ne peut pas en ouvrir un", tentative.code === 403, String(tentative.code));
+    check("le refus nomme l'administrateur",
+      /administrateur/.test((tentative.corps || {}).error || ""), JSON.stringify(tentative.corps));
+
+    const listeRefusee = await appel("/api/users", { cookie: cookieInvite });
+    check("il ne voit pas la liste des comptes", listeRefusee.code === 403, String(listeRefusee.code));
+    const liste = await appel("/api/users", { cookie: ici });
+    check("l'administrateur la voit", liste.code === 200 && liste.corps.users.length >= 3,
+      JSON.stringify((liste.corps || {}).users || []).slice(0, 90));
+    check("elle dit qui est administrateur",
+      liste.corps.users.filter((u) => u.admin).length === 1);
+    check("elle ne laisse fuiter aucune empreinte",
+      !JSON.stringify(liste.corps).match(/hash|salt/), "un secret est exposé");
+
+    /* --- supprimer un compte --- */
+    const sansMdp = await appel("/api/account/delete", { method: "POST", cookie: cookieInvite, body: {} });
+    check("supprimer sans mot de passe est refusé", sansMdp.code === 401, String(sansMdp.code));
+
+    const parUnAutre = await appel("/api/account/delete", {
+      method: "POST", cookie: cookieInvite,
+      body: { id: sess.corps.user.id, password: "mot-de-passe-invite" } });
+    check("un ordinaire ne supprime pas le compte d'un autre",
+      parUnAutre.code === 403, String(parUnAutre.code));
+
+    const suicideAdmin = await appel("/api/account/delete", {
+      method: "POST", cookie: ici, body: { password: mdpAdmin } });
+    check("l'administrateur ne peut pas supprimer le sien", suicideAdmin.code === 409,
+      String(suicideAdmin.code));
+    const adminVivant = await appel("/api/session", { cookie: ici });
+    check("il est toujours là", adminVivant.corps.user !== null);
+
+    const demoSuppr = await appel("/api/account/delete", {
+      method: "POST", cookie: demo, body: { password: "demo" } });
+    check("la démonstration ne se supprime pas", demoSuppr.code === 403, String(demoSuppr.code));
+
+    /* le compte ordinaire s'en va lui-même, avec ses fiches */
+    await appel("/api/presets", { method: "PUT", cookie: cookieInvite,
+      body: { v: 1, custom: [{ id: "u-x", kind: "bass", name: "à effacer" }],
+              overrides: {}, gear: {}, hidden: [] } });
+    const parti = await appel("/api/account/delete", {
+      method: "POST", cookie: cookieInvite, body: { password: "mot-de-passe-invite" } });
+    check("un compte ordinaire supprime le sien", parti.code === 200, JSON.stringify(parti.corps));
+    const revenir = await appel("/api/login", {
+      method: "POST", body: { name: "invite", password: "mot-de-passe-invite" } });
+    check("il ne peut plus se connecter", revenir.code === 401, String(revenir.code));
+    const sessionMorte = await appel("/api/session", { cookie: cookieInvite });
+    check("sa session est tombée", sessionMorte.corps.user === null);
+    const restes = fs.existsSync(path.join(dossier, "presets"))
+      ? fs.readdirSync(path.join(dossier, "presets")) : [];
+    check("ses fiches sont effacées du disque",
+      !restes.some((f) => f.indexOf(sessInvite.corps.user.id) === 0), restes.join(", "));
+    const listeApres = await appel("/api/users", { cookie: ici });
+    check("il a disparu de la liste",
+      !listeApres.corps.users.some((u) => u.name === "invite"),
+      listeApres.corps.users.map((u) => u.name).join(", "));
+
+    /* --- l'administrateur peut réouvrir un compte, et le supprimer --- */
+    const rouvert = await appel("/api/register", {
+      method: "POST", cookie: ici, body: { name: "invite2", password: "mot-de-passe-invite2" } });
+    check("l'administrateur ouvre encore des comptes", rouvert.code === 201, String(rouvert.code));
+    const cible = (await appel("/api/users", { cookie: ici })).corps.users
+      .find((u) => u.name === "invite2");
+    const efface = await appel("/api/account/delete", {
+      method: "POST", cookie: ici, body: { id: cible.id, password: mdpAdmin } });
+    check("et il peut en supprimer un", efface.code === 200, JSON.stringify(efface.corps));
+    check("le compte visé est bien celui-là", efface.corps.deleted === "invite2");
 
     /* --- l'outil en ligne de commande --- */
     let sortie = "";
     try {
-      sortie = execFileSync(process.execPath, [path.join(RACINE, "tools", "motdepasse.js"), "invite"],
+      sortie = execFileSync(process.execPath, [path.join(RACINE, "tools", "motdepasse.js"), "remi"],
         { env: { ...process.env, DATA_DIR: dossier }, encoding: "utf8" });
     } catch (e) { sortie = "ÉCHEC : " + e.message; }
     const tire = (sortie.match(/Mot de passe : (\S+)/) || [])[1];
@@ -126,7 +213,7 @@ const NOUVEAU = "un-nouveau-mot-de-passe";
 
     /* Le serveur garde ses sessions en mémoire : le nouveau mot de passe vaut
        tout de suite, la fermeture des sessions attend le redémarrage. */
-    const apresOutil = await appel("/api/login", { method: "POST", body: { name: "invite", password: tire } });
+    const apresOutil = await appel("/api/login", { method: "POST", body: { name: "remi", password: tire } });
     check("le mot de passe tiré par l'outil ouvre bien le compte",
       apresOutil.code === 200, String(apresOutil.code));
 

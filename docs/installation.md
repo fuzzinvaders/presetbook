@@ -108,9 +108,14 @@ fichier compose lui-même qui est suivi par git. Voir `.env.example`.
 ## Comptes et sécurité
 
 La création de comptes est possible dans trois cas : aucun compte n'existe encore, `ALLOW_REGISTER`
-est activé, ou la demande vient d'un utilisateur déjà connecté — ce dernier cas permet d'ouvrir un
-compte à quelqu'un du groupe sans ouvrir le serveur à tout Internet. C'est ce que fait le bouton
-**Comptes** de l'en-tête, et c'est la voie recommandée : laisser `ALLOW_REGISTER` désactivé.
+est activé, ou la demande vient de l'**administrateur** — le premier compte créé sur l'instance.
+C'est ce que fait le bouton **Comptes** de l'en-tête, et c'est la voie recommandée : laisser
+`ALLOW_REGISTER` désactivé.
+
+Un utilisateur ordinaire ne peut que changer son mot de passe et supprimer son propre compte. Le rôle
+d'administrateur est écrit dans `users.json` (`"admin": true`) ; sur une instance antérieure à cette
+version, il est attribué au compte le plus ancien au premier démarrage, et le journal l'annonce. Pour
+le déplacer, arrêter le serveur et modifier ce champ à la main.
 
 Un compte créé par un utilisateur connecté **ne reçoit pas de cookie de session** : la réponse porte
 `switched: false`, donc la session de qui l'a créé n'est pas détournée vers le nouveau compte. La
@@ -138,10 +143,12 @@ supplémentaire pour masquer entièrement l'existence du site.
 ### Un mot de passe oublié
 
 Chacun change le sien depuis l'application, bouton **Comptes**. Mais personne ne peut changer celui
-d'un autre par le web, et c'est délibéré : ce serveur n'a pas d'administrateur, et tout utilisateur
-connecté pouvant ouvrir un compte, ce droit-là permettrait de prendre n'importe quel compte.
+d'un autre par le web, **pas même l'administrateur**, et c'est délibéré : il peut supprimer un
+compte, il ne peut pas s'y introduire. Sans quoi le rôle d'administrateur donnerait accès aux fiches
+de tout le monde.
 
-Le droit vient donc de l'accès à la machine :
+Le droit de redonner un mot de passe vient donc de l'accès à la machine, ce qui laisse une trace dans
+le journal du serveur :
 
 ```bash
 DATA_DIR=/srv/presetbook-data node tools/motdepasse.js <identifiant>

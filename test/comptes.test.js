@@ -28,7 +28,21 @@ const who = w.__nodes.get("who").innerHTML;
 check("le bouton Comptes apparaît une fois connecté", who.indexOf('id="btn-account"') > 0, who);
 check("la déconnexion est toujours là", who.indexOf('id="btn-logout"') > 0);
 
-/* --- la feuille porte deux formulaires : on les examine séparément --- */
+/* --- ce que voit un compte ordinaire --- */
+pb.setAdmin(false);
+pb.openAccount();
+const ordinaire = w.__nodes.get("veil").innerHTML;
+check("un compte ordinaire peut changer son mot de passe",
+  ordinaire.indexOf('id="pw-form"') > 0);
+check("il ne peut pas ouvrir de compte",
+  ordinaire.indexOf('id="acc-form"') < 0, "le formulaire de création est visible");
+check("il ne voit pas la liste des comptes", ordinaire.indexOf('id="acc-list"') < 0);
+check("il peut supprimer le sien", ordinaire.indexOf('id="del-form"') > 0);
+check("prévenu que tout part avec", ordinaire.indexOf("toutes ses fiches") > 0);
+check("et invité à sauvegarder d'abord", ordinaire.indexOf("Sauvegarde") > 0);
+
+/* --- ce que voit l'administrateur --- */
+pb.setAdmin(true);
 pb.openAccount();
 const f = w.__nodes.get("veil").innerHTML;
 
@@ -40,7 +54,11 @@ function form(id) {
 const creation = form("acc-form");
 const motDePasse = form("pw-form");
 
-check("les deux formulaires sont là", creation.length > 0 && motDePasse.length > 0);
+check("l'administrateur a les deux formulaires", creation.length > 0 && motDePasse.length > 0);
+check("il voit la liste des comptes", f.indexOf('id="acc-list"') > 0);
+check("il ne peut pas supprimer son propre compte ici",
+  f.indexOf('id="del-form"') < 0, "le formulaire de suppression lui est proposé");
+check("et on lui dit pourquoi", f.indexOf("premier compte créé") > 0);
 
 ["name", "password", "again"].forEach((champ) => {
   check("création : le champ « " + champ + " » est là", creation.indexOf('name="' + champ + '"') > 0);
