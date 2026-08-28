@@ -100,7 +100,7 @@ button{font-family:inherit; font-size:13.5px; cursor:pointer}
 .tab{border:0; background:transparent; color:var(--ink-2); padding:6px 12px; border-radius:2px; font-size:13px; font-weight:600}
 .tab[aria-selected="true"]{background:var(--panel); color:var(--ink); box-shadow:var(--shadow)}
 .tab .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3); margin-left:5px}
-input[type="text"],input[type="search"],input[type="number"],textarea,select{
+input[type="text"],input[type="search"],input[type="number"],input[type="password"],textarea,select{
   font-family:inherit; font-size:14px; color:var(--ink); background:var(--panel);
   border:1px solid var(--line-2); border-radius:3px; padding:7px 10px;
 }
@@ -1715,12 +1715,6 @@ function showGate(){
       (session.firstRun ?
         '<p class="gate-note">Aucun compte sur ce serveur : le premier créé sera le tien, ' +
         'et les presets déjà enregistrés lui seront rattachés.</p>' : "") +
-      (session.demo ?
-        '<div class="gate-demo">' +
-          '<button class="btn" type="button" id="gate-demo">Essayer la démonstration</button>' +
-          '<p class="gate-note">Un compte ouvert à tous, pour regarder sans s\'inscrire. ' +
-          'Ses fiches repartent de zéro à chaque redémarrage du serveur.</p>' +
-        '</div>' : "") +
       '<form id="gate-form" autocomplete="on">' +
         '<label class="fld">Identifiant' +
           '<input type="text" name="name" required autocomplete="username" autocapitalize="none" spellcheck="false">' +
@@ -1735,6 +1729,13 @@ function showGate(){
         '<p class="gate-err" id="gate-err" role="alert"></p>' +
         '<button class="btn primary" type="submit">' + (creating ? "Créer le compte" : "Se connecter") + '</button>' +
       '</form>' +
+      /* Sous le formulaire : on se connecte d'abord, on regarde ensuite. */
+      (session.demo ?
+        '<div class="gate-demo">' +
+          '<button class="btn" type="button" id="gate-demo">Essayer la démonstration</button>' +
+          '<p class="gate-note">Un compte ouvert à tous, pour regarder sans s\'inscrire. ' +
+          'Ses fiches repartent de zéro à chaque redémarrage du serveur.</p>' +
+        '</div>' : "") +
     '</div>');
   g.classList.add("open");
   g.setAttribute("aria-hidden", "false");

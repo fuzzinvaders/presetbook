@@ -235,7 +235,23 @@ suffit de le lancer pour savoir ce qui manque au dictionnaire.
 npm run import:rfx -- 90srock.RfxChain          # résumé lisible d'une chaîne
 node tools/rfxchain-import.js chaine.RfxChain --json
 npm run learn:eqtypes -- temoin.RfxChain
+npm run captures                                # refait les images du README
 ```
+
+### Les captures du README
+
+`tools/captures.js` rend l'application dans un navigateur sans interface et écrit les PNG de
+`docs/images/`. Les vues sont atteintes par les **paramètres d'URL que l'application comprend déjà**
+(`?kind=`, `?group=`, `?q=`, `?edit=`, `?lang=`) : c'est ce qui les rend reproductibles sans piloter
+de souris, et c'est la raison de ne pas y ajouter une vue qui demanderait un clic.
+
+Il cherche Edge puis Chrome aux emplacements habituels ; `NAVIGATEUR=/chemin/vers/chromium` passe
+devant. Les captures sont prises depuis `file://`, donc sans serveur — seule `connexion.png` en
+demande un, et l'outil rappelle la marche à suivre au lieu de la laisser deviner.
+
+Après une modification visible de l'interface, relancer l'outil et regarder les images changées :
+c'est aussi une relecture du rendu. Le poids total tient sous le mégaoctet, à surveiller si des vues
+s'ajoutent.
 
 ## Tests
 
