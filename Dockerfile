@@ -1,7 +1,7 @@
 FROM node:22-alpine
 
 LABEL org.opencontainers.image.title="Presetbook" \
-      org.opencontainers.image.description="Presets de basse, d'ampli, de pédales et chaînes de plugins" \
+      org.opencontainers.image.description="Presets d'instruments, d'amplis, de pédales et chaînes de plugins" \
       org.opencontainers.image.source="https://github.com/fuzzinvaders/presetbook" \
       org.opencontainers.image.url="https://github.com/fuzzinvaders/presetbook" \
       org.opencontainers.image.licenses="AGPL-3.0-or-later"

@@ -1,8 +1,12 @@
 # Utiliser Presetbook
 
 Presetbook range des réglages : ceux d'un instrument, d'un ampli, d'une pédale d'effet, d'un
-pédalier entier, et les chaînes de plugins d'un logiciel d'enregistrement. Une fiche décrit un réglage complet, et s'affiche telle qu'on la
-lirait sur le matériel — pas sur une échelle abstraite.
+pédalier entier, et les chaînes de plugins d'un logiciel d'enregistrement. Une fiche décrit un
+réglage complet, et s'affiche telle qu'on la lirait sur le matériel — pas sur une échelle abstraite.
+
+Le catalogue livré est celui d'un bassiste, mais l'outil ne l'est pas : une façade se **décrit**,
+elle n'est pas codée. Guitare, clavier, synthé, boîte à rythmes — tout matériel à boutons se range
+ici, et la section [Le matériel](#le-matériel) explique comment le déclarer.
 
 ## Les cinq sortes de fiches
 

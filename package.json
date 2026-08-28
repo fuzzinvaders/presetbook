@@ -2,7 +2,7 @@
   "name": "presetbook",
   "version": "1.0.0",
   "private": true,
-  "description": "Presets de basse, d'ampli, de pédales et chaînes de plugins, rangés et modifiables",
+  "description": "Presets d'instruments, d'amplis, de pédales et chaînes de plugins, rangés et modifiables",
   "license": "AGPL-3.0-or-later",
   "repository": { "type": "git", "url": "git+https://github.com/fuzzinvaders/presetbook.git" },
   "homepage": "https://github.com/fuzzinvaders/presetbook",
