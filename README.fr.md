@@ -2,24 +2,82 @@
 
 *[English version](README.md)*
 
-Le carnet de réglages : les presets d'un instrument, d'un ampli, d'une pédale, d'un pédalier entier,
-et les chaînes de plugins
-d'un logiciel d'enregistrement, rangés dans une seule page qu'on peut chercher, dupliquer et
-modifier.
+**Le carnet de réglages du bassiste.** Les presets d'un instrument, d'un ampli, d'une pédale, d'un
+pédalier entier, et les chaînes de plugins d'un logiciel d'enregistrement — rangés dans une seule
+page qu'on peut chercher, dupliquer et modifier.
 
-Une fiche s'affiche telle qu'on la lirait sur le matériel : en heures d'horloge pour un bouton cranté
-au milieu, sur son échelle pour un bouton gradué, avec les vrais noms de paramètres des plugins.
-Rien n'est câblé en dur pour un modèle précis — les façades et les plugins sont décrits dans des
-registres, et l'interface en découle.
+![La reprise d'All Star, regroupée par morceau : la fiche de basse et ses cadrans en heures
+d'horloge, à côté de la chaîne Reaper avec les paramètres du TSE BOD et le tableau des bandes de
+ReaEQ](docs/images/par-morceau.png)
 
-En français ou en anglais, au choix : le bouton `FR` / `EN` traduit l'interface **et** le catalogue,
-en laissant les noms propres tranquilles.
+Une fiche s'affiche telle qu'on la lirait **sur le matériel** : en heures d'horloge pour un bouton
+cranté au milieu, sur son échelle pour un bouton gradué, avec les vrais noms de paramètres des
+plugins. Regroupez par morceau, et une reprise rassemble sa basse, son ampli et sa chaîne côte à côte.
 
 ## Essayer
 
 Un compte de démonstration est ouvert sur l'instance publique : le bouton **Essayer la
-démonstration** sur l'écran de connexion, ou les identifiants `demo` / `demo`. Ses fiches repartent
-de zéro à chaque redémarrage du serveur — inutile d'y prendre des précautions.
+démonstration**, ou les identifiants `demo` / `demo`. Ses fiches repartent de zéro à chaque
+redémarrage du serveur — inutile d'y prendre des précautions.
+
+![L'écran de connexion : identifiant et mot de passe, puis sous un séparateur un bouton Essayer la
+démonstration, avec la mention que le compte est ouvert à tous et remis à zéro au
+redémarrage](docs/images/connexion.png)
+
+## Lire une fiche comme on lit le matériel
+
+Rien n'est câblé en dur pour un modèle précis. Les façades sont décrites dans un registre déclaratif
+— types de boutons, modes, commandes qui sortent du circuit — et l'interface en découle.
+
+![Six fiches de basse pour une Yamaha BB734A : chaque carte montre la balance des micros, puis Bass,
+Middle et Treble en cadrans marquant 14 h, 11 h, 14 h, avec une note sur la main droite et les
+cordes](docs/images/basse.png)
+
+Midi est le cran neutre ; `14 h 30` est une position réelle, pas un arrondi. Une commande hors
+circuit dans le mode courant est grisée avec un `—` plutôt que masquée, pour qu'on sache qu'elle
+existe. Et une valeur qui n'a pas de nombre — un seuil de compresseur qu'on descend à l'oreille — dit
+**à régler** au lieu d'inventer un chiffre.
+
+## Pédales et pédaliers
+
+Un pédalier est une suite de pédales dans l'ordre du signal, chacune avec ses réglages et une case
+« en circuit ». Chaque pédale est dessinée d'après ses commandes déclarées : couleur, format de
+boîtier, nombre et placement des boutons. Créez la vôtre, elle est dessinée aussi — sans une ligne de
+code.
+
+![Un pédalier de scène : cinq pédales dessinées dans l'ordre du signal, reliées par des flèches de
+câble — accordeur, compresseur, préampli/DI, overdrive, égaliseur graphique — les coupées grisées,
+témoin éteint](docs/images/pedalier.png)
+
+Les familles livrées portent le **jeu de commandes conventionnel de leur famille** — un overdrive a
+Gain, Tone et Level ; un flanger a Manual, Depth, Rate et Res — jamais l'habillage d'un modèle
+commercial précis.
+
+## Les chaînes de Reaper, lues et réécrites
+
+Les fichiers `.RfxChain` s'importent et s'exportent. Cinq plugins ont leur format binaire établi et
+sont entièrement modifiables ; tous les autres sont conservés **à l'octet près**.
+
+![L'éditeur de chaîne d'All Star : le TSE BOD avec ses huit vrais paramètres, puis ReaEQ avec une
+ligne par bande — type, fréquence, gain, largeur](docs/images/chaine.png)
+
+Deux garde-fous. Un effet dont les valeurs n'ont pas changé est réécrit **à l'identique** : aucun
+arrondi d'affichage ne se glisse dans un réglage qu'on n'a pas touché. Et l'export **refuse en
+nommant l'obstacle** plutôt que d'inventer un état qui ferait planter Reaper — sur ReaEQ, trois types
+de bande seulement ont leur équivalent établi dans le fichier, les autres se choisissent dans Reaper.
+
+## Deux langues
+
+Le bouton `FR` / `EN` traduit l'interface **et** le catalogue : noms de fiches, notes, libellés de
+commandes, familles de pédales. Les noms propres sont laissés tranquilles — une Yamaha BB734A reste
+une Yamaha BB734A.
+
+![Les mêmes fiches d'ampli en anglais : onglets All / Bass / Amp / Pedal / Pedalboard / Reaper, notes
+traduites par « Mids held up to sit between two distorted guitars »](docs/images/anglais.png)
+
+Le séparateur décimal et l'écriture des heures suivent aussi la langue (`6,5` contre `6.5`,
+`12 h 30` contre `12:30`). La recherche, elle, accepte les deux langues quelle que soit celle
+affichée.
 
 ## Démarrer
 
@@ -36,6 +94,10 @@ git clone https://github.com/fuzzinvaders/presetbook.git && cd presetbook && npm
 
 Puis <http://localhost:8080>. À la première ouverture, aucun compte n'existe : le premier créé est le
 vôtre.
+
+Les mots de passe ne sont jamais enregistrés, seulement une dérivation scrypt avec un sel par compte ;
+les jetons de session non plus, seulement leur empreinte SHA-256. La page fonctionne aussi sans
+serveur du tout — publiée en statique, ou ouverte depuis le disque.
 
 ## Documentation
 

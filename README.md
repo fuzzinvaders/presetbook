@@ -2,22 +2,75 @@
 
 *[Version française](README.fr.md) — the documentation in `docs/` is in French for now.*
 
-A settings notebook: the presets of an instrument, an amp, a single pedal, a whole pedalboard, and
-the plugin chains of a recording program, kept in one page you can search, duplicate and edit.
+**A settings notebook for bass players.** The presets of an instrument, an amp, a single pedal, a
+whole pedalboard, and the plugin chains of a recording program — kept in one page you can search,
+duplicate and edit.
 
-A preset is shown the way you would read it **on the gear itself** — in clock hours for a knob
-that's centre-detented, on its own scale for a graduated one, with the real parameter names of the
-plugins. Nothing is hard-wired for a particular model: front panels and plugins are described in
-declarative registries, and the interface follows. So you can add your own gear — down to drawing a
-pedal, its colour and the placement of its knobs — without touching the code.
+![The All Star cover, grouped by song: the bass preset with its clock-hour dials next to the Reaper
+chain, showing TSE BOD parameters and a ReaEQ band table](docs/images/par-morceau.png)
 
-Available in French and English: the `FR` / `EN` button switches the interface **and** the
-catalogue, leaving proper names alone.
+A preset is shown the way you would read it **on the gear itself**: in clock hours for a knob that's
+centre-detented, on its own scale for a graduated one, with the real parameter names of the plugins.
+Group by song and one cover gathers its bass, its amp and its chain side by side.
 
 ## Try it
 
-A demo account is open on the public instance — click **Try the demo** on the sign-in screen, or use
-`demo` / `demo`. Its presets are wiped every time the server restarts, so feel free to break things.
+A demo account is open on the public instance: click **Try the demo**, or use `demo` / `demo`. Its
+presets are wiped every time the server restarts, so feel free to break things.
+
+![The sign-in screen: username and password fields, and below a separator, a Try the demo button
+explaining that the account is open to everyone and reset on restart](docs/images/connexion.png)
+
+## Read a preset like you read the gear
+
+Nothing is hard-wired for a particular model. Front panels are described in a declarative registry —
+knob types, modes, which controls leave the circuit — and the interface follows.
+
+![Six bass presets for a Yamaha BB734A: each card shows the pickup blend, then Bass, Middle and
+Treble as clock dials reading 14 h, 11 h, 14 h, with a note on right-hand technique and
+strings](docs/images/basse.png)
+
+A dial at `12 h` is the neutral detent; `14 h 30` is a real position, not a rounding. A control that
+is out of circuit in the current mode is greyed with a `—` rather than hidden, so you know it exists.
+Values that have no number — a compressor threshold you set by ear — say **à régler**, "set it by
+ear", instead of inventing a figure.
+
+## Pedals and pedalboards
+
+A pedalboard is a chain of pedals in signal order, each with its own settings and an in-circuit
+switch. Every pedal is drawn from its declared controls: colour, enclosure format, knob count and
+placement. Create your own and it is drawn too — no code involved.
+
+![A stage pedalboard: five pedals drawn in signal order, linked by cable arrows — tuner, compressor,
+preamp/DI, overdrive, graphic EQ — the bypassed ones greyed out with their LED dark](docs/images/pedalier.png)
+
+The families shipped carry the **conventional control set of their family** — an overdrive has Gain,
+Tone and Level; a flanger has Manual, Depth, Rate and Res — never the trade dress of a commercial
+model.
+
+## Reaper chains, read and written
+
+`.RfxChain` files import and export. Five plugins have their binary format established and are fully
+editable; every other plugin is preserved **byte for byte**.
+
+![The chain editor for All Star: TSE BOD with its eight real parameters, then ReaEQ with one row per
+band — type, frequency, gain, bandwidth](docs/images/chaine.png)
+
+Two safeguards. An effect whose values you did not change is rewritten **identically**, so no display
+rounding creeps into a setting you never touched. And the export **refuses and names the obstacle**
+rather than inventing a state that would crash Reaper — on ReaEQ, only three band types have an
+established equivalent in the file format, and the others are chosen in Reaper.
+
+## Two languages
+
+The `FR` / `EN` button switches the interface **and** the catalogue: preset names, notes, control
+labels and pedal families. Proper names are left alone — a Yamaha BB734A stays a Yamaha BB734A.
+
+![The same amp presets in English: All / Bass / Amp / Pedal / Pedalboard / Reaper tabs, notes reading
+"Mids held up to sit between two distorted guitars"](docs/images/anglais.png)
+
+The decimal separator and the way EQ hours are written follow the language too (`6,5` against `6.5`,
+`12 h 30` against `12:30`). Search accepts both languages whichever one is displayed.
 
 ## Run it
 
@@ -25,8 +78,8 @@ A demo account is open on the public instance — click **Try the demo** on the 
 docker run -d -p 8080:8080 -v presetbook-data:/data ghcr.io/fuzzinvaders/presetbook:latest
 ```
 
-The public image is rebuilt on every commit, for **amd64 and arm64** — it runs on a Raspberry Pi
-too. Without Docker, the server has no dependencies at all:
+The public image is rebuilt on every commit, for **amd64 and arm64** — it runs on a Raspberry Pi too.
+Without Docker, the server has no dependencies at all:
 
 ```bash
 git clone https://github.com/fuzzinvaders/presetbook.git && cd presetbook && npm start
@@ -34,18 +87,9 @@ git clone https://github.com/fuzzinvaders/presetbook.git && cd presetbook && npm
 
 Then <http://localhost:8080>. On first open no account exists: the first one created is yours.
 
-## What is in it
-
-- **Five kinds of preset** — instrument, amp, pedal, pedalboard, plugin chain — each attachable to a
-  song, so the bass, the amp and the chain of one cover gather together.
-- **Reaper chains, read and written.** `.RfxChain` files import and export. Five plugins have their
-  binary format established and are fully editable; every other plugin is preserved **byte for
-  byte**. An effect whose values you did not change is rewritten identically, and the export
-  **refuses and names the obstacle** rather than inventing a state that would crash Reaper.
-- **Your own gear.** Front panels, pedals and pedalboards are yours to create, with knob types that
-  match real controls: clock dials, bounded scales, pickup blends, switches, EQ faders.
-- **No dependencies.** One HTML page and one Node file. It also works with no server at all —
-  published as a static page, or opened from disk.
+Passwords are never stored, only an scrypt derivation with a per-account salt; session tokens are not
+stored either, only their SHA-256 fingerprint. The page also works with no server at all — published
+as a static page, or opened straight from disk.
 
 ## Documentation
 
@@ -76,9 +120,6 @@ Copyright © 2026 fuzzinvaders.
 and redistribute it. The AGPL adds a single obligation to the GPL, and it is the one that matters for
 a web application: **if you host a modified version for other people, you must offer them your source
 code.** Private use requires nothing.
-
-That is the right fit for a self-hostable tool: it keeps improvements shareable even when the
-application is served rather than distributed.
 
 Donations are **welcome, never asked for** — nothing is limited, nothing expires, no feature waits
 for a payment: <https://ko-fi.com/talva>.
