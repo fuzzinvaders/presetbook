@@ -266,14 +266,18 @@ function isAdmin(user) {
   return !!user && user.admin === true;
 }
 
-/** Le plus ancien des vrais comptes. Le tableau est en ordre de création, mais
-    on s'appuie d'abord sur la date, qui ne dépend pas de l'ordre du fichier. */
+/**
+ * Le premier des vrais comptes.
+ *
+ * L'ordre du tableau fait foi : les comptes y sont ajoutés à leur création,
+ * donc il porte exactement l'information cherchée. Trier sur la date paraissait
+ * plus robuste, mais un compte sans champ « created » passait alors devant tous
+ * les autres — une chaîne vide précède n'importe quelle date. C'est le genre de
+ * détail qui donne le rôle au mauvais compte sans rien signaler.
+ */
 function premierCompte(db) {
   const vrais = realUsers(db);
-  if (!vrais.length) return null;
-  return vrais.slice().sort((a, b) =>
-    String(a.created || "").localeCompare(String(b.created || "")) ||
-    db.users.indexOf(a) - db.users.indexOf(b))[0];
+  return vrais.length ? vrais[0] : null;
 }
 
 /**
