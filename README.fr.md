@@ -8,8 +8,10 @@ peut chercher, dupliquer et modifier.
 
 Né pour la basse, et le catalogue livré s'en ressent : une Yamaha BB734A, un Fender Rumble 40. Mais
 **rien dans l'outil n'est propre à la basse.** Une façade se décrit — ses boutons, ses modes, ses
-commandes hors circuit — et l'interface en découle. Guitare, clavier, synthé modulaire, batterie
-électronique : si ça a des boutons, ça se range ici.
+commandes hors circuit — et l'interface en découle. La preuve est dans le catalogue : le combo
+guitare **Laney Lionheart L20T-112** y est entré sans une ligne de code, avec ses deux canaux, son
+Tone global, et jusqu'à ses boutons blancs à repère bleu sur panneau inox. Clavier, synthé, boîte à
+rythmes : si ça a des boutons, ça se range ici.
 
 ![La reprise d'All Star, regroupée par morceau : la fiche de basse et ses cadrans en heures
 d'horloge, à côté de la chaîne Reaper avec les paramètres du TSE BOD et le tableau des bandes de

@@ -124,6 +124,9 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
 .knob.off{opacity:.45; --ptr:#9C9188}
 .knob.amp{--face:#F2EDDB; --ptr:#17150F; --edge:rgba(0,0,0,.55)}
 .knob.amp.dr{--ptr:#7C1F14}
+/* Boutons blancs à repère bleu, la signature visuelle du Lionheart. */
+.knob.laney{--face:#F8F8F5; --ptr:#1B49B4; --edge:rgba(0,0,0,.42)}
+.knob.laney.dr{--ptr:#A8321F}
 .knob.lg{width:52px; height:52px}
 .knob.lg i::before{top:6px; height:18px; width:3.5px; margin-left:-1.75px}
 
@@ -139,6 +142,11 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
 .strip.amp .dl{color:#8E948C}
 .strip.amp .dv{color:var(--sunk-ink)}
 .strip.plain{background:var(--panel-2); border:1px solid var(--line)}
+/* Lionheart : panneau en inox brossé, rendu en aplat comme le reste. La couleur
+   ne suit pas le thème — c'est celle de la façade, pas celle de la page. */
+.strip.laney{background:#C4C9CB; border:1px solid #9BA1A4}
+.strip.laney .dl{color:#4B5154}
+.strip.laney .dv{color:#14181A}
 .fdr{position:relative; width:14px; height:38px; border-radius:3px; background:var(--line);
   box-shadow:inset 0 0 0 1px var(--line-2); flex:none}
 .fdr i{position:absolute; left:-2px; right:-2px; height:5px; border-radius:2px; background:var(--ink);
@@ -361,6 +369,31 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  /* étiquettes de style : la recherche les traverse dans les deux sens */
+  "répétition": "rehearsal",
+  "polyvalent": "all-rounder",
+  "casque": "headphones",
+  "néo-soul": "neo-soul",
+  /* Laney Lionheart */
+  "Bouton blanc, repère bleu, panneau inox": "White knob, blue marker, stainless panel",
+  "Volume clean": "Clean volume",
+  "Volume drive": "Drive volume",
+  "Deux canaux à lampes qui partagent l'égaliseur, plus un Tone global et la réverbe. Le canal saturé se prend au pied. La façade imprime « VOLUME » deux fois, sous CLEAN et sous DRIVE : ils sont distingués ici pour rester lisibles. Échelle 0–10.": "Two valve channels sharing the EQ, plus a global Tone and the reverb. The drive channel is footswitchable. The panel prints “VOLUME” twice, under CLEAN and under DRIVE: they are told apart here to stay readable. Scale 0–10.",
+  "Clair British": "British clean",
+  "Le Bright fait le tintement, le Tone finit de dégager l'aigu. Monter le volume jusqu'au bord de la saturation : c'est là que la classe A respire.": "Bright makes the chime, Tone finishes clearing the top end. Push the volume to the edge of breakup: that is where class A breathes.",
+  "Bord de saturation": "Edge of breakup",
+  "Canal clair poussé, pas le canal Drive : la saturation vient des lampes de puissance et suit le potard de la guitare. C'est le réglage à essayer avant tout autre.": "The clean channel pushed, not the Drive channel: the grit comes from the output valves and follows the guitar's volume pot. This is the setting to try before any other.",
+  "Blues crémeux": "Creamy blues",
+  "Drive à peine engagé, médiums en avant : le grain se fait à l'attaque, pas au gain.": "Drive barely engaged, mids forward: the grain comes from the attack, not from the gain.",
+  "Crunch rythmique": "Rhythm crunch",
+  "De quoi tenir une rythmique sans noyer l'accord. Le Tone au-dessus de midi rend l'attaque audible dans un mix.": "Enough to hold a rhythm part without drowning the chord. Tone above noon keeps the attack audible in a mix.",
+  "Le terrain d'origine de cet ampli : le grain britannique, médiums tenus, aigu contenu par le Tone pour éviter la lame de rasoir.": "This amp's home ground: British grit, mids held up, top end reined in by Tone to avoid the razor blade.",
+  "Lead chantant": "Singing lead",
+  "Les médiums font le sustain, pas le gain. Au-delà de 8, l'ampli compresse et l'attaque disparaît — mieux vaut une pédale devant que de tout demander au préampli.": "The mids make the sustain, not the gain. Past 8 the amp compresses and the attack disappears — better a pedal in front than asking everything of the preamp.",
+  "Jazz / chaud": "Jazz / warm",
+  "Bright coupé, Tone sous midi : l'aigu qu'on retire ici est celui qui claque sur les rondes.": "Bright off, Tone below noon: the top end removed here is the one that clacks on roundwounds.",
+  "Appartement": "Flat-friendly",
+  "Vingt watts à lampes ne se règlent pas à 2 sans perdre le grave : les médiums compensent ce que le volume ne donne pas. Ne gardez pas ce réglage pour la salle.": "Twenty valve watts cannot sit at 2 without losing the low end: the mids make up for what the volume will not give. Do not keep this setting for the venue.",
   "Essayer la démonstration": "Try the demo",
   "Un compte ouvert à tous, pour regarder sans s'inscrire. Ses fiches repartent de zéro à chaque redémarrage du serveur.":
     "An account open to everyone, to look around without signing up. Its presets are wiped every time the server restarts.",
@@ -1069,6 +1102,11 @@ function amp(id,name,tags,gain,btn,od,eq,aim){
           bright:btn.indexOf("bright")>=0, contour:btn.indexOf("contour")>=0, vintage:btn.indexOf("vintage")>=0,
           od:od, eq:eq, notes:aim, song:null};
 }
+/** Une fiche pour le Lionheart : deux canaux, égaliseur partagé, Tone global. */
+function laney(id,name,tags,bright,vol,dr,eq,rev,tone,aim){
+  return {id:id, kind:"amp", gear:"lionheart20", name:name, tags:tags,
+          bright:bright, vol:vol, dr:dr, eq:eq, rev:rev, tone:tone, notes:aim, song:null};
+}
 function chain(id,name,tags,tempo,tuning,rows,aim){
   return {id:id, kind:"reaper", name:name, tags:tags, tempo:tempo, tuning:tuning,
           chain:rows, notes:aim, song:null};
@@ -1191,6 +1229,38 @@ var SEED = [
     "Coupez le Contour dès que le batteur arrive."),
   amp("a-casque","Casque / travail",["casque"],5,[],{on:false,drive:3,level:5},{b:5,lm:5,hm:5,tr:5},
     "Ne gardez jamais un réglage trouvé au casque pour jouer en salle."),
+
+  /* ---- Laney Lionheart : guitare, deux canaux à lampes ---- */
+  laney("l-clair","Clair British",["clean","pop"],true,5,{on:false,gain:4,vol:5},
+    {b:5,m:5.5,tr:6.5},3,6,
+    "Le Bright fait le tintement, le Tone finit de dégager l'aigu. Monter le volume jusqu'au " +
+    "bord de la saturation : c'est là que la classe A respire."),
+  laney("l-bord","Bord de saturation",["blues","rock"],true,6.5,{on:false,gain:4,vol:5},
+    {b:5.5,m:6,tr:6},3.5,5.5,
+    "Canal clair poussé, pas le canal Drive : la saturation vient des lampes de puissance et " +
+    "suit le potard de la guitare. C'est le réglage à essayer avant tout autre."),
+  laney("l-blues","Blues crémeux",["blues"],false,5,{on:true,gain:3.5,vol:5},
+    {b:5.5,m:6.5,tr:5.5},4,5,
+    "Drive à peine engagé, médiums en avant : le grain se fait à l'attaque, pas au gain."),
+  laney("l-crunch","Crunch rythmique",["rock"],true,5,{on:true,gain:5,vol:5.5},
+    {b:5,m:6,tr:6},2,6,
+    "De quoi tenir une rythmique sans noyer l'accord. Le Tone au-dessus de midi rend l'attaque " +
+    "audible dans un mix."),
+  laney("l-rock","Classic rock",["rock","hard rock"],false,5,{on:true,gain:6.5,vol:5.5},
+    {b:5.5,m:6.5,tr:5.5},2,5.5,
+    "Le terrain d'origine de cet ampli : le grain britannique, médiums tenus, aigu contenu par " +
+    "le Tone pour éviter la lame de rasoir."),
+  laney("l-lead","Lead chantant",["rock","solo"],false,5,{on:true,gain:8,vol:6},
+    {b:5,m:7,tr:5.5},3.5,5.5,
+    "Les médiums font le sustain, pas le gain. Au-delà de 8, l'ampli compresse et l'attaque " +
+    "disparaît — mieux vaut une pédale devant que de tout demander au préampli."),
+  laney("l-jazz","Jazz / chaud",["jazz"],false,4.5,{on:false,gain:4,vol:5},
+    {b:6,m:6,tr:4},2,4,
+    "Bright coupé, Tone sous midi : l'aigu qu'on retire ici est celui qui claque sur les rondes."),
+  laney("l-appart","Appartement",["répétition"],false,2,{on:false,gain:4,vol:5},
+    {b:4.5,m:6,tr:5.5},2.5,4.5,
+    "Vingt watts à lampes ne se règlent pas à 2 sans perdre le grave : les médiums compensent " +
+    "ce que le volume ne donne pas. Ne gardez pas ce réglage pour la salle."),
 
   /* ---- pédales ---- */
   pedal("p-od-doux","pd-od","Overdrive discret",["rock","pop"],
@@ -1334,6 +1404,24 @@ var GEAR = {
       {k:"eq.lm", t:"scale", l:"Low-Mid", min:1, max:10, step:0.5, d:5.5},
       {k:"eq.hm", t:"scale", l:"High-Mid", min:1, max:10, step:0.5, d:5.5},
       {k:"eq.tr", t:"scale", l:"Treble", min:1, max:10, step:0.5, d:5.5}
+    ]
+  },
+  "lionheart20": {
+    kind:"amp", brand:"Laney", model:"Lionheart L20T-112", face:"laney", hot:"dr.on",
+    note:"Deux canaux à lampes qui partagent l'égaliseur, plus un Tone global et la réverbe. " +
+         "Le canal saturé se prend au pied. La façade imprime « VOLUME » deux fois, sous CLEAN " +
+         "et sous DRIVE : ils sont distingués ici pour rester lisibles. Échelle 0–10.",
+    controls:[
+      {k:"bright", t:"switch", l:"Bright"},
+      {k:"vol", t:"scale", l:"Volume clean", min:0, max:10, step:0.5, d:5},
+      {k:"dr.on", t:"switch", l:"Drive"},
+      {k:"dr.gain", t:"scale", l:"Drive", min:0, max:10, step:0.5, d:5, needs:"dr.on"},
+      {k:"dr.vol", t:"scale", l:"Volume drive", min:0, max:10, step:0.5, d:5, needs:"dr.on"},
+      {k:"eq.b", t:"scale", l:"Bass", min:0, max:10, step:0.5, d:5},
+      {k:"eq.m", t:"scale", l:"Middle", min:0, max:10, step:0.5, d:5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:0, max:10, step:0.5, d:5},
+      {k:"rev", t:"scale", l:"Reverb", min:0, max:10, step:0.5, d:2},
+      {k:"tone", t:"scale", l:"Tone", min:0, max:10, step:0.5, d:5}
     ]
   },
   "amp3": {
@@ -2476,7 +2564,8 @@ var CTRL_KINDS = [
 var FACES = [
   {f:"plain", l:"Neutre"},
   {f:"bass",  l:"Bouton noir, repère laiton"},
-  {f:"amp",   l:"Bouton ivoire sur façade sombre"}
+  {f:"amp",   l:"Bouton ivoire sur façade sombre"},
+  {f:"laney", l:"Bouton blanc, repère bleu, panneau inox"}
 ];
 
 function slugKey(label, taken){

@@ -108,8 +108,14 @@ côtés et complète le reste avec les défauts du nouveau modèle, sans rien ef
 Le bouton **Matériel** ouvre la liste des façades, avec pour chacune son nombre de commandes et le
 nombre de fiches qui l'utilisent.
 
-Les façades **livrées** — Yamaha BB734A et Fender Rumble 40, décrites d'après leurs façades réelles,
-plus des gabarits génériques — ne sont pas modifiables. On les **duplique** pour partir d'une base.
+Les façades **livrées** — Yamaha BB734A, Fender Rumble 40 et Laney Lionheart L20T-112, décrites
+d'après leurs façades réelles, plus des gabarits génériques — ne sont pas modifiables. On les
+**duplique** pour partir d'une base.
+
+Le Lionheart montre au passage ce que le registre sait faire sans code : deux canaux qui partagent
+l'égaliseur, un Tone global, un canal saturé qui grise ses propres commandes quand il est coupé, et
+une allure à lui — boutons blancs à repère bleu sur panneau inox, le repère passant au rouge quand
+le canal saturé est engagé.
 
 Créer une façade demande un modèle, éventuellement une marque, l'aspect des boutons, puis les
 commandes dans l'ordre. Chaque commande a un libellé et un type :
