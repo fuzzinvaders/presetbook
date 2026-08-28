@@ -24,6 +24,7 @@ const fs = require("node:fs");
 const fsp = require("node:fs/promises");
 const path = require("node:path");
 const crypto = require("node:crypto");
+const zlib = require("node:zlib");
 
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || "0.0.0.0";
@@ -94,6 +95,41 @@ const MIME = {
   ".webmanifest": "application/manifest+json",
 };
 
+/* ------------------------------------------------------------- compression */
+
+/* Seuls les formats qui y gagnent. Un PNG ou un woff2 sont déjà compressés :
+   les repasser en gzip coûte du temps pour grossir de quelques octets. */
+const COMPRESSIBLE = /^(text\/|application\/(json|manifest\+json|javascript)|image\/svg)/;
+const GZIP_MIN = 1400;          /* en dessous, l'en-tête coûte plus que le gain */
+const GZIP_MAX_CACHE = 24;
+
+/* Les fichiers statiques sont servis en boucle : on garde leur version
+   compressée, indexée par leur ETag, pour ne pas refaire le travail à chaque
+   requête — un Raspberry Pi n'a pas de souffle à perdre là-dessus. */
+const gzipCache = new Map();
+
+function acceptsGzip(req) {
+  return /\bgzip\b/.test(String(req.headers["accept-encoding"] || ""));
+}
+
+function gzip(buf) {
+  return new Promise((resolve, reject) =>
+    zlib.gzip(buf, { level: zlib.constants.Z_DEFAULT_COMPRESSION }, (err, out) =>
+      err ? reject(err) : resolve(out)
+    )
+  );
+}
+
+/** La version compressée d'un fichier, mémorisée tant que son ETag ne change pas. */
+async function gzipCached(cle, buf) {
+  const hit = gzipCache.get(cle);
+  if (hit) return hit;
+  const out = await gzip(buf);
+  if (gzipCache.size >= GZIP_MAX_CACHE) gzipCache.delete(gzipCache.keys().next().value);
+  gzipCache.set(cle, out);
+  return out;
+}
+
 /* ---------------------------------------------------------------- réponses */
 
 function send(res, code, body, headers = {}) {
@@ -102,8 +138,35 @@ function send(res, code, body, headers = {}) {
   res.end(buf);
 }
 
+/**
+ * Comme send(), mais en gzip si le client l'accepte et si le type y gagne.
+ *
+ * « Vary: Accept-Encoding » n'est pas décoratif : sans lui, un intermédiaire
+ * peut servir la réponse compressée à un client qui ne sait pas la lire.
+ */
+async function sendMaybeGzip(req, res, code, body, headers = {}) {
+  const buf = Buffer.isBuffer(body) ? body : Buffer.from(String(body), "utf8");
+  const type = String(headers["Content-Type"] || "");
+  if (!COMPRESSIBLE.test(type) || buf.length < GZIP_MIN || !acceptsGzip(req)) {
+    return send(res, code, buf, { ...headers, Vary: "Accept-Encoding" });
+  }
+  let out;
+  try { out = await gzip(buf); }
+  catch { return send(res, code, buf, { ...headers, Vary: "Accept-Encoding" }); }
+  return send(res, code, out, { ...headers, "Content-Encoding": "gzip", Vary: "Accept-Encoding" });
+}
+
 function sendJson(res, code, obj, headers = {}) {
   send(res, code, JSON.stringify(obj), {
+    "Content-Type": MIME[".json"],
+    "Cache-Control": "no-store",
+    ...headers,
+  });
+}
+
+/** Une bibliothèque de presets pèse vite : elle voyage compressée. */
+function sendJsonGz(req, res, code, obj, headers = {}) {
+  return sendMaybeGzip(req, res, code, JSON.stringify(obj), {
     "Content-Type": MIME[".json"],
     "Cache-Control": "no-store",
     ...headers,
@@ -458,7 +521,10 @@ async function serveStatic(req, res, pathname) {
 
   const type = MIME[path.extname(full).toLowerCase()] || "application/octet-stream";
   const etag = `W/"${stat.size}-${Number(stat.mtimeMs).toString(36)}"`;
-  if (req.headers["if-none-match"] === etag) return send(res, 304, "", { ETag: etag });
+  const recu = req.headers["if-none-match"];
+  if (recu === etag || recu === etag.replace(/"$/, '-gz"')) {
+    return send(res, 304, "", { ETag: recu, Vary: "Accept-Encoding" });
+  }
 
   const headers = {
     "Content-Type": type,
@@ -466,7 +532,26 @@ async function serveStatic(req, res, pathname) {
     ETag: etag,
     "Cache-Control": type.startsWith("text/html") ? "no-cache" : "public, max-age=3600",
     "X-Content-Type-Options": "nosniff",
+    Vary: "Accept-Encoding",
   };
+
+  /* La page fait près de 200 Ko et part à chaque ouverture : compressée, elle
+     en fait moins de 60. Sur un téléphone en 4G, c'est la différence qui se
+     voit. L'ETag change avec l'encodage, sinon un cache pourrait rendre une
+     réponse gzip à qui a demandé du clair. */
+  if (COMPRESSIBLE.test(type) && stat.size >= GZIP_MIN && acceptsGzip(req)) {
+    try {
+      const brut = await fsp.readFile(full);
+      const out = await gzipCached(full + "|" + etag, brut);
+      const h = { ...headers, "Content-Length": out.length,
+                  "Content-Encoding": "gzip", ETag: etag.replace(/"$/, '-gz"') };
+      if (req.method === "HEAD") return send(res, 200, "", h);
+      return send(res, 200, out, h);
+    } catch {
+      /* illisible ou incompressible : on retombe sur l'envoi tel quel */
+    }
+  }
+
   if (req.method === "HEAD") return send(res, 200, "", headers);
 
   res.writeHead(200, headers);
@@ -628,7 +713,7 @@ const server = http.createServer(async (req, res) => {
       if (!user) return sendJson(res, 401, { error: "Connexion requise." });
 
       if (req.method === "GET" || req.method === "HEAD") {
-        return sendJson(res, 200, await readJsonFile(presetsFile(user), EMPTY_STATE));
+        return await sendJsonGz(req, res, 200, await readJsonFile(presetsFile(user), EMPTY_STATE));
       }
       if (req.method === "PUT" || req.method === "POST") {
         let parsed;

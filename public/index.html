@@ -2598,6 +2598,17 @@ function matches(p){
   return passeKind(p) && passeGear(p) && passeTags(p) && passeQ(p);
 }
 
+/** Minuscules et sans accents : « pedalier » doit trouver « pédalier ».
+    Personne ne met les accents en tapant sur un téléphone, et une recherche
+    qui ne trouve rien passe pour une recherche cassée. */
+function plat(s){
+  s = String(s == null ? "" : s).toLowerCase();
+  try { s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+  catch (e) { /* pas de normalize : les minuscules suffiront */ }
+  /* Les ligatures ne se décomposent pas en NFD. */
+  return s.replace(/\u0153/g, "oe").replace(/\u00e6/g, "ae");
+}
+
 function passeQ(p){
   if (!ui.q) return true;
   var hay = [p.name, p.notes, p.tech, p.strings, (p.tags||[]).join(" "),
@@ -2607,8 +2618,8 @@ function passeQ(p){
              (p.kind === "reaper" || p.kind === "board" ? "" : gearName(gearOf(p))),
              (p.slots||[]).map(function(x){ var g = allGear()[x.gear]; return g ? g.model : ""; }).join(" "),
              p.song ? (p.song.title + " " + p.song.artist) : "",
-             (p.chain||[]).map(function(s){ return s.plugin + " " + s.role + " " + s.settings; }).join(" ")].join(" ").toLowerCase();
-  return hay.indexOf(ui.q.toLowerCase()) >= 0;
+             (p.chain||[]).map(function(s){ return s.plugin + " " + s.role + " " + s.settings; }).join(" ")].join(" ");
+  return plat(hay).indexOf(plat(ui.q)) >= 0;
 }
 
 /* ---------------- facettes ----------------
@@ -3858,6 +3869,7 @@ window.__pb = {
   openEditor: openEditor, openIO: openIO, showGate: showGate, library: library,
   tf: tf, renderChrome: renderChrome,
   presetFile: presetFile, addPreset: addPreset, findPreset: findPreset, fileName: fileName,
+  plat: plat,
   matches: matches, facetGear: facetGear, facetTags: facetTags,
   renderFilters: renderFilters, filterLabel: filterLabel, activeFilters: activeFilters,
   ui: function(){ return ui; }, printDate: printDate,
