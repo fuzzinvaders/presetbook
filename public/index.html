@@ -2380,7 +2380,9 @@ function showGate(){
 function gateError(msg){
   var e = document.getElementById("gate-err");
   if (!e) return;
-  e.textContent = msg;
+  /* Comme ses trois sœurs : le message vient du serveur, donc en français, et
+     textContent le pose sans l'interpréter — mais il faut encore le traduire. */
+  e.textContent = t(msg);
   e.classList.add("show");
 }
 
@@ -2461,12 +2463,18 @@ function openFromUrl(){
    Deux choses distinctes : le service worker, qui rend l'application ouvrable
    sans réseau, et l'invite d'installation, que le navigateur ne propose qu'à
    ses conditions. On n'insiste pas : le bouton n'apparaît que si le navigateur
-   a lui-même signalé que c'était possible.                                  */
-var invitation = null;
+   a lui-même signalé que c'était possible.
+
+   Le nom compte : « invitation » désigne déjà le jeton d'un lien d'invitation,
+   quelques centaines de lignes plus haut. Deux « var » de même nom au même
+   niveau ne font qu'une seule variable — l'invite d'installation écrasait le
+   jeton, et la page croyait tenir une invitation là où le navigateur ne
+   proposait que de s'installer.                                             */
+var installPrompt = null;
 
 function installable(){
   var b = document.getElementById("btn-install");
-  if (b) b.hidden = !invitation;
+  if (b) b.hidden = !installPrompt;
 }
 
 function setupInstall(){
@@ -2486,20 +2494,20 @@ function setupInstall(){
 
   window.addEventListener("beforeinstallprompt", function(e){
     e.preventDefault();               /* on garde la main sur le moment */
-    invitation = e;
+    installPrompt = e;
     installable();
   });
   window.addEventListener("appinstalled", function(){
-    invitation = null;
+    installPrompt = null;
     installable();
     toast("Presetbook est installé.");
   });
 }
 
 function doInstall(){
-  if (!invitation) return;
-  var e = invitation;
-  invitation = null;
+  if (!installPrompt) return;
+  var e = installPrompt;
+  installPrompt = null;
   installable();
   e.prompt();
 }
@@ -4714,11 +4722,12 @@ window.__pb = {
   openShared: openShared, sharePreset: sharePreset, takeShared: takeShared,
   setShared: function(l){ sharedCache = l; },
   readInvite: readInvite, inviteLink: inviteLink, showGate2: showGate,
+  gateError: gateError, passwordError: passwordError, accountError: accountError,
   setSession: function(u, demo){ session.user = u; session.isDemo = !!demo; },
   setDemo: function(d){ session.demo = d; },
   getSession: function(){ return session; },
   setupInstall: setupInstall, doInstall: doInstall, installable: installable,
-  setInvitation: function(e){ invitation = e; },
+  setInstallPrompt: function(e){ installPrompt = e; },
   mountKofi: mountKofi, kofiUser: function(){ return KOFI; },
   kofiMounted: function(){ return kofiMounted; }
 };

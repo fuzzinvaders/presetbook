@@ -94,16 +94,32 @@ pb.installable();
 check("il reste caché tant que rien n'est proposé", bouton.hidden === true, String(bouton.hidden));
 check("il porte un libellé", bouton.innerHTML === "Installer", bouton.innerHTML);
 
-pb.setInvitation({ prompt: function () { this.appele = true; } });
+pb.setInstallPrompt({ prompt: function () { this.appele = true; } });
 pb.installable();
 check("il apparaît quand le navigateur le propose", bouton.hidden === false, String(bouton.hidden));
 
 let demande = false;
-pb.setInvitation({ prompt: function () { demande = true; } });
+pb.setInstallPrompt({ prompt: function () { demande = true; } });
 pb.doInstall();
 check("le clic déclenche l'invite du navigateur", demande === true);
 pb.installable();
 check("et le bouton repart", bouton.hidden === true, String(bouton.hidden));
+
+/* L'invite d'installation et le jeton d'invitation sont deux choses. Elles ont
+   porté le même nom de variable, si bien qu'un navigateur proposant d'installer
+   l'application faisait croire à la page qu'elle tenait une invitation : sur une
+   instance neuve, la création du premier compte échouait sur « Cette invitation
+   n'est plus valable. » */
+const propre = run(pageF, { search: "" }).__pb;
+check("aucune invitation au départ", propre.getInvite() === null, String(propre.getInvite()));
+propre.setInstallPrompt({ prompt: function () {} });
+check("le navigateur proposant l'installation n'invente pas d'invitation",
+  propre.getInvite() === null, JSON.stringify(propre.getInvite()));
+
+const invite = run(pageF, { search: "?invite=UN-JETON" }).__pb;
+invite.setInstallPrompt({ prompt: function () {} });
+check("et il n'écrase pas un vrai jeton", invite.getInvite() === "UN-JETON",
+  String(invite.getInvite()));
 
 const en = run(pageF, { search: "?lang=en" }).__pb;
 check("le bouton est traduit", en.t("Installer") === "Install", en.t("Installer"));

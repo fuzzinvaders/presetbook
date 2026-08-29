@@ -71,6 +71,17 @@ const sansTrad = [...messages].filter((x) => pb.EN[x] === undefined);
 check("tous les messages éphémères sont traduits (" + messages.size + ")",
   sansTrad.length === 0, sansTrad.slice(0, 4).join(" | "));
 
+/* Une traduction au dictionnaire ne sert à rien si le poseur du message ne la
+   demande pas : gateError posait le texte du serveur tel quel, donc en
+   français, sur une page anglaise. */
+[["gateError", "gate-err"], ["passwordError", "pw-err"], ["accountError", "acc-err"]]
+  .forEach(function (p) {
+    en.__pb[p[0]]("Cette invitation n'est plus valable.");
+    check("« " + p[0] + " » traduit ce que le serveur renvoie",
+      en.__nodes.get(p[1]).textContent === "This invitation is no longer valid.",
+      en.__nodes.get(p[1]).textContent);
+  });
+
 /* --- l'en-tête, écrit par le script et non par le gabarit --- */
 const chrome = ["eyebrow", "btn-gear", "btn-io", "btn-new", "grp"]
   .map((id) => en.__nodes.get(id).innerHTML).join(" ");

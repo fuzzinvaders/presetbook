@@ -708,10 +708,27 @@ async function createInvite(user) {
 }
 
 /** Consomme un jeton. Renvoie faux s'il est absent, périmé ou déjà servi. */
-async function useInvite(token) {
-  if (!token) return false;
+/**
+ * Une invitation est-elle valable ? Sans la consommer.
+ *
+ * Séparé de useInvite pour que la validation du formulaire vienne d'abord : un
+ * mot de passe trop court ne doit pas brûler un lien qui ne sert qu'une fois.
+ *
+ * Le jeton doit être une chaîne. Tout autre chose est traité comme « pas
+ * d'invitation » plutôt que comme une invitation fausse : une page qui envoie
+ * n'importe quoi ne doit pas fermer une porte ouverte par ailleurs.
+ */
+async function checkInvite(token) {
+  if (typeof token !== "string" || !token) return false;
   const db = await readInvites();
-  const h = tokenHash(String(token));
+  const inv = db.invites.find((i) => i.hash === tokenHash(token));
+  return !!inv && !inv.used && !inviteExpired(inv);
+}
+
+async function useInvite(token) {
+  if (typeof token !== "string" || !token) return false;
+  const db = await readInvites();
+  const h = tokenHash(token);
   const inv = db.invites.find((i) => i.hash === h);
   if (!inv || inv.used || inviteExpired(inv)) return false;
   inv.used = true;
@@ -1053,13 +1070,18 @@ async function handleRegister(req, res) {
 
   /* Quatre portes : personne n'est encore inscrit, le serveur est ouvert, c'est
      l'administrateur, ou une invitation valable. La dernière est celle qu'on
-     tend à quelqu'un — elle se consomme, donc elle ne sert qu'une fois. */
-  const parInvitation = body.invite ? await useInvite(body.invite) : false;
-  if (body.invite && !parInvitation) {
-    noteFailure(req);
-    return sendJson(res, 410, { error: "Cette invitation n'est plus valable." });
-  }
-  if (!(realUsers(db).length === 0 || ALLOW_REGISTER || isAdmin(asUser) || parInvitation)) {
+     tend à quelqu'un — elle se consomme, donc elle ne sert qu'une fois.
+
+     Les trois premières se testent d'abord : sur une instance neuve, un jeton
+     douteux ne doit pas fermer la porte que l'absence de compte laisse
+     ouverte. */
+  const sansInvite = realUsers(db).length === 0 || ALLOW_REGISTER || isAdmin(asUser);
+  const inviteValide = sansInvite ? false : await checkInvite(body.invite);
+  if (!sansInvite && !inviteValide) {
+    if (body.invite) {
+      noteFailure(req);
+      return sendJson(res, 410, { error: "Cette invitation n'est plus valable." });
+    }
     return sendJson(res, 403, asUser
       ? { error: "Seul l'administrateur peut ouvrir un compte." }
       : { error: "La création de comptes est fermée sur ce serveur." });
@@ -1074,6 +1096,14 @@ async function handleRegister(req, res) {
     return sendJson(res, 422, { error: `Mot de passe : au moins ${PW_MIN} caractères.` });
   }
   if (findUser(db, name)) return sendJson(res, 409, { error: "Cet identifiant est déjà pris." });
+
+  /* Le formulaire est accepté : c'est seulement maintenant que l'invitation se
+     consomme. Avant, un mot de passe trop court la brûlait, et la personne se
+     retrouvait devant un lien mort sans avoir jamais eu de compte. */
+  if (inviteValide && !(await useInvite(body.invite))) {
+    noteFailure(req);
+    return sendJson(res, 410, { error: "Cette invitation n'est plus valable." });
+  }
 
   /* Le premier vrai compte de l'instance est l'administrateur. */
   const premier = realUsers(db).length === 0;
