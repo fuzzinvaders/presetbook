@@ -475,6 +475,23 @@ displayed. Changing it would shut everyone out until the next restart.
 A **forgotten** password is fixed from the hosting machine, not from the application — see
 [Installing and running it](installing.md).
 
+### When someone asks you for an account
+
+On a public instance, a visitor who tries the demo and wants more has no way to reach you. The
+`ALLOW_REQUESTS=1` setting adds an **Ask for an account** button to the sign-in screen: the person
+leaves a username they would like, an address and, if they feel like it, a word about themselves.
+
+Next time you sign in, a banner tells you and a badge counts the requests on the **Accounts** button.
+Beside each one, *Prepare the invitation* builds the link and reminds you of the address to send it
+to; *Dismiss* removes it.
+
+**The app sends nothing.** It has no dependencies, so no mail client: sending stays your own move.
+That is also what stops a sending server from being hijacked by whoever finds the form.
+
+The address is used for nothing else and goes away with the request as soon as you dismiss it. Three
+requests per IP address per day, fifty pending at most: this is an unauthenticated write endpoint, it
+must not be allowed to swell. Closed by default — a private instance has no reason to expose it.
+
 ### Inviting someone
 
 **Administrator only**, and it is the right way to bring someone in. The **Accounts** button offers

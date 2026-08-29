@@ -18,6 +18,8 @@ services:
       DATA_DIR: /data
       # Compte de démonstration public : "identifiant:motdepasse", vide = désactivé.
       DEMO_LOGIN: "${DEMO_LOGIN:-}"
+      # Formulaire public « Demander un compte » : 1 pour l'ouvrir, vide = fermé.
+      ALLOW_REQUESTS: "${ALLOW_REQUESTS:-}"
       # Décommenter pour exiger un identifiant sur tout le site (sauf /healthz).
       # La valeur se met dans un fichier .env à côté, jamais ici.
       # BASIC_AUTH: "${BASIC_AUTH:?renseigne BASIC_AUTH dans .env}"

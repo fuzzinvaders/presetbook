@@ -499,6 +499,26 @@ public et affiché. Le changer fermerait la porte à tout le monde jusqu'au red�
 Un mot de passe **oublié** se répare depuis la machine qui héberge, pas depuis l'application — voir
 [Installer et exploiter](installation.md).
 
+### Quand on vous demande un compte
+
+Sur une instance publique, un visiteur qui essaie la démonstration et veut la suite n'a aucun moyen
+de vous joindre. Le réglage `ALLOW_REQUESTS=1` ajoute un bouton **Demander un compte** sur l'écran de
+connexion : la personne laisse un identifiant souhaité, une adresse et, si elle veut, un mot sur
+elle.
+
+À votre connexion suivante, un bandeau vous prévient et une pastille compte les demandes sur le
+bouton **Comptes**. En face de chacune, *Préparer l'invitation* fabrique le lien et vous rappelle
+l'adresse à qui l'envoyer ; *Écarter* la retire.
+
+**L'application n'envoie rien.** Elle n'a aucune dépendance, donc pas de client de courrier :
+l'envoi reste votre geste. C'est aussi ce qui évite qu'un serveur d'envoi soit détourné par
+quelqu'un qui aurait trouvé le formulaire.
+
+L'adresse ne sert qu'à ça et disparaît avec la demande dès que vous l'écartez. Trois demandes par
+adresse IP et par jour, cinquante en attente au plus : c'est un point d'écriture sans
+authentification, il ne doit pas pouvoir enfler. Fermé par défaut — une instance privée n'a aucune
+raison de l'exposer.
+
 ### Inviter quelqu'un
 
 **Réservé à l'administrateur**, et c'est la bonne façon de faire entrer quelqu'un. Le bouton

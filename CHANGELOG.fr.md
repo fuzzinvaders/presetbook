@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.1.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.2.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,48 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.2.0 — 30 août 2026
+
+La version qui s'occupe du premier contact. Le lien est public depuis qu'il est posté sur un forum,
+et le parcours du visiteur était un cul-de-sac : il essayait la démonstration, y prenait goût, et
+n'avait nulle part où demander la suite.
+
+### Ajouté
+
+- **Un bouton « Demander un compte » sur l'écran de connexion.** Le visiteur laisse un identifiant
+  souhaité, une adresse et, s'il veut, un mot sur lui. À la connexion suivante de l'administrateur,
+  un bandeau le prévient et une pastille compte les demandes sur le bouton *Comptes*. En face de
+  chacune, *Préparer l'invitation* fabrique le lien et rappelle l'adresse à qui l'envoyer.
+
+  **L'application n'envoie rien** : elle n'a aucune dépendance, donc pas de client de courrier, et
+  l'envoi reste un geste humain. C'est aussi ce qui évite qu'un serveur d'envoi soit détourné par
+  qui trouverait le formulaire. L'adresse ne sert qu'à ça et part avec la demande dès qu'elle est
+  écartée.
+
+  Fermé par défaut : `ALLOW_REQUESTS=1` l'ouvre. Une instance privée n'a aucune raison d'exposer un
+  point d'écriture sans authentification — et quand il est ouvert, il est tenu : trois demandes par
+  adresse IP et par jour, cinquante en attente au plus, et une même adresse deux fois est acceptée
+  sans rien ajouter, parce que répondre « déjà demandé » dirait à un inconnu qui a écrit là.
+- **Une phrase qui dit ce qu'est Presetbook**, sur l'écran de connexion. Le sur-titre suffisait à qui
+  venait de lire le billet qui menait ici ; pas à qui reçoit le lien de seconde main.
+
+### Modifié
+
+- **La démonstration est décrite plus justement.** Elle annonçait une remise à zéro « à chaque
+  redémarrage du serveur », en taisant ce qui compte pour le visiteur : elle repart de zéro **à son
+  arrivée** si personne n'y a touché depuis une demi-heure. Il trouve donc un écran propre, et non
+  les essais d'un inconnu. L'écran indique aussi que « Sauvegarde » lui rend en fichier ce qu'il y a
+  créé, à reprendre dans un vrai compte.
+
+### Corrigé
+
+- **Les sections d'administration n'apparaissaient qu'après un rechargement.** La session lue au
+  démarrage est celle d'un anonyme ; se connecter ne la relisait pas, si bien que l'application
+  ignorait que ce compte administrait l'instance. L'écran des comptes s'ouvrait donc sans la liste
+  des comptes, sans les invitations, sans rien — jusqu'à ce qu'on recharge la page.
 
 ---
 

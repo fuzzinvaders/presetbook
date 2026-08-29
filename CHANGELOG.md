@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.1.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.2.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,46 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.2.0 — 30 August 2026
+
+The version that looks after first contact. The link has been public since it was posted on a forum,
+and the visitor's path was a dead end: they tried the demo, took a liking to it, and had nowhere to
+ask for more.
+
+### Added
+
+- **An "Ask for an account" button on the sign-in screen.** The visitor leaves a username they would
+  like, an address and, if they feel like it, a word about themselves. Next time the administrator
+  signs in, a banner tells them and a badge counts the requests on the *Accounts* button. Beside each
+  one, *Prepare the invitation* builds the link and reminds them of the address to send it to.
+
+  **The app sends nothing**: it has no dependencies, so no mail client, and sending stays a human
+  move. That is also what stops a sending server from being hijacked by whoever finds the form. The
+  address is used for nothing else and goes away with the request as soon as it is dismissed.
+
+  Closed by default: `ALLOW_REQUESTS=1` opens it. A private instance has no reason to expose an
+  unauthenticated write endpoint — and when it is open, it is held: three requests per IP address per
+  day, fifty pending at most, and the same address twice is accepted without adding anything, because
+  answering "already requested" would tell a stranger who has written there.
+- **A sentence saying what Presetbook is**, on the sign-in screen. The kicker line was enough for
+  someone who had just read the post that led here; not for someone handed the link second-hand.
+
+### Changed
+
+- **The demo is described more accurately.** It announced a reset "every time the server restarts",
+  keeping quiet about what matters to the visitor: it resets **when they arrive** if nobody has
+  touched it for half an hour. So they find a clean screen, not a stranger's experiments. The screen
+  also points out that "Backup" hands them what they made as a file, to bring into a real account.
+
+### Fixed
+
+- **The administration sections only appeared after a reload.** The session read at startup is an
+  anonymous one; signing in did not read it again, so the app did not know that this account
+  administers the instance. The accounts screen therefore opened without the list of accounts,
+  without the invitations, without anything — until you reloaded the page.
 
 ---
 

@@ -306,6 +306,13 @@ legend{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.11
 .sl.dim{opacity:.4}
 .sug{margin:-4px 0 10px; display:flex; flex-direction:column; gap:3px}
 .sug:empty{margin:0}
+.gate-what{font-size:13.5px; line-height:1.5; color:var(--ink-2); margin:0 0 14px; max-width:44ch}
+.gate-ok{font-size:14px; line-height:1.55; color:var(--ink); margin:12px 0 0}
+.badge{
+  display:inline-block; min-width:16px; padding:0 4px; margin-left:5px;
+  font-size:11px; line-height:16px; text-align:center; border-radius:8px;
+  background:var(--warn); color:var(--bg); font-weight:700;
+}
 .sug .t{font-size:12px; color:var(--ink-2); padding:2px 0}
 .sug .t.dup{color:var(--warn); font-weight:600}
 .sug button{
@@ -340,6 +347,7 @@ select[data-gear]{font-weight:600}
 .mini input[type="number"]{width:74px; font-family:"IBM Plex Mono",monospace; text-align:right}
 .mini select{font-family:"IBM Plex Sans",sans-serif; font-size:12.5px; text-transform:none; letter-spacing:0}
 .mini .u{color:var(--ink-3); font-size:9.5px}
+.mini.tel-quel{text-transform:none; letter-spacing:0; font-size:11px}
 .pgridE{display:flex; flex-wrap:wrap; gap:7px 12px; align-items:center}
 .bandsE{display:flex; flex-direction:column; gap:6px; padding:7px 8px; border:1px dashed var(--line-2); border-radius:4px}
 .bandE{display:flex; flex-wrap:wrap; gap:6px 9px; align-items:center}
@@ -550,6 +558,39 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Le carnet où retrouver ses réglages : ce qu'on avait mis sur l'ampli pour ce morceau, dans quel ordre étaient les pédales, comment la chaîne de plugins était réglée.":
+    "The notebook where your settings live: what you had on the amp for that song, what order the pedals were in, how the plugin chain was set.",
+  "Demander un compte": "Ask for an account",
+  "Quelqu'un demande un compte.": "Someone is asking for an account.",
+  "{0} personnes demandent un compte.": "{0} people are asking for an account.",
+  "Voir": "Open",
+  "Demandes de compte": "Account requests",
+  "Personne n'attend de compte.": "Nobody is waiting for an account.",
+  "Demandes indisponibles.": "Requests unavailable.",
+  "Préparer l'invitation": "Prepare the invitation",
+  "Écarter": "Dismiss",
+  "Demande traitée, l'écarter": "Handled — dismiss it",
+  "Le lien ne sera plus affiché. Envoie-le toi-même : l'application n'a pas de client de courrier.":
+    "The link will not be shown again. Send it yourself: the app has no mail client.",
+  "À": "To",
+  "Lien d'invitation": "Invitation link",
+  "Envoyer la demande": "Send the request",
+  "Revenir à la connexion": "Back to signing in",
+  "Revenir": "Back",
+  "Identifiant souhaité": "Username you would like",
+  "Adresse de courriel": "Email address",
+  "Un mot sur toi, si tu veux": "A word about you, if you like",
+  "Bassiste, vu sur le forum…": "Bass player, saw it on the forum…",
+  "La création de comptes est réservée à qui tient ce serveur. Laisse ton adresse : il t'enverra un lien d'invitation, et tu choisiras toi-même ton mot de passe. L'adresse ne sert qu'à ça et disparaît une fois l'invitation partie.":
+    "Creating accounts is up to whoever runs this server. Leave your address: they will send you an invitation link, and you will pick your own password. The address is used for nothing else and goes away once the invitation is sent.",
+  "C'est envoyé. Celui qui tient ce serveur verra ta demande à sa prochaine connexion et t'enverra un lien d'invitation. En attendant, la démonstration reste ouverte.":
+    "Sent. Whoever runs this server will see your request next time they sign in, and will send you an invitation link. The demo stays open in the meantime.",
+  "Un compte ouvert à tous, pour regarder sans s'inscrire. Tu la trouves propre : elle repart de zéro à ton arrivée si personne n'y a touché depuis une demi-heure. Ce que tu y crées ne tient pas — mais « Sauvegarde » te le donne en fichier, à reprendre dans un vrai compte.":
+    "An account open to everyone, to look around without signing up. You find it clean: it resets when you arrive if nobody has touched it for half an hour. What you make there does not last — but \"Backup\" hands it to you as a file, to bring into a real account.",
+  "Trop de demandes depuis cette adresse. Réessaie demain.": "Too many requests from this address. Try again tomorrow.",
+  "Trop de demandes en attente. Réessaie plus tard.": "Too many pending requests. Try again later.",
+  "Cette adresse ne ressemble pas à une adresse de courriel.": "That does not look like an email address.",
+  "Cette demande n'existe plus.": "That request no longer exists.",
   "Une fiche porte déjà ce nom :": "A preset already goes by that name:",
   "Des fiches proches existent déjà :": "Close presets already exist:",
   "Déjà saisi :": "Already entered:",
@@ -2451,7 +2492,8 @@ function readUrlFilter(){
 /* ============================ comptes ============================
    Uniquement en déploiement autonome : la page publiée n'a pas de
    serveur, donc aucun écran de connexion n'apparaît là-bas.        */
-var session = {user:null, canRegister:false, firstRun:false, demo:null, isDemo:false, isAdmin:false};
+var session = {user:null, canRegister:false, firstRun:false, demo:null, isDemo:false, isAdmin:false,
+               canRequest:false, requests:0};
 var invitation = null;      /* jeton lu dans ?invite=, effacé de l'URL aussitôt */
 var gateMode = "login";
 
@@ -2480,7 +2522,11 @@ function renderWho(){
                    esc(session.user.name) + (session.isDemo ? " · démonstration" : "") + '</span>' +
                    /* La démo ne peut pas créer de compte : le serveur refuse, donc
                       le bouton n'a pas à faire croire le contraire. */
-                   (session.isDemo ? "" : '<button class="btn" id="btn-account">Comptes</button>') +
+                   /* La pastille dit le nombre de demandes en attente : sans elle, la
+                      file resterait invisible tant qu'on n'ouvre pas l'écran. */
+                   (session.isDemo ? "" : '<button class="btn" id="btn-account">Comptes' +
+                     (session.requests ? '<span class="badge">' + session.requests + '</span>' : "") +
+                     '</button>') +
                    '<button class="btn" id="btn-logout">Déconnexion</button>');
   if (!session.isDemo) document.getElementById("btn-account").addEventListener("click", openAccount);
   document.getElementById("btn-logout").addEventListener("click", function(){
@@ -2537,6 +2583,9 @@ function openAccount(){
         '</div>' +
       '</form>' +
       '</fieldset>' +
+      '<fieldset><legend>Demandes de compte</legend>' +
+        '<div id="req-list"><p class="hint">Chargement…</p></div>' +
+      '</fieldset>' +
       '<fieldset><legend>Inviter quelqu\'un</legend>' +
         '<p class="hint">Fabrique un lien à usage unique : la personne choisit elle-même son ' +
         'identifiant et son mot de passe. Rien de secret ne passe par la messagerie du forum, ' +
@@ -2551,7 +2600,7 @@ function openAccount(){
       dangerZone() +
     '</div></div>');
   veil.classList.add("open");
-  if (session.isAdmin){ loadUsers(); loadInvites(); }
+  if (session.isAdmin){ loadUsers(); loadInvites(); loadRequests(); }
   var first = veil.querySelector('input[name="name"]');
   if (first) first.focus();
 }
@@ -2642,6 +2691,65 @@ function copyInvite(){
     navigator.clipboard.writeText(champ.value).then(function(){ toast("Lien copié."); },
       function(){ toast("Sélectionne le lien et fais Ctrl+C."); });
   } else toast("Sélectionne le lien et fais Ctrl+C.");
+}
+
+/**
+ * Les demandes de compte en attente.
+ *
+ * L'application n'envoie rien : elle n'a aucune dépendance, donc pas de client
+ * de courrier. Elle prépare le lien et rappelle l'adresse ; l'envoi reste un
+ * geste humain — c'est aussi ce qui évite qu'un serveur d'envoi soit détourné.
+ */
+function loadRequests(){
+  var host = document.getElementById("req-list");
+  if (!host) return;
+  fetchJson("api/requests").then(function(j){
+    var l = (j && j.requests) || [];
+    session.requests = l.length;
+    renderChrome();
+    if (!l.length){
+      setHtml(host, "Personne n'attend de compte.");
+      return;
+    }
+    host.innerHTML = tHtml('<div class="ulist">' + l.map(function(r){
+      /* L'adresse voyage en attribut plutôt que d'être relue dans le texte
+         affiché : la mise en forme n'a pas à décider de ce qu'on envoie. */
+      return '<div class="urow" data-req="' + esc(r.id) + '" data-email="' + esc(r.email) + '">' +
+        '<span class="uname">' + esc(r.name) + '</span>' +
+        '<span class="mini tel-quel" style="opacity:.7">' + esc(r.email) + '</span>' +
+        (r.note ? '<span class="mini tel-quel" style="opacity:.6">' + esc(r.note) + '</span>' : "") +
+        '<span class="spacer"></span>' +
+        '<button class="btn small" data-reqinv="' + esc(r.id) + '">Préparer l\'invitation</button>' +
+        '<button class="btn small ghost danger" data-reqdel="' + esc(r.id) + '">Écarter</button>' +
+        '</div>';
+    }).join("") + '</div><div id="req-out"></div>');
+  }, function(){ setHtml(host, "Demandes indisponibles."); });
+}
+
+/** Fabriquer le lien pour une demande précise, et rappeler à qui l'envoyer. */
+function inviteForRequest(id, btn){
+  var ligne = document.querySelector('[data-req="' + id + '"]');
+  var adresse = ligne ? ligne.getAttribute("data-email") || "" : "";
+  btn.disabled = true;
+  post("api/invites").then(function(j){
+    btn.disabled = false;
+    var out = document.getElementById("req-out");
+    if (!out) return;
+    out.innerHTML = tHtml('<p class="hint">Le lien ne sera plus affiché. Envoie-le toi-même : ' +
+      'l\'application n\'a pas de client de courrier.</p>' +
+      '<label class="fld">À<input type="text" id="req-to" readonly></label>' +
+      '<label class="fld">Lien d\'invitation<textarea id="inv-lien" rows="2" readonly></textarea></label>' +
+      '<div class="acts"><button class="btn" data-copyinvite>Copier le lien</button>' +
+      '<button class="btn ghost" data-reqdel="' + esc(id) + '">Demande traitée, l\'écarter</button></div>');
+    var a = document.getElementById("req-to");
+    if (a) a.value = adresse;
+    var champ = document.getElementById("inv-lien");
+    if (champ){ champ.value = inviteLink(j.token); champ.select(); }
+    loadInvites();
+  }, function(err){
+    btn.disabled = false;
+    toast(err.message);
+  });
 }
 
 /** Les invitations en attente : de quoi révoquer un lien qu'on regrette. */
@@ -2772,10 +2880,16 @@ function showGate(){
   /* Une invitation en poche : on ouvre le formulaire de création sans détour. */
   if (invitation) gateMode = "register";
   var creating = gateMode === "register";
+  var asking = gateMode === "request";
   g.innerHTML =
     tHtml('<div class="gate-card">' +
       '<p class="eyebrow">Instruments · amplis · pédales · chaînes de plugins</p>' +
       '<h1>Presetbook</h1>' +
+      /* Le sur-titre suffit à qui vient de lire le billet qui menait ici ; pas à
+         qui reçoit le lien de seconde main. Une phrase, et il sait. */
+      '<p class="gate-what">Le carnet où retrouver ses réglages : ce qu\'on avait mis sur ' +
+      'l\'ampli pour ce morceau, dans quel ordre étaient les pédales, comment la chaîne ' +
+      'de plugins était réglée.</p>' +
       ((session.canRegister || invitation) ?
         '<div class="seg" id="gate-seg" role="tablist">' +
           '<button role="tab" data-gm="login" aria-selected="' + (!creating) + '">Se connecter</button>' +
@@ -2787,6 +2901,25 @@ function showGate(){
       (session.firstRun ?
         '<p class="gate-note">Aucun compte sur ce serveur : le premier créé sera le tien, ' +
         'et les presets déjà enregistrés lui seront rattachés.</p>' : "") +
+      (asking ?
+        '<form id="ask-form" autocomplete="on">' +
+          '<p class="gate-note">La création de comptes est réservée à qui tient ce serveur. ' +
+          'Laisse ton adresse : il t\'enverra un lien d\'invitation, et tu choisiras toi-même ' +
+          'ton mot de passe. L\'adresse ne sert qu\'à ça et disparaît une fois l\'invitation partie.</p>' +
+          '<label class="fld">Identifiant souhaité' +
+            '<input type="text" name="name" required autocomplete="username" autocapitalize="none" spellcheck="false">' +
+          '</label>' +
+          '<label class="fld">Adresse de courriel' +
+            '<input type="email" name="email" required autocomplete="email" spellcheck="false">' +
+          '</label>' +
+          '<label class="fld">Un mot sur toi, si tu veux' +
+            '<input type="text" name="note" maxlength="300" placeholder="Bassiste, vu sur le forum…">' +
+          '</label>' +
+          '<p class="gate-err" id="gate-err" role="alert"></p>' +
+          '<button class="btn primary" type="submit">Envoyer la demande</button>' +
+          '<button class="btn ghost" type="button" data-gm="login">Revenir à la connexion</button>' +
+        '</form>' : "") +
+      (asking ? "" :
       '<form id="gate-form" autocomplete="on">' +
         '<label class="fld">Identifiant' +
           '<input type="text" name="name" required autocomplete="username" autocapitalize="none" spellcheck="false">' +
@@ -2800,19 +2933,48 @@ function showGate(){
                     'il n\'y a pas de récupération par courriel sur un serveur auto-hébergé.</p>' : "") +
         '<p class="gate-err" id="gate-err" role="alert"></p>' +
         '<button class="btn primary" type="submit">' + (creating ? "Créer le compte" : "Se connecter") + '</button>' +
-      '</form>' +
+      '</form>') +
       /* Sous le formulaire : on se connecte d'abord, on regarde ensuite. */
-      (session.demo ?
+      (session.demo && !asking ?
         '<div class="gate-demo">' +
           '<button class="btn" type="button" id="gate-demo">Essayer la démonstration</button>' +
           '<p class="gate-note">Un compte ouvert à tous, pour regarder sans s\'inscrire. ' +
-          'Ses fiches repartent de zéro à chaque redémarrage du serveur.</p>' +
+          'Tu la trouves propre : elle repart de zéro à ton arrivée si personne n\'y a touché ' +
+          'depuis une demi-heure. Ce que tu y crées ne tient pas — mais « Sauvegarde » te le ' +
+          'donne en fichier, à reprendre dans un vrai compte.</p>' +
+        '</div>' : "") +
+      (session.canRequest && !asking ?
+        '<div class="gate-demo">' +
+          '<button class="btn" type="button" data-gm="request">Demander un compte</button>' +
         '</div>' : "") +
     '</div>');
   g.classList.add("open");
   g.setAttribute("aria-hidden", "false");
   var first = g.querySelector('input[name="name"]');
   if (first) first.focus();
+}
+
+/** Déposer une demande de compte. Rien n'est envoyé d'ici : le serveur range,
+    l'administrateur reçoit à sa prochaine connexion. */
+function submitRequest(form){
+  var corps = {
+    name: form.name.value.trim(),
+    email: form.email.value.trim(),
+    note: form.note.value.trim()
+  };
+  post("api/requests", corps).then(function(){
+    var carte = document.querySelector(".gate-card");
+    if (!carte) return;
+    setHtml(carte, "");
+    carte.innerHTML = tHtml('<p class="eyebrow">Instruments · amplis · pédales · chaînes de plugins</p>' +
+      '<h1>Presetbook</h1>' +
+      '<p class="gate-ok">C\'est envoyé. Celui qui tient ce serveur verra ta demande à sa ' +
+      'prochaine connexion et t\'enverra un lien d\'invitation. En attendant, la ' +
+      'démonstration reste ouverte.</p>' +
+      '<div class="gate-demo"><button class="btn" type="button" data-gm="login">Revenir</button></div>');
+  }, function(err){
+    gateError(err.message);
+  });
 }
 
 function gateError(msg){
@@ -2824,11 +2986,32 @@ function gateError(msg){
   e.classList.add("show");
 }
 
+/**
+ * Prévenir l'administrateur qu'on attend un compte.
+ *
+ * La pastille suffit à qui regarde l'en-tête ; le bandeau s'adresse à qui vient
+ * d'ouvrir sa session et n'a rien demandé. Il ouvre l'écran d'un clic, sinon la
+ * demande dort jusqu'à ce qu'on pense à aller voir.
+ */
+function announceRequests(){
+  if (!session.isAdmin || !session.requests) return;
+  toast(session.requests === 1 ? "Quelqu'un demande un compte."
+                               : tf("{0} personnes demandent un compte.", session.requests),
+        { label: "Voir", run: openAccount });
+}
+
 function hideGate(){
   var g = document.getElementById("gate");
   g.classList.remove("open");
   g.setAttribute("aria-hidden", "true");
   g.innerHTML = "";
+}
+
+/** Relit /api/session. Un échec n'est pas fatal : la session ouverte tient. */
+function refreshSession(){
+  return fetchJson("api/session").then(function(sess){
+    if (sess && sess.user) session = sess;
+  }, function(){ /* on garde ce qu'on a */ });
 }
 
 function loadFromApi(){
@@ -2866,6 +3049,9 @@ document.getElementById("gate").addEventListener("click", function(e){
 document.getElementById("gate").addEventListener("submit", function(e){
   e.preventDefault();
   var f = e.target;
+  /* Avant tout : la demande de compte n'a pas de champ mot de passe, et la
+     suite en lirait un. */
+  if (f.id === "ask-form"){ submitRequest(f); return; }
   var name = f.elements.name.value.trim();
   var password = f.elements.password.value;
   var btn = f.querySelector('button[type="submit"]');
@@ -2876,7 +3062,11 @@ document.getElementById("gate").addEventListener("submit", function(e){
     .then(function(j){
       session.user = j.user;
       mountKofi();
-      return loadFromApi();
+      /* La session lue au démarrage est celle d'un anonyme : elle ignore si ce
+         compte administre l'instance et combien de demandes attendent. Sans
+         cette relecture, l'écran des comptes s'ouvrait sans ses sections
+         d'administration jusqu'au prochain rechargement. */
+      return refreshSession().then(loadFromApi).then(announceRequests);
     })
     .catch(function(err){
       btn.disabled = false;
@@ -2992,7 +3182,7 @@ function boot(){
 
   fetchJson("api/session").then(function(sess){    /* 1. serveur autonome */
     session = sess || session;
-    if (session.user){ mountKofi(); return loadFromApi(); }
+    if (session.user){ mountKofi(); return loadFromApi().then(announceRequests); }
     setStore("locked", "connexion requise");
     showGate();
   }, function(){
@@ -4959,6 +5149,17 @@ document.getElementById("veil").addEventListener("click", function(e){
   if (pris){ takeShared(pris.getAttribute("data-take")); return; }
   var retire = t.closest && t.closest("[data-unshare]");
   if (retire){ unshare(retire.getAttribute("data-unshare")); return; }
+  var dReq = t.closest && t.closest("[data-reqinv]");
+  if (dReq){ inviteForRequest(dReq.getAttribute("data-reqinv"), dReq); return; }
+  var xReq = t.closest && t.closest("[data-reqdel]");
+  if (xReq){
+    post("api/requests/delete", {id: xReq.getAttribute("data-reqdel")}).then(function(){
+      var out = document.getElementById("req-out");
+      if (out) out.innerHTML = "";
+      loadRequests();
+    }, function(err){ toast(err.message); });
+    return;
+  }
   var neuf = t.closest && t.closest("[data-newinvite]");
   if (neuf){ newInvite(neuf); return; }
   if (t.closest && t.closest("[data-copyinvite]")){ copyInvite(); return; }
@@ -5348,6 +5549,11 @@ window.__pb = {
   openShared: openShared, sharePreset: sharePreset, takeShared: takeShared,
   setShared: function(l){ sharedCache = l; },
   readInvite: readInvite, inviteLink: inviteLink, showGate2: showGate,
+  submitRequest: submitRequest, loadRequests: loadRequests, inviteForRequest: inviteForRequest,
+  refreshSession: refreshSession,
+  announceRequests: announceRequests,
+  setGateMode: function(m){ gateMode = m; },
+  getGateMode: function(){ return gateMode; },
   gateError: gateError, passwordError: passwordError, accountError: accountError,
   setSession: function(u, demo){ session.user = u; session.isDemo = !!demo; },
   setDemo: function(d){ session.demo = d; },
