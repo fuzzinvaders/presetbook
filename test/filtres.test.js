@@ -107,6 +107,51 @@ function cherche(q) {
 });
 check("la casse n'y change rien", cherche("PEDALIER") === cherche("pédalier"));
 
+/* --- la recherche de l'étagère partagée --- */
+const etagere = [];
+["Motown doux", "Funk sec", "Blues crémeux", "Rock sale", "Jazz rond", "Reggae dub",
+ "Pop propre", "Métal"].forEach((nom, i) => {
+  etagere.push({ id: "s" + i, by: i < 2 ? "remi" : "copain", kind: i % 2 ? "amp" : "bass",
+                 name: nom, preset: { id: "p" + i, kind: i % 2 ? "amp" : "bass", name: nom },
+                 gear: {} });
+});
+pb.setShared(etagere);
+pb.openShared();
+function surEtagere() {
+  pb.renderShared();
+  return (w.__nodes.get("shared-list").innerHTML.match(/data-take/g) || []).length;
+}
+pb.setSharedQ("");
+check("sans filtre, toute l'étagère", surEtagere() === etagere.length, String(surEtagere()));
+pb.setSharedQ("blues");
+check("filtrer par le nom", surEtagere() === 1, String(surEtagere()));
+pb.setSharedQ("BLUES");
+check("la casse est ignorée", surEtagere() === 1);
+pb.setSharedQ("cremeux");
+check("les accents aussi, comme dans le catalogue", surEtagere() === 1, String(surEtagere()));
+pb.setSharedQ("remi");
+check("filtrer par l'auteur", surEtagere() === 2, String(surEtagere()));
+pb.setSharedQ("zzz");
+check("rien ne correspond : on le dit", surEtagere() === 0 &&
+  w.__nodes.get("shared-list").innerHTML.indexOf("correspond") > 0,
+  w.__nodes.get("shared-list").innerHTML.slice(0, 60));
+pb.setSharedQ("");
+
+check("une étagère fournie propose le champ", pb.sharedFilterVisible() === true,
+  String(etagere.length) + ' fiches');
+pb.setShared(etagere.slice(0, 3));
+check("une étagère courte s'en passe", pb.sharedFilterVisible() === false,
+  'le champ occuperait la place sans servir');
+pb.setShared(etagere);
+
+/* --- la recherche du catalogue ne reconstruit pas à chaque frappe --- */
+const source = require("node:fs").readFileSync(page, "utf8");
+const handler = source.slice(source.indexOf('getElementById("q").addEventListener'),
+                             source.indexOf('getElementById("q").addEventListener') + 340);
+check("la saisie passe par un délai",
+  /setTimeout/.test(handler) && /clearTimeout/.test(handler),
+  "sans délai, chaque touche reconstruit toute la liste");
+
 /* --- l'URL --- */
 const parUrl = run(page, { search: "?gear=lionheart20&tag=blues,rock" });
 check("l'URL pose les filtres",

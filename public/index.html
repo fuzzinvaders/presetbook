@@ -539,6 +539,9 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Chercher un nom, un auteur…": "Search a name, an author…",
+  "Chercher dans les fiches partagées": "Search the shared presets",
+  "Aucune fiche partagée ne correspond.": "No shared preset matches.",
   "Comparer": "Compare",
   "Avec": "With",
   "écart": "difference",
@@ -3932,6 +3935,7 @@ function openShared(){
       '<p class="hint">Ce que les autres comptes de ce serveur ont publié. ' +
       'Reprendre une fiche en fait une copie chez toi : la modifier ensuite ne touche à rien ' +
       'de ce que les autres voient.</p>' +
+      '<div id="shared-filter"></div>' +
       '<div id="shared-list"><p class="hint">Chargement…</p></div>' +
     '</div></div>');
   veil.classList.add("open");
@@ -3939,6 +3943,16 @@ function openShared(){
 }
 
 var sharedCache = [];
+var sharedQ = "";
+
+/* Le champ n'apparaît qu'une fois l'étagère assez fournie : sous une poignée de
+   fiches, il n'aiderait personne et occuperait la place. */
+var SHARED_FILTER_FROM = 6;
+
+/** Le champ de recherche a-t-il lieu d'être ? Séparé pour être éprouvable seul. */
+function sharedFilterVisible(){
+  return sharedCache.length >= SHARED_FILTER_FROM;
+}
 
 function loadShared(){
   var host = document.getElementById("shared-list");
@@ -3949,7 +3963,37 @@ function loadShared(){
       setHtml(host, "Personne n'a encore publié de fiche. Sois le premier : « Partager » sur une carte.");
       return;
     }
-    host.innerHTML = tHtml('<div class="ulist">' + sharedCache.map(function(it){
+    var filtre = document.getElementById("shared-filter");
+    if (filtre){
+      filtre.innerHTML = sharedFilterVisible()
+        ? tHtml('<input type="search" data-shared-q placeholder="Chercher un nom, un auteur…"' +
+                ' aria-label="Chercher dans les fiches partagées">')
+        : "";
+      var champ = filtre.querySelector && filtre.querySelector("[data-shared-q]");
+      if (champ) champ.value = sharedQ;
+    }
+    renderShared();
+  }, function(){
+    setHtml(host, "Étagère indisponible.");
+  });
+}
+
+/** Le même aplatissement que la recherche du catalogue : casse et accents ignorés. */
+function sharedMatch(it){
+  if (!sharedQ) return true;
+  var foin = [it.name, it.by, KINDS[it.kind] ? KINDS[it.kind].label : it.kind].join(" ");
+  return plat(foin).indexOf(plat(sharedQ)) >= 0;
+}
+
+function renderShared(){
+  var host = document.getElementById("shared-list");
+  if (!host) return;
+  var vues = sharedCache.filter(sharedMatch);
+  if (!vues.length){
+    setHtml(host, "Aucune fiche partagée ne correspond.");
+    return;
+  }
+  host.innerHTML = tHtml('<div class="ulist">' + vues.map(function(it){
       var mien = session.user && it.by === session.user.name;
       return '<div class="urow">' +
         '<span class="kind ' + esc(it.kind) + '">' + esc(KINDS[it.kind] ? KINDS[it.kind].label : it.kind) + '</span>' +
@@ -3961,9 +4005,6 @@ function loadShared(){
           '<button class="btn small ghost danger" data-unshare="' + esc(it.id) + '">Retirer</button>' : "") +
         '</div>';
     }).join("") + '</div>');
-  }, function(){
-    setHtml(host, "Étagère indisponible.");
-  });
 }
 
 /** Reprendre : exactement le chemin d'un fichier importé, garde-fous compris. */
@@ -4222,7 +4263,16 @@ document.getElementById("grp").addEventListener("click", function(e){
   });
   render();
 });
-document.getElementById("q").addEventListener("input", function(){ ui.q = this.value; render(); });
+/* Chaque frappe reconstruisait toute la liste. Mesuré : environ 2,4 Ko de HTML
+   par carte, donc plus d'un mégaoctet pour une bibliothèque de cinq cents
+   fiches — à chaque touche. Un délai court suffit à ne rendre qu'une fois par
+   mot tapé, et 150 ms restent imperceptibles. */
+var qTimer = null;
+document.getElementById("q").addEventListener("input", function(){
+  var v = this.value;
+  if (qTimer) window.clearTimeout(qTimer);
+  qTimer = window.setTimeout(function(){ qTimer = null; ui.q = v; render(); }, 150);
+});
 document.getElementById("btn-filters").addEventListener("click", function(){
   ui.open = !ui.open;
   renderFilters();
@@ -4430,6 +4480,12 @@ document.getElementById("veil").addEventListener("click", function(e){
   }
 });
 
+document.getElementById("veil").addEventListener("input", function(e){
+  var f = e.target;
+  if (!f || !f.hasAttribute || !f.hasAttribute("data-shared-q")) return;
+  sharedQ = f.value;
+  renderShared();
+});
 document.getElementById("veil").addEventListener("submit", function(e){
   var f = e.target;
   if (!f) return;
@@ -4652,6 +4708,9 @@ window.__pb = {
   setAdmin: function(v){ session.isAdmin = !!v; },
   setInvite: function(v){ invitation = v; }, getInvite: function(){ return invitation; },
   compareRows: compareRows, openCompare: openCompare, compareTable: compareTable,
+  renderShared: renderShared, sharedMatch: sharedMatch,
+  sharedFilterVisible: sharedFilterVisible,
+  setSharedQ: function(v){ sharedQ = v; },
   openShared: openShared, sharePreset: sharePreset, takeShared: takeShared,
   setShared: function(l){ sharedCache = l; },
   readInvite: readInvite, inviteLink: inviteLink, showGate2: showGate,

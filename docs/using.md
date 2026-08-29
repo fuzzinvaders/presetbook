@@ -44,7 +44,9 @@ Just below, the sorting bar:
 - the **tabs** All, Bass, Amp, Pedal, Pedalboard, Reaper, each with its preset count;
 - the **search**, which looks at the name, the notes, the styles, the song, the artist, the gear
   name, the pedals of a pedalboard and the plugins of a chain. It ignores case **and accents**:
-  `pedalier` finds "Pédalier", which matters when you are typing on a phone;
+  `pedalier` finds "Pédalier", which matters when you are typing on a phone. The list is rebuilt a
+  fraction of a second after you stop typing rather than on every keystroke, which keeps the field
+  responsive even with a large library;
 - the **grouping**, by gear or by song;
 - the **filters**, by gear model and by style — see below;
 - **Print**, which puts what is displayed onto paper.
@@ -106,6 +108,10 @@ Three things to understand, one sentence each:
 You remove your own presets from the shelf whenever you like; the administrator can remove any of
 them, which is what makes moderation possible. A deleted account takes its publications with it — a
 preset signed by a name that no longer exists has no business being there.
+
+As soon as the shelf holds more than half a dozen presets, a search field appears above it: it looks
+at the name, the author and the family, ignoring case and accents just like the catalogue one. Below
+that count it would have nothing to filter and would only take up room.
 
 The demo account does not publish: its credentials being public, that would open the shelf to the
 whole internet.
