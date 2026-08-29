@@ -7,7 +7,7 @@
 | `public/index.html` | l'application entière : styles, catalogue, registres, interface |
 | `public/rfxchain.js` | lecture et écriture des chaînes d'effets de Reaper |
 | `server.js` | serveur sans dépendance : statique, comptes, API de persistance |
-| `test/` | dix-huit suites, exécutables sans rien installer |
+| `test/` | dix-neuf suites, exécutables sans rien installer |
 | `tools/` | six outils en ligne de commande, embarqués dans l'image |
 
 Deux partis pris tiennent tout le reste. **L'application est une page unique et autonome**, ce qui
@@ -40,6 +40,7 @@ données de l'utilisateur sont à part, et ce sont les seules écrites sur le di
   "overrides": { "b-motown": { /* une fiche du catalogue, modifiée */ } },
   "gear":      { "g-svt": { /* une façade créée */ } },
   "hidden":    [ "a-casque" ],
+  "trash":     [ { "at": "…", "preset": { }, "gear": { } } ],
   "lang":      "en",
   "updated":   "2026-08-26T09:00:00.000Z"
 }

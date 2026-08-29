@@ -349,6 +349,29 @@ identifiant neuf et son nom reçoit *(importée)*, pour que vous puissiez compar
 si une façade manque, l'import est **refusé en la nommant**, plutôt que d'ajouter une fiche qu'on ne
 pourrait pas afficher.
 
+## Si vous supprimez quelque chose par erreur
+
+Trois filets, du plus immédiat au plus lointain.
+
+**Le message de confirmation porte « Annuler la suppression ».** Il reste huit secondes : c'est le
+moment où l'on se rend compte de son erreur, et c'est là que le bouton doit être.
+
+**La corbeille.** Une fiche que vous avez créée y attend **30 jours**, avec les façades dont elle
+dépend — une pédale que vous aviez dessinée revient avec elle. Elle se trouve dans **Sauvegarde**, et
+elle voyage avec vos données : une fiche supprimée depuis le téléphone se récupère depuis
+l'ordinateur. Une fiche du **catalogue livré** n'y passe pas : la supprimer ne fait que la masquer, ce
+que « Réinitialiser mes modifications » annule déjà.
+
+**Les versions précédentes**, en déploiement autonome. Le serveur garde **un état par jour pendant une
+semaine**, et **Sauvegarde** les liste avec le nombre de fiches de chacun. C'est ce qui rattrape le
+reste : une restauration malheureuse, une modification en masse, une bêtise qu'on ne remarque que le
+lendemain.
+
+L'instantané d'un jour fige l'état **au premier enregistrement de ce jour-là** — donc celui de la
+veille au soir. C'est exactement ce qu'il faut pour revenir en arrière d'une journée ; à l'intérieur
+d'une même journée, ce sont les deux premiers filets qui jouent. Et revenir à une version photographie
+d'abord l'état courant : ce geste-là est réversible aussi.
+
 ## Où vont les enregistrements
 
 La pastille en haut à droite l'indique en permanence :
