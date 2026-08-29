@@ -136,6 +136,22 @@ check("un cas valide n'est pas retenu par la validation",
   auReseau.indexOf("identiques") < 0 && auReseau.indexOf("10 caractères") < 0,
   auReseau);
 
+/* --- une invitation, côté page --- */
+const inv = run(page, { search: "?invite=UN-JETON-DE-TEST" });
+check("le jeton est lu depuis l'URL", inv.__pb.getInvite() === "UN-JETON-DE-TEST",
+  String(inv.__pb.getInvite()));
+inv.__pb.showGate2();
+const porteInv = inv.__nodes.get("gate").innerHTML;
+check("l'écran ouvre directement la création de compte",
+  porteInv.indexOf('data-gm="register" aria-selected="true"') > 0, porteInv.slice(0, 140));
+check("il explique que la personne choisit ses identifiants",
+  porteInv.indexOf("Choisis toi-même ton identifiant") > 0);
+check("le lien d'invitation se fabrique depuis l'origine",
+  inv.__pb.inviteLink("abc").indexOf("?invite=abc") > 0, inv.__pb.inviteLink("abc"));
+
+const sansInv = run(page, { search: "" });
+check("sans jeton, rien n'est retenu", sansInv.__pb.getInvite() === null);
+
 /* --- le compte de démonstration, côté page --- */
 const g = run(page, { search: "" });
 g.__pb.showGate();
