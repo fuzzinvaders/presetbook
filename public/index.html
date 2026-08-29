@@ -8,6 +8,8 @@
      980 px puis réduit le tout : lisible à la loupe seulement. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<!-- Un lien d'invitation porte son jeton dans l'URL : on ne l'envoie à personne. -->
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="description" content="Presetbook : les réglages d'un instrument, d'un ampli, d'une pédale, d'un pédalier et des chaînes de plugins, affichés comme sur le matériel.">
 <meta name="theme-color" content="#E4E4E0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121412" media="(prefers-color-scheme: dark)">
@@ -522,6 +524,22 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Inviter quelqu'un": "Invite someone",
+  "Créer un lien d'invitation": "Create an invitation link",
+  "Fabrique un lien à usage unique : la personne choisit elle-même son identifiant et son mot de passe. Rien de secret ne passe par la messagerie du forum, et le lien expire au bout d'une semaine.":
+    "Creates a single-use link: the person chooses their own username and password. Nothing secret travels through a messaging system, and the link expires after a week.",
+  "À transmettre — ce lien ne sera plus affiché :": "To pass on — this link will not be shown again:",
+  "Copier le lien": "Copy the link",
+  "Lien copié.": "Link copied.",
+  "Sélectionne le lien et fais Ctrl+C.": "Select the link and press Ctrl+C.",
+  "Invitation en attente": "Pending invitation",
+  "Révoquer": "Revoke",
+  "Invitation révoquée.": "Invitation revoked.",
+  "Tu as été invité sur ce serveur. Choisis toi-même ton identifiant et ton mot de passe : personne d'autre ne les connaîtra. L'invitation ne sert qu'une fois.":
+    "You have been invited to this server. Choose your own username and password: nobody else will know them. The invitation works only once.",
+  "Cette invitation n'est plus valable.": "This invitation is no longer valid.",
+  "Trop d'invitations en attente.": "Too many pending invitations.",
+  "Invitation introuvable.": "Invitation not found.",
   "Les comptes de ce serveur": "The accounts on this server",
   "Ce compte": "This account",
   "Supprimer mon compte": "Delete my account",
@@ -1885,6 +1903,26 @@ function fetchJson(url){
 }
 
 /* Filtre initial repris de l'URL : ?q=…&kind=bass|amp|reaper&group=song — un filtre se met en favori. */
+/**
+ * Récupère « ?invite=… » puis le retire de l'URL.
+ *
+ * Un jeton qui reste dans la barre d'adresse finit dans l'historique, dans les
+ * captures d'écran et dans les liens qu'on repartage sans y penser. Il ne sert
+ * qu'une fois : autant qu'il ne traîne pas.
+ */
+function readInvite(){
+  try {
+    var qp = new URLSearchParams(window.location.search);
+    var jeton = qp.get("invite");
+    if (!jeton) return;
+    invitation = jeton;
+    qp.delete("invite");
+    var reste = qp.toString();
+    window.history.replaceState(null, "",
+      window.location.pathname + (reste ? "?" + reste : "") + window.location.hash);
+  } catch (e) { /* pas d'URL exploitable */ }
+}
+
 function readUrlFilter(){
   try {
     var qp = new URLSearchParams(window.location.search);
@@ -1908,6 +1946,7 @@ function readUrlFilter(){
    Uniquement en déploiement autonome : la page publiée n'a pas de
    serveur, donc aucun écran de connexion n'apparaît là-bas.        */
 var session = {user:null, canRegister:false, firstRun:false, demo:null, isDemo:false, isAdmin:false};
+var invitation = null;      /* jeton lu dans ?invite=, effacé de l'URL aussitôt */
 var gateMode = "login";
 
 function post(url, body){
@@ -1987,13 +2026,21 @@ function openAccount(){
         '</div>' +
       '</form>' +
       '</fieldset>' +
+      '<fieldset><legend>Inviter quelqu\'un</legend>' +
+        '<p class="hint">Fabrique un lien à usage unique : la personne choisit elle-même son ' +
+        'identifiant et son mot de passe. Rien de secret ne passe par la messagerie du forum, ' +
+        'et le lien expire au bout d\'une semaine.</p>' +
+        '<div class="acts"><button class="btn" data-newinvite>Créer un lien d\'invitation</button></div>' +
+        '<div id="inv-out"></div>' +
+        '<div id="inv-list"></div>' +
+      '</fieldset>' +
       '<fieldset><legend>Les comptes de ce serveur</legend>' +
         '<div id="acc-list"><p class="hint">Chargement…</p></div>' +
       '</fieldset>' : "") +
       dangerZone() +
     '</div></div>');
   veil.classList.add("open");
-  if (session.isAdmin) loadUsers();
+  if (session.isAdmin){ loadUsers(); loadInvites(); }
   var first = veil.querySelector('input[name="name"]');
   if (first) first.focus();
 }
@@ -2049,6 +2096,58 @@ function submitDelete(f){
     setHtml(btn, "Supprimer définitivement");
     deleteError(err.message);
   });
+}
+
+/** Le lien complet à transmettre. Il n'existe qu'ici : le serveur ne le garde pas. */
+function inviteLink(jeton){
+  return window.location.origin + window.location.pathname + "?invite=" + encodeURIComponent(jeton);
+}
+
+function newInvite(btn){
+  btn.disabled = true;
+  post("api/invites").then(function(j){
+    btn.disabled = false;
+    var lien = inviteLink(j.token);
+    var out = document.getElementById("inv-out");
+    /* Affiché une seule fois : le serveur n'en garde que l'empreinte. */
+    setHtml(out, "");
+    out.innerHTML = tHtml('<p class="hint">À transmettre — ce lien ne sera plus affiché :</p>' +
+      '<textarea id="inv-lien" rows="2" readonly></textarea>' +
+      '<div class="acts"><button class="btn" data-copyinvite>Copier le lien</button></div>');
+    var champ = document.getElementById("inv-lien");
+    if (champ){ champ.value = lien; champ.select(); }
+    loadInvites();
+  }, function(err){
+    btn.disabled = false;
+    toast(err.message);
+  });
+}
+
+function copyInvite(){
+  var champ = document.getElementById("inv-lien");
+  if (!champ) return;
+  champ.select();
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(champ.value).then(function(){ toast("Lien copié."); },
+      function(){ toast("Sélectionne le lien et fais Ctrl+C."); });
+  } else toast("Sélectionne le lien et fais Ctrl+C.");
+}
+
+/** Les invitations en attente : de quoi révoquer un lien qu'on regrette. */
+function loadInvites(){
+  var host = document.getElementById("inv-list");
+  if (!host) return;
+  fetchJson("api/invites").then(function(j){
+    var l = (j && j.invites) || [];
+    if (!l.length){ setHtml(host, ""); return; }
+    host.innerHTML = tHtml('<div class="ulist">' + l.map(function(i){
+      return '<div class="urow"><span class="mini">' + t("Invitation en attente") + '</span>' +
+        '<span class="mini" style="opacity:.6">' + esc(String(i.expires || "").slice(0, 10)) + '</span>' +
+        '<span class="spacer"></span>' +
+        '<button class="btn small ghost danger" data-invdel="' + esc(i.id) + '">Révoquer</button>' +
+        '</div>';
+    }).join("") + '</div>');
+  }, function(){ setHtml(host, ""); });
 }
 
 /** La liste des comptes, pour l'administrateur seul. */
@@ -2159,16 +2258,21 @@ function submitAccount(f){
 
 function showGate(){
   var g = document.getElementById("gate");
+  /* Une invitation en poche : on ouvre le formulaire de création sans détour. */
+  if (invitation) gateMode = "register";
   var creating = gateMode === "register";
   g.innerHTML =
     tHtml('<div class="gate-card">' +
       '<p class="eyebrow">Instruments · amplis · pédales · chaînes de plugins</p>' +
       '<h1>Presetbook</h1>' +
-      (session.canRegister ?
+      ((session.canRegister || invitation) ?
         '<div class="seg" id="gate-seg" role="tablist">' +
           '<button role="tab" data-gm="login" aria-selected="' + (!creating) + '">Se connecter</button>' +
           '<button role="tab" data-gm="register" aria-selected="' + creating + '">Créer un compte</button>' +
         '</div>' : "") +
+      (invitation && creating ?
+        '<p class="gate-note">Tu as été invité sur ce serveur. Choisis toi-même ton identifiant et ' +
+        'ton mot de passe : personne d\'autre ne les connaîtra. L\'invitation ne sert qu\'une fois.</p>' : "") +
       (session.firstRun ?
         '<p class="gate-note">Aucun compte sur ce serveur : le premier créé sera le tien, ' +
         'et les presets déjà enregistrés lui seront rattachés.</p>' : "") +
@@ -2253,7 +2357,9 @@ document.getElementById("gate").addEventListener("submit", function(e){
   var password = f.elements.password.value;
   var btn = f.querySelector('button[type="submit"]');
   btn.disabled = true;
-  post(gateMode === "register" ? "api/register" : "api/login", {name:name, password:password})
+  var corps = {name:name, password:password};
+  if (gateMode === "register" && invitation) corps.invite = invitation;
+  post(gateMode === "register" ? "api/register" : "api/login", corps)
     .then(function(j){
       session.user = j.user;
       mountKofi();
@@ -2358,6 +2464,7 @@ function mountKofi(){
 }
 
 function boot(){
+  readInvite();
   readUrlFilter();
   setupInstall();
   applyLang();
@@ -3748,6 +3855,16 @@ document.getElementById("veil").addEventListener("click", function(e){
 
   var udel = t.closest && t.closest("[data-udel]");
   if (udel){ adminDelete(udel); return; }
+  var neuf = t.closest && t.closest("[data-newinvite]");
+  if (neuf){ newInvite(neuf); return; }
+  if (t.closest && t.closest("[data-copyinvite]")){ copyInvite(); return; }
+  var revoc = t.closest && t.closest("[data-invdel]");
+  if (revoc){
+    post("api/invites/revoke", {id: revoc.getAttribute("data-invdel")}).then(function(){
+      toast("Invitation révoquée."); loadInvites();
+    }, function(err){ toast(err.message); });
+    return;
+  }
 
   if (t.closest("[data-close]")){ closeEditor(); return; }
 
@@ -4077,6 +4194,8 @@ window.__pb = {
   openAccount: openAccount, submitAccount: submitAccount, renderWho: renderWho,
   submitPassword: submitPassword, submitDelete: submitDelete, dangerZone: dangerZone,
   setAdmin: function(v){ session.isAdmin = !!v; },
+  setInvite: function(v){ invitation = v; }, getInvite: function(){ return invitation; },
+  readInvite: readInvite, inviteLink: inviteLink, showGate2: showGate,
   setSession: function(u, demo){ session.user = u; session.isDemo = !!demo; },
   setDemo: function(d){ session.demo = d; },
   getSession: function(){ return session; },

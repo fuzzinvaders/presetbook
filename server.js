@@ -9,6 +9,7 @@
  * Statique      : public/
  * Session       : GET /api/session, POST /api/register, /api/login, /api/logout, /api/password
  * Comptes       : GET /api/users, POST /api/account/delete — réservés ou restreints à l'admin
+ * Invitations   : GET/POST /api/invites, POST /api/invites/revoke — réservés à l'admin
  * Presets       : GET/PUT /api/presets — propres à l'utilisateur connecté
  * Santé         : GET /healthz — jamais protégé
  *
@@ -33,6 +34,7 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const SESSIONS_FILE = path.join(DATA_DIR, "sessions.json");
+const INVITES_FILE = path.join(DATA_DIR, "invites.json");
 const PRESETS_DIR = path.join(DATA_DIR, "presets");
 const LEGACY_PRESETS = path.join(DATA_DIR, "presets.json");
 
@@ -61,6 +63,11 @@ const PW_MAX = 200;
 const NAME_RE = /^[\p{L}\p{N}][\p{L}\p{N} ._-]{1,39}$/u;
 const SCRYPT = { N: 16384, r: 8, p: 1, keylen: 64 };
 const LOGIN_MAX_FAILS = 10;
+const INVITE_DAYS = 7;
+const INVITE_MAX = 50;
+/* La démo ne se remet à zéro à l'entrée que si personne n'y a touché depuis ce
+   délai : sinon un nouveau venu effacerait l'écran de celui qui explore. */
+const DEMO_IDLE_MS = 30 * 60 * 1000;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
 /* Empreinte de la page servie : permet de vérifier d un coup d oeil quelle
@@ -525,6 +532,100 @@ function noteFailure(req) {
   else rec.n += 1;
 }
 
+/* ------------------------------------------------------------ invitations */
+
+/**
+ * Une invitation est un jeton à usage unique qui autorise à ouvrir un compte.
+ *
+ * Elle remplace la transmission d'un mot de passe : la personne invitée choisit
+ * elle-même son identifiant et son mot de passe, et rien de secret ne circule
+ * par messagerie. Comme pour les sessions, seule l'empreinte du jeton est
+ * enregistrée — le lien complet n'existe qu'une fois, à la création.
+ */
+async function readInvites() {
+  const db = await readJsonFile(INVITES_FILE, { v: 1, invites: [] });
+  return Array.isArray(db.invites) ? db : { v: 1, invites: [] };
+}
+
+function inviteExpired(inv) {
+  return !inv.expires || Date.parse(inv.expires) < Date.now();
+}
+
+/** Retire les jetons périmés ou déjà servis : le fichier ne grossit pas sans fin. */
+function pruneInvites(db) {
+  const avant = db.invites.length;
+  db.invites = db.invites.filter((i) => !i.used && !inviteExpired(i));
+  return avant !== db.invites.length;
+}
+
+async function createInvite(user) {
+  const db = await readInvites();
+  pruneInvites(db);
+  if (db.invites.length >= INVITE_MAX) {
+    throw Object.assign(new Error("Trop d'invitations en attente."), { code: 429 });
+  }
+  const token = crypto.randomBytes(24).toString("base64url");
+  db.invites.push({
+    hash: tokenHash(token),
+    by: user.name,
+    created: new Date().toISOString(),
+    expires: new Date(Date.now() + INVITE_DAYS * 86400000).toISOString(),
+    used: false,
+  });
+  await writeJsonFile(INVITES_FILE, db);
+  return token;
+}
+
+/** Consomme un jeton. Renvoie faux s'il est absent, périmé ou déjà servi. */
+async function useInvite(token) {
+  if (!token) return false;
+  const db = await readInvites();
+  const h = tokenHash(String(token));
+  const inv = db.invites.find((i) => i.hash === h);
+  if (!inv || inv.used || inviteExpired(inv)) return false;
+  inv.used = true;
+  pruneInvites(db);
+  await writeJsonFile(INVITES_FILE, db);
+  return true;
+}
+
+async function handleInvites(req, res) {
+  const user = await currentUser(req);
+  if (!isAdmin(user)) return sendJson(res, 403, { error: "Réservé à l'administrateur." });
+
+  if (req.method === "GET") {
+    const db = await readInvites();
+    if (pruneInvites(db)) await writeJsonFile(INVITES_FILE, db);
+    /* Le jeton n'est jamais renvoyé : il n'existe qu'au moment de la création. */
+    return sendJson(res, 200, {
+      invites: db.invites.map((i) => ({ id: i.hash.slice(0, 12), by: i.by,
+                                        created: i.created, expires: i.expires })),
+    });
+  }
+
+  try {
+    const token = await createInvite(user);
+    console.log("[presetbook] invitation créée par " + user.name);
+    return sendJson(res, 201, { token: token, days: INVITE_DAYS });
+  } catch (err) {
+    return sendJson(res, err.code || 500, { error: err.message });
+  }
+}
+
+async function handleRevokeInvite(req, res) {
+  const user = await currentUser(req);
+  if (!isAdmin(user)) return sendJson(res, 403, { error: "Réservé à l'administrateur." });
+  let body;
+  try { body = await readJsonBody(req); }
+  catch { return sendJson(res, 400, { error: "Requête invalide." }); }
+  const db = await readInvites();
+  const avant = db.invites.length;
+  db.invites = db.invites.filter((i) => i.hash.slice(0, 12) !== String(body.id || ""));
+  if (db.invites.length === avant) return sendJson(res, 404, { error: "Invitation introuvable." });
+  await writeJsonFile(INVITES_FILE, db);
+  return sendJson(res, 200, { ok: true });
+}
+
 /* ---------------------------------------------------------------- presets */
 
 function presetsFile(user) {
@@ -707,19 +808,25 @@ async function handleRegister(req, res) {
        ouvrirait la création de comptes à tout Internet. */
     return sendJson(res, 403, { error: "Le compte de démonstration ne peut pas créer de compte." });
   }
-  /* Ouvrir un compte est une action d'administration : un utilisateur ordinaire
-     ne peut que changer son mot de passe et supprimer son propre compte. */
-  if (!(realUsers(db).length === 0 || ALLOW_REGISTER || isAdmin(asUser))) {
-    return sendJson(res, 403, asUser
-      ? { error: "Seul l'administrateur peut ouvrir un compte." }
-      : { error: "La création de comptes est fermée sur ce serveur." });
-  }
-
   let body;
   try {
     body = await readJsonBody(req);
   } catch {
     return sendJson(res, 400, { error: "Requête invalide." });
+  }
+
+  /* Quatre portes : personne n'est encore inscrit, le serveur est ouvert, c'est
+     l'administrateur, ou une invitation valable. La dernière est celle qu'on
+     tend à quelqu'un — elle se consomme, donc elle ne sert qu'une fois. */
+  const parInvitation = body.invite ? await useInvite(body.invite) : false;
+  if (body.invite && !parInvitation) {
+    noteFailure(req);
+    return sendJson(res, 410, { error: "Cette invitation n'est plus valable." });
+  }
+  if (!(realUsers(db).length === 0 || ALLOW_REGISTER || isAdmin(asUser) || parInvitation)) {
+    return sendJson(res, 403, asUser
+      ? { error: "Seul l'administrateur peut ouvrir un compte." }
+      : { error: "La création de comptes est fermée sur ce serveur." });
   }
   const name = String(body.name || "").trim();
   const password = String(body.password || "");
@@ -755,6 +862,32 @@ async function handleRegister(req, res) {
    fabrique pas des sessions à l'infini. */
 const demoGrants = new Map(); // ip -> {n, first}
 
+/**
+ * Remet les fiches de la démo à zéro si personne n'y a touché depuis un moment.
+ *
+ * Réinitialiser à chaque entrée serait plus simple, mais effacerait l'écran de
+ * quelqu'un en train d'explorer si deux visiteurs arrivent à quelques minutes
+ * d'écart. Le délai d'inactivité donne une démo propre au nouveau venu sans
+ * tirer le tapis sous les pieds du précédent.
+ */
+async function resetDemoIfIdle(user) {
+  try {
+    const etat = await readJsonFile(presetsFile(user), null);
+    const vide = !etat || (!(etat.custom || []).length &&
+                           !Object.keys(etat.overrides || {}).length &&
+                           !Object.keys(etat.gear || {}).length &&
+                           !(etat.hidden || []).length);
+    if (vide) return false;
+    const touche = etat.updated ? Date.parse(etat.updated) : 0;
+    if (Date.now() - touche < DEMO_IDLE_MS) return false;      /* quelqu'un y est */
+    await writeJsonFile(presetsFile(user), { ...EMPTY_STATE, updated: new Date().toISOString() });
+    console.log("[presetbook] démonstration remise à zéro (inactive)");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function handleDemo(req, res) {
   if (!DEMO_NAME) return sendJson(res, 404, { error: "Aucun compte de démonstration ici." });
   const ip = clientIp(req);
@@ -771,6 +904,10 @@ async function handleDemo(req, res) {
   const db = await readUsers();
   const user = findUser(db, DEMO_NAME);
   if (!user) return sendJson(res, 503, { error: "Le compte de démonstration n'est pas prêt." });
+
+  /* Un nouveau venu trouve une démo propre, si le précédent l'a laissée. */
+  await resetDemoIfIdle(user);
+
   const token = newSession(user.id);
   return sendJson(res, 200, { user: { id: user.id, name: user.name } },
     { "Set-Cookie": sessionCookie(token, req) });
@@ -909,6 +1046,12 @@ const server = http.createServer(async (req, res) => {
     if (pathname === "/api/demo" && req.method === "POST") return await handleDemo(req, res);
     if (pathname === "/api/password" && req.method === "POST") return await handlePassword(req, res);
     if (pathname === "/api/users" && req.method === "GET") return await handleUsers(req, res);
+    if (pathname === "/api/invites" && (req.method === "GET" || req.method === "POST")) {
+      return await handleInvites(req, res);
+    }
+    if (pathname === "/api/invites/revoke" && req.method === "POST") {
+      return await handleRevokeInvite(req, res);
+    }
     if (pathname === "/api/account/delete" && req.method === "POST") return await handleDeleteAccount(req, res);
     if (pathname === "/api/logout" && req.method === "POST") return handleLogout(req, res);
 

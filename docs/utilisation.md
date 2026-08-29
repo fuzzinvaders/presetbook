@@ -350,10 +350,12 @@ de messagerie ne peut pas en offrir. Gardez le mot de passe dans un gestionnaire
 Si le serveur en propose un, l'écran de connexion affiche **Essayer la démonstration**. Un clic
 suffit : c'est un compte ouvert à tous, fait pour regarder l'application sans s'inscrire.
 
-Deux choses à savoir avant d'y ranger quoi que ce soit. Ses fiches **repartent de zéro à chaque
-redémarrage du serveur** — ce n'est pas un rangement, c'est un bac à sable. Et il **ne peut pas
-ouvrir de compte** : ses identifiants étant publics, ce droit reviendrait à ouvrir le serveur à tout
-le monde. Le bouton **Comptes** n'apparaît donc pas dans cette session, et la pastille en haut à
+Deux choses à savoir avant d'y ranger quoi que ce soit. Ses fiches **repartent de zéro** au
+redémarrage du serveur, et aussi à l'arrivée d'un visiteur si personne n'y a touché depuis une
+demi-heure — ce n'est pas un rangement, c'est un bac à sable. Le délai d'inactivité compte : sans
+lui, l'arrivée d'un curieux effacerait l'écran de quelqu'un en train d'explorer. Et le compte **ne
+peut pas ouvrir de compte** : ses identifiants étant publics, ce droit reviendrait à ouvrir le
+serveur à tout le monde. Le bouton **Comptes** n'apparaît donc pas dans cette session, et la pastille en haut à
 droite rappelle en permanence qu'on est en démonstration.
 
 Pour garder son travail, il faut un vrai compte. En attendant, **Exporter** sur une carte et
@@ -400,7 +402,24 @@ public et affiché. Le changer fermerait la porte à tout le monde jusqu'au red�
 Un mot de passe **oublié** se répare depuis la machine qui héberge, pas depuis l'application — voir
 [Installer et exploiter](installation.md).
 
-### Ouvrir un compte à quelqu'un
+### Inviter quelqu'un
+
+**Réservé à l'administrateur**, et c'est la bonne façon de faire entrer quelqu'un. Le bouton
+**Comptes** propose *Créer un lien d'invitation* : vous obtenez un lien à transmettre, la personne
+clique, **choisit elle-même son identifiant et son mot de passe**.
+
+Rien de secret ne circule : vous ne connaissez pas son mot de passe, et il n'y a rien à changer après
+coup. Le lien **ne sert qu'une fois** et **expire au bout d'une semaine**. Les invitations en attente
+se révoquent d'un clic tant qu'elles n'ont pas servi.
+
+Le lien n'est affiché **qu'une seule fois**, au moment où vous le créez — le serveur n'en garde que
+l'empreinte, comme pour les mots de passe. Si vous le perdez avant de l'envoyer, révoquez-le et
+créez-en un autre.
+
+À l'arrivée, le jeton est retiré de la barre d'adresse dès l'ouverture de la page : il ne traîne ni
+dans l'historique, ni dans une capture d'écran, ni dans un lien repartagé par inadvertance.
+
+### Ouvrir un compte à quelqu'un, sans lien
 
 **Réservé à l'administrateur.** Le bouton **Comptes** de l'en-tête ouvre un compte à quelqu'un d'autre :
 identifiant, mot de passe, et sa répétition. **Votre session ne change pas** — c'est le serveur qui
@@ -411,10 +430,9 @@ La personne se connecte ensuite elle-même, et ses fiches sont entièrement sép
 évite d'ouvrir `ALLOW_REGISTER` sur un serveur exposé à Internet : vous créez les comptes de votre
 groupe un par un, sans laisser la création ouverte à tout venant.
 
-Deux choses à savoir. Le mot de passe se transmet **de la main à la main** — il n'y a pas d'envoi par
-courriel — donc dites à la personne de le **changer à sa première connexion**, ce qui fermera du même
-coup toute autre session. Et il n'existe pas de liste des comptes dans l'interface : un identifiant
-déjà pris est signalé au moment de la création, c'est tout.
+Cette voie ne sert que si vous ne pouvez pas transmettre de lien : le mot de passe se transmet alors
+**de la main à la main**, et il faut penser à dire à la personne de le **changer à sa première
+connexion**. Le lien d'invitation évite tout cela — c'est pourquoi il est préférable.
 
 ## Licence et dons
 

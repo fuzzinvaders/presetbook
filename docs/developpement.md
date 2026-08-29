@@ -7,7 +7,7 @@
 | `public/index.html` | l'application entière : styles, catalogue, registres, interface |
 | `public/rfxchain.js` | lecture et écriture des chaînes d'effets de Reaper |
 | `server.js` | serveur sans dépendance : statique, comptes, API de persistance |
-| `test/` | seize suites, exécutables sans rien installer |
+| `test/` | dix-sept suites, exécutables sans rien installer |
 | `tools/` | six outils en ligne de commande, embarqués dans l'image |
 
 Deux partis pris tiennent tout le reste. **L'application est une page unique et autonome**, ce qui
