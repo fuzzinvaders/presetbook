@@ -44,7 +44,9 @@ Juste en dessous, la barre de tri :
 - les **onglets** Tout, Basse, Ampli, Pédale, Pédalier, Reaper, avec le nombre de fiches de chacun ;
 - la **recherche**, qui regarde le nom, les notes, les styles, le morceau, l'artiste, le nom du
   matériel, les pédales d'un pédalier et les plugins d'une chaîne. Elle ignore la casse **et les
-  accents** : `pedalier` trouve « Pédalier », ce qui compte quand on tape sur un téléphone ;
+  accents** : `pedalier` trouve « Pédalier », ce qui compte quand on tape sur un téléphone. La
+  liste se recompose une fraction de seconde après la frappe plutôt qu'à chaque touche, ce qui garde
+  le champ fluide même avec une grande bibliothèque ;
 - le **regroupement**, par matériel ou par morceau ;
 - les **filtres**, par modèle de matériel et par style — voir plus bas ;
 - **Imprimer**, qui met sur papier ce qui est affiché.
@@ -107,6 +109,10 @@ Trois choses à comprendre, et elles tiennent en une phrase chacune :
 Vous retirez vos propres fiches de l'étagère quand vous voulez ; l'administrateur peut retirer
 n'importe laquelle, ce qui permet de modérer. Un compte supprimé emporte ses publications avec lui —
 une fiche signée d'un nom qui n'existe plus n'aurait rien à faire là.
+
+Dès que l'étagère dépasse une demi-douzaine de fiches, un champ de recherche apparaît au-dessus :
+il regarde le nom, l'auteur et la famille, en ignorant la casse et les accents comme celui du
+catalogue. En dessous, il n'aurait rien à filtrer et prendrait la place pour rien.
 
 Le compte de démonstration ne publie pas : ses identifiants étant publics, ce serait ouvrir l'étagère
 à tout Internet.
