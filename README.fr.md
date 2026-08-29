@@ -141,6 +141,7 @@ serveur du tout — publiée en statique, ou ouverte depuis le disque.
 
 | | |
 | --- | --- |
+| [L'installer sur un Mac](docs/install-mac.md) 🇬🇧 | pas à pas, pour qui n'ouvre jamais un terminal : ni Docker, ni Homebrew, ni git |
 | [Utiliser Presetbook](docs/utilisation.md) | lire et modifier une fiche, composer un pédalier, créer une façade, importer une chaîne de Reaper, changer de langue, filtrer, imprimer, exporter, sauvegarder |
 | [Installer et exploiter](docs/installation.md) | Docker, reverse proxy, mise à jour, comptes, compte de démonstration, sécurité, script tiers |
 | [Développer](docs/developpement.md) | architecture, modèle de données, registres, codec `.RfxChain`, les deux langues, tests |

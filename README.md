@@ -131,6 +131,7 @@ as a static page, or opened straight from disk.
 
 | | |
 | --- | --- |
+| [Running it on a Mac](docs/install-mac.md) 🇬🇧 | a step-by-step guide for people who do not use a terminal: no Docker, no Homebrew, no git |
 | [Using Presetbook](docs/utilisation.md) 🇫🇷 | reading and editing a preset, building a pedalboard, creating a front panel, importing a Reaper chain, switching language, filtering, printing, exporting |
 | [Installing and running it](docs/installation.md) 🇫🇷 | Docker, reverse proxy, updates, accounts, the demo account, security, the third-party script |
 | [Developing](docs/developpement.md) 🇫🇷 | architecture, data model, registries, the `.RfxChain` codec, both languages, tests |

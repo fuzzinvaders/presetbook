@@ -964,7 +964,13 @@ loadSessions()
         console.error("[presetbook] compte de démonstration indisponible :", err.message)
       );
       const db = await readUsers().catch(() => ({ users: [] }));
-      console.log(`[presetbook] écoute sur http://${HOST}:${PORT}`);
+      /* « 0.0.0.0 » ne se colle pas dans un navigateur : on affiche l'adresse
+         qui marche, et on dit à part ce que le serveur écoute vraiment. */
+      const ouvrir = HOST === "0.0.0.0" || HOST === "::" ? "localhost" : HOST;
+      console.log(`[presetbook] ouvre http://${ouvrir}:${PORT}`);
+      if (ouvrir === "localhost") {
+        console.log("[presetbook] écoute sur toutes les interfaces — HOST=127.0.0.1 pour ce poste seul");
+      }
       console.log(`[presetbook] données : ${DATA_DIR}`);
       console.log(`[presetbook] page servie : ${appFingerprint.sha} (${appFingerprint.bytes} octets, ${appFingerprint.mtime})`);
       const vrais = realUsers(db).length;
