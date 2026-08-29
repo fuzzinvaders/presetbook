@@ -207,6 +207,17 @@ balance control — not in rough steps.
 show their value in the gear's own unit while you move them, and a control that is out of circuit is
 greyed rather than hidden — so you know it exists.
 
+From the second letter typed into the **name**, close presets appear right below it. A library
+always ends up holding two "Motown doux" written six months apart, and the moment to notice is while
+you are typing the name. A name already taken is flagged more firmly than mere neighbours.
+
+Clicking a suggestion opens the existing preset, which is usually what you meant to do. What you were
+typing is not lost for that: the banner brings it back in one click.
+
+Matching happens at the **start of a word**: "motown" finds "Compression Motown", but "zz" does not
+drag in every Jazz and Fuzz in the library. The **Song** field works the same way and offers titles
+already entered, artist included — a title should be spelled one way.
+
 **Duplicate** makes an editable copy, which is the right way to start from a catalogue preset.
 **Delete** asks for confirmation with a second click.
 
@@ -218,9 +229,11 @@ new model's defaults, erasing nothing.
 The **Gear** button opens the list of front panels, each with its control count and the number of
 presets using it.
 
-The **shipped** panels — Yamaha BB734A, Fender Rumble 40 and Laney Lionheart L20T-112, described from
-their real front panels, plus generic templates — cannot be edited. You **duplicate** one to start
-from a base.
+The **shipped** panels cannot be edited. You **duplicate** one to start from a base. They cover
+some twenty named models — bass amps (Ampeg SVT-CL, Markbass Little Mark, TC Electronic BH250,
+Fender Rumble 40 and 500), guitar amps (Fender Blues Junior, Vox AC30C2, Marshall DSL40, Boss
+Katana 50, Laney Lionheart L20T-112), instruments (Yamaha BB734A, Fender Precision and Jazz Bass,
+Music Man StingRay, Ibanez SR) and a few named pedals — plus generic templates for everything else.
 
 The Lionheart shows in passing what the registry can do without code: two channels sharing the EQ, a
 global Tone, a drive channel that greys out its own controls when it is off, and a look of its own —
