@@ -69,6 +69,26 @@ en cache.** Le service worker va au réseau d'abord et ne se replie sur sa copie
 répond pas. Une mise à jour se voit donc au premier rechargement, sans vider quoi que ce soit — c'est
 l'inverse du réflexe habituel, et c'est pour éviter de tourner sur une version périmée sans le savoir.
 
+## Comparer deux fiches
+
+**Comparer**, sur une carte, met deux fiches côte à côte et **marque les lignes qui diffèrent**. La
+liste déroulante en haut choisit la seconde, parmi les fiches du même genre. Le nombre d'écarts est
+annoncé avant le tableau : *4 écarts*, ou *Réglages identiques*.
+
+Les valeurs affichées sont celles des cartes, lues par les mêmes fonctions — une comparaison qui
+dirait autre chose que ce qu'on voit ne servirait à rien.
+
+Ce qui **n'est pas** compté comme un écart :
+
+- une commande **hors circuit des deux côtés** — deux `—` ne sont pas une différence ;
+- une commande **absente de l'autre façade**, quand les deux fiches n'ont pas le même matériel. Elle
+  reste affichée, avec la mention « absente de l'autre façade », mais comparer un Contour qui
+  n'existe pas ailleurs serait un faux écart. Le changement de matériel, lui, est signalé en tête.
+
+Chaque genre se compare à sa manière : un instrument ou un ampli commande par commande, **un pédalier
+emplacement par emplacement** — l'ordre du signal fait le pédalier autant que les réglages — et une
+chaîne maillon par maillon. Deux genres différents n'ont rien à confronter, et l'écran le dit.
+
 ## Partager une fiche avec les autres comptes
 
 En déploiement autonome, le bouton **Partager** de chaque carte propose votre fiche aux autres comptes

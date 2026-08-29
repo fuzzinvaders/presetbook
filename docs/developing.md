@@ -9,7 +9,7 @@
 | `public/index.html` | the whole application: styles, catalogue, registries, interface |
 | `public/rfxchain.js` | reading and writing Reaper's effect chains |
 | `server.js` | dependency-free server: static files, accounts, persistence API |
-| `test/` | nineteen suites, runnable with nothing to install |
+| `test/` | twenty suites, runnable with nothing to install |
 | `tools/` | six command-line tools, shipped inside the image |
 
 Two decisions hold up everything else. **The application is a single, self-contained page**, which
@@ -288,7 +288,7 @@ review of the rendering. The total weight stays under a megabyte, worth watching
 npm test
 ```
 
-Nineteen suites, nothing to install. Some replay the page in a minimal DOM, others start a **real
+Twenty suites, nothing to install. Some replay the page in a minimal DOM, others start a **real
 server** — rights, sessions and disk writes cannot be verified any other way.
 
 | Suite | What it covers |
@@ -311,6 +311,7 @@ server** — rights, sessions and disk writes cannot be verified any other way.
 | `invitations.test.js` | *server* — an invitation's life cycle, and the self-refreshing demo |
 | `partage.test.js` | *server* — publishing, copying, removing, and what is refused |
 | `corbeille.test.js` | *server* — trash, snapshots, and file integrity |
+| `comparer.test.js` | comparison: what counts as a difference, and what does not |
 | `langue.test.js` | the English audit: thirteen screens, no French word tolerated |
 
 `test/sandbox.js` runs the page's script in a minimal DOM, under `node:vm`. For that the page exposes
