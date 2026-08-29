@@ -539,6 +539,118 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Sustain monte la saturation et la compression ensemble ; Tone bascule d'un extrême à l'autre autour d'un creux de médiums qu'on ne peut pas retirer.":
+    "Sustain raises the drive and the compression together; Tone swings from one extreme to the other around a mid scoop you cannot remove.",
+  "Bosse de médiums et grave coupé : elle sert surtout à pousser un ampli déjà au bord, pas à saturer toute seule.":
+    "A mid hump and rolled-off bass: it is there to push an amp already on the edge, not to distort on its own.",
+  "Distorsion franche, indépendante de l'ampli : le Tone y est large, il coupe beaucoup à gauche.":
+    "Outright distortion, independent of the amp: the Tone control has a wide range and cuts a lot at the low end of its travel.",
+  "Suivi monophonique : une seule note à la fois, et d'autant plus stable qu'on joue haut sur le manche. Oct 2 descend deux octaves.":
+    "Monophonic tracking: one note at a time, and the higher up the neck you play, the steadier it gets. Oct 2 drops two octaves.",
+  "Deux boutons seulement : Sensitivity fait la compression, Output rattrape le niveau perdu.":
+    "Two knobs only: Sensitivity does the compression, Output makes up the level it costs you.",
+  "Blend dose le signal traité contre le direct : à zéro la pédale ne s'entend plus, et la sortie DI reste utilisable.":
+    "Blend sets the processed signal against the dry one: at zero the pedal is inaudible, and the DI output still works.",
+  "Saturation en parallèle du direct, puis quatre bandes. Attack et Grunt se prennent avant : ils décident du grain que l'égaliseur travaille ensuite.":
+    "Drive in parallel with the dry signal, then four bands. Attack and Grunt come first: they decide the grain the EQ then works on.",
+  "Pédalier saturation, deux marches":
+    "Two-stage drive pedalboard",
+  "Le Tube Screamer pousse le Big Muff plutôt que de saturer seul : l'un donne la bosse de médiums, l'autre le mur. Le compresseur passe devant pour tenir l'attaque.":
+    "The Tube Screamer pushes the Big Muff rather than distorting on its own: one gives the mid hump, the other the wall. The compressor sits in front to hold the attack.",
+  "Pédalier basse, prise directe":
+    "Bass pedalboard, direct out",
+  "Le B7K sert de préampli et de sortie DI : la saturation reste en parallèle du direct, donc le grave ne part jamais. L'octaver est en tête, là où le suivi est le plus propre.":
+    "The B7K acts as preamp and DI: the drive stays parallel to the dry signal, so the low end never leaves. The octaver goes first, where tracking is cleanest.",
+  "Type d'ampli":
+    "Amp type",
+  "Volume normal":
+    "Normal volume",
+  "Volume Top Boost":
+    "Top Boost volume",
+  "Volume canal":
+    "Channel volume",
+  "Trémolo Speed":
+    "Tremolo Speed",
+  "Trémolo Depth":
+    "Tremolo Depth",
+  "Un micro double en position centrale, un volume, une tonalité. Rien d'autre à noter, et c'est ce qui fait qu'on la retrouve partout.":
+    "One split-coil pickup in the middle position, one volume, one tone. Nothing else to write down, which is exactly why you find it everywhere.",
+  "Deux micros simples avec un volume chacun : le dosage se fait aux deux boutons, il n'y a pas de balance. Chevalet seul pour le son nasillard, les deux à fond pour le reste.":
+    "Two single-coil pickups with a volume each: you balance them on the two knobs, there is no blend control. Bridge alone for the nasal tone, both wide open for everything else.",
+  "Préampli actif : les trois bandes sont crantées au neutre et coupent autant qu'elles boostent. Le volume, lui, part de zéro.":
+    "Active preamp: the three bands are detented at flat and cut as much as they boost. The volume, on the other hand, starts at zero.",
+  "Deux micros dosés à la balance, puis un égaliseur actif trois bandes cranté au neutre.":
+    "Two pickups balanced on a blend control, then a three-band active EQ detented at flat.",
+  "Le grand frère du Rumble 40 : mêmes boutons de caractère et même overdrive, mais quatre bandes d'égaliseur et un master séparé du gain. Échelle 1–10.":
+    "The Rumble 40's big brother: same voicing switches and same overdrive, but four EQ bands and a master separate from the gain. Scale 1–10.",
+  "Le sélecteur de fréquence médium a cinq crans, notés ici de 1 à 5 : 1 = 220 Hz, 2 = 450 Hz, 3 = 800 Hz, 4 = 1,6 kHz, 5 = 3 kHz. Les deux contours Ultra se prennent au panneau et changent le son bien plus que l'égaliseur.":
+    "The midrange frequency selector has five positions, written 1 to 5 here: 1 = 220 Hz, 2 = 450 Hz, 3 = 800 Hz, 4 = 1.6 kHz, 5 = 3 kHz. The two Ultra contours are panel switches and change the sound far more than the EQ does.",
+  "Quatre bandes, plus les deux filtres maison : VLE coupe les aigus pour aller vers un son de vieux baffle, VPF creuse les médiums. À zéro tous les deux, ils ne font rien.":
+    "Four bands, plus the two house filters: VLE rolls off the highs towards an old-cabinet tone, VPF scoops the mids. At zero, neither does anything.",
+  "Trois bandes, un master, et le bouton Tubetone qui amène la saturation. L'emplacement TonePrint reçoit un effet chargé depuis l'application du fabricant : note ici lequel, la façade ne le dit pas.":
+    "Three bands, a master, and the Tubetone knob that brings in the drive. The TonePrint slot holds an effect loaded from the maker's app: write down which one here, the panel will not tell you.",
+  "Un seul canal : le gain se prend au volume, et c'est le master qui décide du niveau dans la salle. Le bouton FAT épaissit les bas médiums et se commute aussi au pied.":
+    "A single channel: the volume is your gain, and the master decides how loud the room gets. The FAT switch thickens the low mids and can also be footswitched.",
+  "Deux canaux qui ne partagent rien : le Normal n'a qu'un volume, le Top Boost a son volume et l'égaliseur. Tone Cut agit après, sur l'étage de puissance, et se referme quand on le monte.":
+    "Two channels that share nothing: Normal has only a volume, Top Boost has its own volume and the EQ. Tone Cut acts later, on the power stage, and closes down as you turn it up.",
+  "Deux canaux qui partagent l'égaliseur : on choisit le canal, le gain et le volume suivent. Presence et Resonance agissent sur l'étage de puissance, donc après l'égaliseur. Tone Shift creuse les médiums d'un coup.":
+    "Two channels sharing the EQ: pick the channel, and the gain and volume follow. Presence and Resonance act on the power stage, so after the EQ. Tone Shift scoops the mids in one move.",
+  "Le sélecteur de type a cinq positions, notées ici de 1 à 5 : 1 = Acoustic, 2 = Clean, 3 = Crunch, 4 = Lead, 5 = Brown. Les quatre boutons d'effets règlent un dosage, pas l'effet lui-même : lequel est chargé se décide dans le logiciel, donc note-le à part.":
+    "The amp type selector has five positions, written 1 to 5 here: 1 = Acoustic, 2 = Clean, 3 = Crunch, 4 = Lead, 5 = Brown. The four effect knobs set an amount, not the effect itself: which one is loaded is decided in the software, so write that down separately.",
+  "Rock 70s au SVT":
+    "70s rock on the SVT",
+  "Ultra Lo enfoncé pour le creux de médiums, et le gain assez haut pour que l'étage d'entrée commence à chauffer. Le master fait le reste.":
+    "Ultra Lo engaged for the mid scoop, and the gain high enough that the input stage starts to work. The master does the rest.",
+  "Motown au doigt":
+    "Motown with the fingers",
+  "Médiums au premier cran, à 220 Hz : c'est là que le son parle. Aigus baissés, aucun contour, tout vient de la main droite.":
+    "Mids on the first position, at 220 Hz: that is where this sound speaks. Treble down, no contour, everything comes from the right hand.",
+  "Jazz rond au Little Mark":
+    "Round jazz on the Little Mark",
+  "VLE à 4 pour arrondir le haut sans toucher à l'égaliseur, VPF à zéro : creuser les médiums ferait disparaître la basse derrière le piano.":
+    "VLE at 4 to round off the top without touching the EQ, VPF at zero: scooping the mids would bury the bass behind the piano.",
+  "Répétition, son neutre":
+    "Rehearsal, flat tone",
+  "Tout au milieu, Tubetone à zéro : le point de départ dont on part pour régler une salle qu'on ne connaît pas.":
+    "Everything at noon, Tubetone at zero: the starting point you work from in a room you do not know.",
+  "Funk slap au Rumble 500":
+    "Slap funk on the Rumble 500",
+  "Bright et Contour ensemble : le pouce claque, l'index claque, et le milieu est laissé libre pour la guitare rythmique.":
+    "Bright and Contour together: the thumb cracks, the index pops, and the middle is left free for the rhythm guitar.",
+  "Blues crunch":
+    "Blues crunch",
+  "Le volume amène la saturation, le master ramène le niveau à ce que la salle supporte. FAT enfoncé pour épaissir un micro simple.":
+    "The volume brings the breakup, the master brings the level back to what the room can take. FAT engaged to thicken a single coil.",
+  "Pop 60s, son carillon":
+    "60s pop, chime tone",
+  "Canal Top Boost seul, aigus hauts, Tone Cut presque ouvert. Le trémolo est prêt mais à zéro : on le monte au refrain.":
+    "Top Boost channel alone, treble up, Tone Cut nearly wide open. The tremolo is set but at zero: bring it in on the chorus.",
+  "Rock rythmique saturée":
+    "Driven rhythm rock",
+  "Canal Ultra Gain. Deep et Presence remontent les deux bouts après l'égaliseur : c'est ce qui donne le poids sans embrouiller les médiums.":
+    "Ultra Gain channel. Deep and Presence lift both ends after the EQ: that is what gives the weight without muddling the mids.",
+  "Répétition polyvalente":
+    "All-round rehearsal",
+  "Type Crunch, gain bas : le son se salit à l'attaque et se nettoie au volume de la guitare. Un peu de delay pour ne pas jouer sec.":
+    "Crunch type, low gain: the tone dirties on attack and cleans up from the guitar's volume. A little delay so you are not playing dry.",
+  "Slap StingRay":
+    "StingRay slap",
+  "Le creux de médiums du préampli suffit : rien à corriger à l'ampli derrière.":
+    "The preamp's mid scoop is enough on its own: nothing left to fix on the amp behind it.",
+  "Fusion moderne":
+    "Modern fusion",
+  "Balance un peu vers le chevalet pour que les traits rapides sortent, aigus montés pour les harmoniques.":
+    "Blend a little towards the bridge so the fast lines come through, treble up for the harmonics.",
+  "Motown à la Precision":
+    "Motown on the Precision",
+  "Volume à fond, tonalité aux trois quarts fermée : le haut du spectre est laissé à la batterie et aux cuivres.":
+    "Volume wide open, tone three quarters closed: the top end is left to the drums and the horns.",
+  "Chevalet seul, indie":
+    "Bridge pickup alone, indie",
+  "Le micro chevalet seul, nasal et sec. Rouvrir un peu le manche épaissit immédiatement, donc on le laisse à zéro.":
+    "The bridge pickup on its own, nasal and dry. Opening the neck up even slightly thickens it at once, so it stays at zero.",
+  "Marque": "Brand",
+  "Par marque": "By brand",
   "Chercher un nom, un auteur…": "Search a name, an author…",
   "Chercher dans les fiches partagées": "Search the shared presets",
   "Aucune fiche partagée ne correspond.": "No shared preset matches.",
@@ -1214,6 +1326,7 @@ function renderChrome(){
   grp.setAttribute("aria-label", t("Regrouper"));
   grp.innerHTML = tHtml(
     '<button role="tab" data-g="kind" aria-selected="' + (ui.group === "kind") + '">Par matériel</button>' +
+    '<button role="tab" data-g="brand" aria-selected="' + (ui.group === "brand") + '">Par marque</button>' +
     '<button role="tab" data-g="song" aria-selected="' + (ui.group === "song") + '">Par morceau</button>');
 }
 
@@ -1404,6 +1517,27 @@ function laney(id,name,tags,bright,vol,dr,eq,rev,tone,aim){
   return {id:id, kind:"amp", gear:"lionheart20", name:name, tags:tags,
           bright:bright, vol:vol, dr:dr, eq:eq, rev:rev, tone:tone, notes:aim, song:null};
 }
+/**
+ * Une fiche pour n'importe quel matériel du catalogue.
+ *
+ * Les constructeurs au-dessus sont taillés pour un modèle précis. Celui-ci
+ * prend les valeurs à plat, avec les mêmes clés pointées que les commandes
+ * déclarées dans GEAR — « eq.b » se range sous « eq », comme partout ailleurs.
+ */
+function mat(id, gear, kind, name, tags, vals, aim){
+  var p = {id:id, kind:kind, gear:gear, name:name, tags:tags, notes:aim, song:null};
+  Object.keys(vals).forEach(function(cle){
+    var bouts = cle.split("."), ou = p;
+    while (bouts.length > 1){
+      var b = bouts.shift();
+      if (!ou[b]) ou[b] = {};
+      ou = ou[b];
+    }
+    ou[bouts[0]] = vals[cle];
+  });
+  return p;
+}
+
 function chain(id,name,tags,tempo,tuning,rows,aim){
   return {id:id, kind:"reaper", name:name, tags:tags, tempo:tempo, tuning:tuning,
           chain:rows, notes:aim, song:null};
@@ -1622,7 +1756,79 @@ var SEED = [
       "Laissée hors circuit : c'est elle qui causait le claquement. À comparer dans le mix avant de trancher."))
   ],
     "Le caractère All Star tient aux bandes 900 Hz et 2,5 kHz : c'est la présence, pas le volume."),
-    "All Star","Smash Mouth")
+    "All Star","Smash Mouth"),
+
+  /* --- de quoi montrer le reste du catalogue : une fiche par modèle nommé --- */
+  mat("a-svt-rock70", "svtcl", "amp", "Rock 70s au SVT", ["rock"],
+    {gain:6, ultralo:true, ultrahi:false, "eq.b":6, "eq.m":4, "eq.mf":2, "eq.tr":5.5, master:5},
+    "Ultra Lo enfoncé pour le creux de médiums, et le gain assez haut pour que l'étage " +
+    "d'entrée commence à chauffer. Le master fait le reste."),
+  mat("a-svt-motown", "svtcl", "amp", "Motown au doigt", ["motown", "soul"],
+    {gain:4, ultralo:false, ultrahi:false, "eq.b":6.5, "eq.m":6, "eq.mf":1, "eq.tr":3, master:5},
+    "Médiums au premier cran, à 220 Hz : c'est là que le son parle. Aigus baissés, " +
+    "aucun contour, tout vient de la main droite."),
+  mat("a-lm-jazz", "littlemark", "amp", "Jazz rond au Little Mark", ["jazz"],
+    {gain:5, vle:4, vpf:0, "eq.b":5.5, "eq.lm":5, "eq.hm":4.5, "eq.tr":4, master:5},
+    "VLE à 4 pour arrondir le haut sans toucher à l'égaliseur, VPF à zéro : creuser " +
+    "les médiums ferait disparaître la basse derrière le piano."),
+  mat("a-bh-repet", "bh250", "amp", "Répétition, son neutre", ["répétition", "polyvalent"],
+    {gain:5, tubetone:0, "eq.b":5, "eq.m":5, "eq.tr":5, tp:false, master:6},
+    "Tout au milieu, Tubetone à zéro : le point de départ dont on part pour régler " +
+    "une salle qu'on ne connaît pas."),
+  mat("a-r500-funk", "rumble500", "amp", "Funk slap au Rumble 500", ["funk"],
+    {gain:5, bright:true, contour:true, vintage:false, "od.on":false, "od.drive":3, "od.level":5,
+     "eq.b":6.5, "eq.lm":4, "eq.hm":5, "eq.tr":7, master:5},
+    "Bright et Contour ensemble : le pouce claque, l'index claque, et le milieu est " +
+    "laissé libre pour la guitare rythmique."),
+  mat("a-bluesjr-crunch", "bluesjr", "amp", "Blues crunch", ["blues"],
+    {vol:7, fat:true, "eq.tr":7, "eq.b":5, "eq.m":6, rev:3, master:4},
+    "Le volume amène la saturation, le master ramène le niveau à ce que la salle " +
+    "supporte. FAT enfoncé pour épaissir un micro simple."),
+  mat("a-ac30-carillon", "ac30", "amp", "Pop 60s, son carillon", ["pop"],
+    {vol:0, "tb.vol":6, "eq.tr":7.5, "eq.b":4, "trem.speed":5, "trem.depth":0, rev:3,
+     tonecut:2, master:6},
+    "Canal Top Boost seul, aigus hauts, Tone Cut presque ouvert. Le trémolo est " +
+    "prêt mais à zéro : on le monte au refrain."),
+  mat("a-dsl-rythmique", "dsl40", "amp", "Rock rythmique saturée", ["rock", "hard rock"],
+    {mode:"Ultra Gain", gain:7, vol:5, "eq.b":5, "eq.m":4, "eq.tr":6, toneshift:false, deep:true,
+     presence:6, resonance:6, rev:2, master:4},
+    "Canal Ultra Gain. Deep et Presence remontent les deux bouts après l'égaliseur : " +
+    "c'est ce qui donne le poids sans embrouiller les médiums."),
+  mat("a-katana-repet", "katana50", "amp", "Répétition polyvalente", ["répétition", "polyvalent"],
+    {voice:3, gain:4, vol:5, "eq.b":5, "eq.m":5.5, "eq.tr":5, presence:5,
+     "fx.boost":0, "fx.mod":0, "fx.delay":3, "fx.rev":2, master:5},
+    "Type Crunch, gain bas : le son se salit à l'attaque et se nettoie au volume " +
+    "de la guitare. Un peu de delay pour ne pas jouer sec."),
+  mat("b-stingray-slap", "stingray3", "bass", "Slap StingRay", ["funk"],
+    {vol:5, "eq.b":2, "eq.m":-2, "eq.t":3},
+    "Le creux de médiums du préampli suffit : rien à corriger à l'ampli derrière."),
+  mat("b-sr-fusion", "ibanezsr", "bass", "Fusion moderne", ["fusion", "prog"],
+    {vol:5, balance:60, "eq.b":1, "eq.m":0, "eq.t":2},
+    "Balance un peu vers le chevalet pour que les traits rapides sortent, aigus " +
+    "montés pour les harmoniques."),
+  mat("b-precision-motown", "precision", "bass", "Motown à la Precision", ["motown", "soul"],
+    {vol:10, tone:2},
+    "Volume à fond, tonalité aux trois quarts fermée : le haut du spectre est " +
+    "laissé à la batterie et aux cuivres."),
+  mat("b-jazz-indie", "jazzbass", "bass", "Chevalet seul, indie", ["indie"],
+    {volN:0, volB:10, tone:7},
+    "Le micro chevalet seul, nasal et sec. Rouvrir un peu le manche épaissit " +
+    "immédiatement, donc on le laisse à zéro."),
+  board("bd-deuxmarches", "Pédalier saturation, deux marches", ["rock", "stoner"], [
+    ps("pd-dynacomp", "Tenue d'attaque", {output:6, sens:4}),
+    ps("pd-ts9", "Première marche", {drive:2, tone:6, level:8}),
+    ps("pd-bigmuff", "Mur", {volume:5, tone:5, sustain:8}, false),
+    ps("pd-ds1", "Solo", {tone:6, level:6, dist:5}, false)
+  ], "Le Tube Screamer pousse le Big Muff plutôt que de saturer seul : l'un donne la bosse " +
+     "de médiums, l'autre le mur. Le compresseur passe devant pour tenir l'attaque."),
+  board("bd-prise-directe", "Pédalier basse, prise directe", ["funk", "polyvalent"], [
+    ps("pd-tuner", "En tête", {}, false),
+    ps("pd-oc2", "Octave", {direct:7, oct1:5, oct2:0}, false),
+    ps("pd-b7k", "Préampli et DI", {level:6, blend:5, drive:4, attack:true, grunt:false,
+                                     bass:5.5, lomid:5, himid:5, treble:6}),
+    ps("pd-sansamp", "Secours", {level:6, blend:5, drive:3, bass:5, treble:5, presence:5}, false)
+  ], "Le B7K sert de préampli et de sortie DI : la saturation reste en parallèle du direct, " +
+     "donc le grave ne part jamais. L'octaver est en tête, là où le suivi est le plus propre.")
 ];
 
 var KINDS = {
@@ -1656,6 +1862,52 @@ var GEAR = {
     ],
     extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
   },
+  "precision": {
+    kind:"bass", brand:"Fender", model:"Precision Bass", face:"bass",
+    note:"Un micro double en position centrale, un volume, une tonalité. Rien d'autre à noter, " +
+         "et c'est ce qui fait qu'on la retrouve partout.",
+    controls:[
+      {k:"vol", t:"clock", l:"Volume", d:5},
+      {k:"tone", t:"clock", l:"Tonalité", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+  "jazzbass": {
+    kind:"bass", brand:"Fender", model:"Jazz Bass", face:"bass",
+    note:"Deux micros simples avec un volume chacun : le dosage se fait aux deux boutons, " +
+         "il n'y a pas de balance. Chevalet seul pour le son nasillard, les deux à fond pour le reste.",
+    controls:[
+      {k:"volN", t:"clock", l:"Volume manche", d:5},
+      {k:"volB", t:"clock", l:"Volume chevalet", d:5},
+      {k:"tone", t:"clock", l:"Tonalité", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+  "stingray3": {
+    kind:"bass", brand:"Music Man", model:"StingRay (EQ 3 bandes)", face:"bass",
+    note:"Préampli actif : les trois bandes sont crantées au neutre et coupent autant " +
+         "qu'elles boostent. Le volume, lui, part de zéro.",
+    controls:[
+      {k:"vol", t:"clock", l:"Volume", d:5},
+      {k:"eq.b", t:"clock", l:"Bass", d:0},
+      {k:"eq.m", t:"clock", l:"Middle", d:0},
+      {k:"eq.t", t:"clock", l:"Treble", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+  "ibanezsr": {
+    kind:"bass", brand:"Ibanez", model:"SR (EQ 3 bandes)", face:"bass",
+    note:"Deux micros dosés à la balance, puis un égaliseur actif trois bandes cranté au neutre.",
+    controls:[
+      {k:"vol", t:"clock", l:"Volume", d:5},
+      {k:"balance", t:"balance", l:"Balance", a:"M", b:"C", min:0, max:100, step:1, d:50},
+      {k:"eq.b", t:"clock", l:"Bass", d:0},
+      {k:"eq.m", t:"clock", l:"Middle", d:0},
+      {k:"eq.t", t:"clock", l:"Treble", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+
   "pbass": {
     kind:"bass", brand:"générique", model:"Basse passive, un micro", face:"plain",
     note:"Un volume, une tonalité : le schéma d'une Precision.",
@@ -1721,6 +1973,144 @@ var GEAR = {
       {k:"tone", t:"scale", l:"Tone", min:0, max:10, step:0.5, d:5}
     ]
   },
+  "rumble500": {
+    kind:"amp", brand:"Fender", model:"Rumble 500", face:"amp", hot:"od.on",
+    note:"Le grand frère du Rumble 40 : mêmes boutons de caractère et même overdrive, " +
+         "mais quatre bandes d'égaliseur et un master séparé du gain. Échelle 1–10.",
+    controls:[
+      {k:"gain", t:"scale", l:"Gain", min:1, max:10, step:0.5, d:5.5},
+      {k:"bright", t:"switch", l:"Bright"},
+      {k:"contour", t:"switch", l:"Contour"},
+      {k:"vintage", t:"switch", l:"Vintage"},
+      {k:"od.on", t:"switch", l:"Overdrive"},
+      {k:"od.drive", t:"scale", l:"Drive", min:1, max:10, step:0.5, d:3, needs:"od.on"},
+      {k:"od.level", t:"scale", l:"Level", min:1, max:10, step:0.5, d:5, needs:"od.on"},
+      {k:"eq.b", t:"scale", l:"Bass", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.lm", t:"scale", l:"Low-Mid", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.hm", t:"scale", l:"High-Mid", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:1, max:10, step:0.5, d:5.5},
+      {k:"master", t:"scale", l:"Master", min:1, max:10, step:0.5, d:5}
+    ]
+  },
+  "svtcl": {
+    kind:"amp", brand:"Ampeg", model:"SVT-CL", face:"amp",
+    note:"Le sélecteur de fréquence médium a cinq crans, notés ici de 1 à 5 : " +
+         "1 = 220 Hz, 2 = 450 Hz, 3 = 800 Hz, 4 = 1,6 kHz, 5 = 3 kHz. Les deux contours " +
+         "Ultra se prennent au panneau et changent le son bien plus que l'égaliseur.",
+    controls:[
+      {k:"gain", t:"scale", l:"Gain", min:1, max:10, step:0.5, d:5},
+      {k:"ultralo", t:"switch", l:"Ultra Lo"},
+      {k:"ultrahi", t:"switch", l:"Ultra Hi"},
+      {k:"eq.b", t:"scale", l:"Bass", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.m", t:"scale", l:"Midrange", min:1, max:10, step:0.5, d:5.5},
+      {k:"eq.mf", t:"scale", l:"Mid Freq", min:1, max:5, step:1, d:3},
+      {k:"eq.tr", t:"scale", l:"Treble", min:1, max:10, step:0.5, d:5.5},
+      {k:"master", t:"scale", l:"Master", min:1, max:10, step:0.5, d:5}
+    ]
+  },
+  "littlemark": {
+    kind:"amp", brand:"Markbass", model:"Little Mark", face:"amp",
+    note:"Quatre bandes, plus les deux filtres maison : VLE coupe les aigus pour aller vers " +
+         "un son de vieux baffle, VPF creuse les médiums. À zéro tous les deux, ils ne font rien.",
+    controls:[
+      {k:"gain", t:"scale", l:"Gain", min:0, max:10, step:0.5, d:5},
+      {k:"vle", t:"scale", l:"VLE", min:0, max:10, step:0.5, d:0},
+      {k:"vpf", t:"scale", l:"VPF", min:0, max:10, step:0.5, d:0},
+      {k:"eq.b", t:"scale", l:"Low", min:0, max:10, step:0.5, d:5},
+      {k:"eq.lm", t:"scale", l:"Mid Low", min:0, max:10, step:0.5, d:5},
+      {k:"eq.hm", t:"scale", l:"Mid High", min:0, max:10, step:0.5, d:5},
+      {k:"eq.tr", t:"scale", l:"High", min:0, max:10, step:0.5, d:5},
+      {k:"master", t:"scale", l:"Master", min:0, max:10, step:0.5, d:5}
+    ]
+  },
+  "bh250": {
+    kind:"amp", brand:"TC Electronic", model:"BH250", face:"amp",
+    note:"Trois bandes, un master, et le bouton Tubetone qui amène la saturation. " +
+         "L'emplacement TonePrint reçoit un effet chargé depuis l'application du fabricant : " +
+         "note ici lequel, la façade ne le dit pas.",
+    controls:[
+      {k:"gain", t:"scale", l:"Gain", min:0, max:10, step:0.5, d:5},
+      {k:"tubetone", t:"scale", l:"Tubetone", min:0, max:10, step:0.5, d:0},
+      {k:"eq.b", t:"scale", l:"Bass", min:0, max:10, step:0.5, d:5},
+      {k:"eq.m", t:"scale", l:"Middle", min:0, max:10, step:0.5, d:5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:0, max:10, step:0.5, d:5},
+      {k:"tp", t:"switch", l:"TonePrint"},
+      {k:"master", t:"scale", l:"Master", min:0, max:10, step:0.5, d:5}
+    ]
+  },
+  "bluesjr": {
+    kind:"amp", brand:"Fender", model:"Blues Junior", face:"amp",
+    note:"Un seul canal : le gain se prend au volume, et c'est le master qui décide du niveau " +
+         "dans la salle. Le bouton FAT épaissit les bas médiums et se commute aussi au pied.",
+    controls:[
+      {k:"vol", t:"scale", l:"Volume", min:1, max:12, step:0.5, d:4},
+      {k:"fat", t:"switch", l:"FAT"},
+      {k:"eq.tr", t:"scale", l:"Treble", min:1, max:12, step:0.5, d:6},
+      {k:"eq.b", t:"scale", l:"Bass", min:1, max:12, step:0.5, d:6},
+      {k:"eq.m", t:"scale", l:"Middle", min:1, max:12, step:0.5, d:6},
+      {k:"rev", t:"scale", l:"Reverb", min:1, max:12, step:0.5, d:3},
+      {k:"master", t:"scale", l:"Master", min:1, max:12, step:0.5, d:5}
+    ]
+  },
+  "ac30": {
+    kind:"amp", brand:"Vox", model:"AC30C2", face:"amp",
+    note:"Deux canaux qui ne partagent rien : le Normal n'a qu'un volume, le Top Boost a " +
+         "son volume et l'égaliseur. Tone Cut agit après, sur l'étage de puissance, et se " +
+         "referme quand on le monte.",
+    controls:[
+      {k:"vol", t:"scale", l:"Volume normal", min:0, max:10, step:0.5, d:5},
+      {k:"tb.vol", t:"scale", l:"Volume Top Boost", min:0, max:10, step:0.5, d:5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:0, max:10, step:0.5, d:5},
+      {k:"eq.b", t:"scale", l:"Bass", min:0, max:10, step:0.5, d:5},
+      {k:"trem.speed", t:"scale", l:"Trémolo Speed", min:0, max:10, step:0.5, d:5},
+      {k:"trem.depth", t:"scale", l:"Trémolo Depth", min:0, max:10, step:0.5, d:0},
+      {k:"rev", t:"scale", l:"Reverb", min:0, max:10, step:0.5, d:3},
+      {k:"tonecut", t:"scale", l:"Tone Cut", min:0, max:10, step:0.5, d:3},
+      {k:"master", t:"scale", l:"Master", min:0, max:10, step:0.5, d:5}
+    ]
+  },
+  "dsl40": {
+    kind:"amp", brand:"Marshall", model:"DSL40", face:"amp", hot:"toneshift",
+    note:"Deux canaux qui partagent l'égaliseur : on choisit le canal, le gain et le volume " +
+         "suivent. Presence et Resonance agissent sur l'étage de puissance, donc après " +
+         "l'égaliseur. Tone Shift creuse les médiums d'un coup.",
+    modes:{ options:["Classic Gain", "Ultra Gain"] },
+    controls:[
+      {k:"gain", t:"scale", l:"Gain", min:0, max:10, step:0.5, d:5},
+      {k:"vol", t:"scale", l:"Volume canal", min:0, max:10, step:0.5, d:5},
+      {k:"eq.b", t:"scale", l:"Bass", min:0, max:10, step:0.5, d:5},
+      {k:"eq.m", t:"scale", l:"Middle", min:0, max:10, step:0.5, d:5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:0, max:10, step:0.5, d:5},
+      {k:"toneshift", t:"switch", l:"Tone Shift"},
+      {k:"deep", t:"switch", l:"Deep"},
+      {k:"presence", t:"scale", l:"Presence", min:0, max:10, step:0.5, d:5},
+      {k:"resonance", t:"scale", l:"Resonance", min:0, max:10, step:0.5, d:5},
+      {k:"rev", t:"scale", l:"Reverb", min:0, max:10, step:0.5, d:3},
+      {k:"master", t:"scale", l:"Master", min:0, max:10, step:0.5, d:5}
+    ]
+  },
+  "katana50": {
+    kind:"amp", brand:"Boss", model:"Katana 50", face:"amp",
+    note:"Le sélecteur de type a cinq positions, notées ici de 1 à 5 : 1 = Acoustic, " +
+         "2 = Clean, 3 = Crunch, 4 = Lead, 5 = Brown. Les quatre boutons d'effets règlent " +
+         "un dosage, pas l'effet lui-même : lequel est chargé se décide dans le logiciel, " +
+         "donc note-le à part.",
+    controls:[
+      {k:"voice", t:"scale", l:"Type d'ampli", min:1, max:5, step:1, d:2},
+      {k:"gain", t:"scale", l:"Gain", min:0, max:10, step:0.5, d:5},
+      {k:"vol", t:"scale", l:"Volume", min:0, max:10, step:0.5, d:5},
+      {k:"eq.b", t:"scale", l:"Bass", min:0, max:10, step:0.5, d:5},
+      {k:"eq.m", t:"scale", l:"Middle", min:0, max:10, step:0.5, d:5},
+      {k:"eq.tr", t:"scale", l:"Treble", min:0, max:10, step:0.5, d:5},
+      {k:"presence", t:"scale", l:"Presence", min:0, max:10, step:0.5, d:5},
+      {k:"fx.boost", t:"scale", l:"Booster", min:0, max:10, step:0.5, d:0},
+      {k:"fx.mod", t:"scale", l:"Modulation", min:0, max:10, step:0.5, d:0},
+      {k:"fx.delay", t:"scale", l:"Delay", min:0, max:10, step:0.5, d:0},
+      {k:"fx.rev", t:"scale", l:"Reverb", min:0, max:10, step:0.5, d:2},
+      {k:"master", t:"scale", l:"Master", min:0, max:10, step:0.5, d:5}
+    ]
+  },
+
   "amp3": {
     kind:"amp", brand:"générique", model:"Ampli 3 bandes", face:"plain",
     note:"Le schéma le plus courant : gain, grave, médium, aigu, sur une échelle 1–10.",
@@ -1763,6 +2153,7 @@ var GEAR = {
    mention contraire, et un égaliseur graphique utilise des curseurs.     */
 function pk(k, l, d){ return {k:k, t:"scale", l:l, min:0, max:10, step:0.5, d:d === undefined ? 5 : d}; }
 function fader(k, l){ return {k:k, t:"slider", l:l, min:-15, max:15, step:0.5, d:0, u:"dB"}; }
+function psw(k, l){ return {k:k, t:"switch", l:l}; }
 
 var PEDALS = {
   "pd-boost":   {model:"Boost", color:"#E8B33A", style:"mini", perRow:1, note:"Un seul bouton : de quoi passer devant sans changer de son.",
@@ -1810,7 +2201,37 @@ var PEDALS = {
                  controls:[pk("sens","Sensibilité",5), pk("filter","Filter",5),
                            pk("dry","Dry",5), pk("synth","Synth",6)]},
   "pd-tuner":   {model:"Accordeur", color:"#2B2B28", style:"tall", perRow:1, note:"Aucun réglage : il coupe ou laisse passer.",
-                 controls:[]}
+                 controls:[]},
+
+  /* --- des modèles nommés, à côté des types ci-dessus ---
+     Les types génériques restent le bon choix pour décrire un pédalier : on
+     note ce que fait chaque boîtier. Ceux-ci servent quand la pédale précise
+     compte, parce que ses boutons ne sont pas ceux du type général. */
+  "pd-bigmuff":  {brand:"Electro-Harmonix", model:"Big Muff Pi", color:"#C9C3B4", style:"big", perRow:3,
+                  note:"Sustain monte la saturation et la compression ensemble ; Tone bascule d'un extrême à l'autre autour d'un creux de médiums qu'on ne peut pas retirer.",
+                  controls:[pk("volume","Volume",6), pk("tone","Tone",5), pk("sustain","Sustain",7)]},
+  "pd-ts9":      {brand:"Ibanez", model:"Tube Screamer TS9", color:"#3E8F4E", style:"std", perRow:3,
+                  note:"Bosse de médiums et grave coupé : elle sert surtout à pousser un ampli déjà au bord, pas à saturer toute seule.",
+                  controls:[pk("drive","Drive",4), pk("tone","Tone",5), pk("level","Level",7)]},
+  "pd-ds1":      {brand:"Boss", model:"DS-1", color:"#E9761F", style:"std", perRow:3,
+                  note:"Distorsion franche, indépendante de l'ampli : le Tone y est large, il coupe beaucoup à gauche.",
+                  controls:[pk("tone","Tone",5), pk("level","Level",5), pk("dist","Dist",6)]},
+  "pd-oc2":      {brand:"Boss", model:"OC-2 Octave", color:"#D8D2C4", style:"std", perRow:3,
+                  note:"Suivi monophonique : une seule note à la fois, et d'autant plus stable qu'on joue haut sur le manche. Oct 2 descend deux octaves.",
+                  controls:[pk("direct","Direct Level",6), pk("oct1","Oct 1",5), pk("oct2","Oct 2",0)]},
+  "pd-dynacomp": {brand:"MXR", model:"Dyna Comp", color:"#B23A48", style:"std", perRow:2,
+                  note:"Deux boutons seulement : Sensitivity fait la compression, Output rattrape le niveau perdu.",
+                  controls:[pk("output","Output",6), pk("sens","Sensitivity",5)]},
+  "pd-sansamp":  {brand:"Tech 21", model:"SansAmp Bass Driver DI", color:"#2E3B4E", style:"big", perRow:3,
+                  note:"Blend dose le signal traité contre le direct : à zéro la pédale ne s'entend plus, et la sortie DI reste utilisable.",
+                  controls:[pk("level","Level",6), pk("blend","Blend",5), pk("drive","Drive",4),
+                            pk("bass","Bass",5), pk("treble","Treble",5), pk("presence","Presence",5)]},
+  "pd-b7k":      {brand:"Darkglass", model:"Microtubes B7K", color:"#1F2A24", style:"big", perRow:3,
+                  note:"Saturation en parallèle du direct, puis quatre bandes. Attack et Grunt se prennent avant : ils décident du grain que l'égaliseur travaille ensuite.",
+                  controls:[pk("level","Level",6), pk("blend","Blend",5), pk("drive","Drive",5),
+                            psw("attack","Attack"), psw("grunt","Grunt"),
+                            pk("bass","Bass",5), pk("lomid","Low Mid",5),
+                            pk("himid","High Mid",5), pk("treble","Treble",5)]}
 };
 
 /* Les pédales entrent dans le registre général : une pédale est une façade. */
@@ -1818,7 +2239,7 @@ var PEDALS = {
   var k;
   for (k in PEDALS){
     GEAR[k] = {
-      kind:"pedal", brand:"générique", model:PEDALS[k].model, face:"plain",
+      kind:"pedal", brand:PEDALS[k].brand || "générique", model:PEDALS[k].model, face:"plain",
       color:PEDALS[k].color, style:PEDALS[k].style, perRow:PEDALS[k].perRow,
       note:PEDALS[k].note || "",
       controls:PEDALS[k].controls, extras:[]
@@ -1880,7 +2301,7 @@ var LS_KEY = "presetbook-v1";
 var LS_KEY_OLD = "rack-presets-v1";
 var S = {v:1, custom:[], overrides:{}, gear:{}, hidden:[]};
 var store = {mode:"memory", api:false, writer:null, downloads:null};
-var ui = {kind:"all", q:"", group:"kind", gear:[], tags:[], open:false};
+var ui = {kind:"all", q:"", group:"kind", gear:[], brands:[], tags:[], open:false};
 
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function library(){
@@ -1998,11 +2419,12 @@ function readUrlFilter(){
     /* Listes séparées par des virgules : ?gear=rumble40,lionheart20&tag=rock,blues */
     var liste = function(v){ return v ? v.split(",").map(function(x){ return x.trim(); }).filter(Boolean) : []; };
     ui.gear = liste(qp.get("gear"));
+    ui.brands = liste(qp.get("brand"));
     ui.tags = liste(qp.get("tag"));
-    if (ui.gear.length || ui.tags.length) ui.open = true;
+    if (ui.gear.length || ui.brands.length || ui.tags.length) ui.open = true;
     if (q) ui.q = q;
     if (kind === "all" || KINDS[kind]) ui.kind = kind;   /* toute famille connue */
-    if (group === "song" || group === "kind") ui.group = group;
+    if (group === "song" || group === "kind" || group === "brand") ui.group = group;
     document.getElementById("q").value = ui.q;
     Array.prototype.forEach.call(document.querySelectorAll("#grp [data-g]"), function(b){
       b.setAttribute("aria-selected", String(b.getAttribute("data-g") === ui.group));
@@ -2985,7 +3407,26 @@ function gearsOf(p){
   return [gearId(p)];
 }
 
+/**
+ * Les marques du matériel d'un preset. Un pédalier en a autant que de pédales,
+ * et une chaîne Reaper aucune : ce sont des plugins, pas du matériel.
+ */
+function brandsOf(p){
+  var reg = allGear(), vues = [];
+  gearsOf(p).forEach(function(id){
+    var g = reg[id];
+    if (!g || !g.brand) return;
+    if (vues.indexOf(g.brand) < 0) vues.push(g.brand);
+  });
+  return vues;
+}
+
 function passeKind(p){ return ui.kind === "all" || p.kind === ui.kind; }
+function passeBrand(p){
+  if (!ui.brands.length) return true;
+  var b = brandsOf(p);
+  return ui.brands.some(function(x){ return b.indexOf(x) >= 0; });
+}
 function passeGear(p){
   if (!ui.gear.length) return true;
   var g = gearsOf(p);
@@ -3001,7 +3442,7 @@ function passeTags(p){
    tous doivent passer. C'est la convention attendue, et elle évite les
    sélections qui ne ramènent jamais rien. */
 function matches(p){
-  return passeKind(p) && passeGear(p) && passeTags(p) && passeQ(p);
+  return passeKind(p) && passeBrand(p) && passeGear(p) && passeTags(p) && passeQ(p);
 }
 
 /** Minuscules et sans accents : « pedalier » doit trouver « pédalier ».
@@ -3031,10 +3472,29 @@ function passeQ(p){
 /* ---------------- facettes ----------------
    Le compte d'une facette ignore la facette elle-même : sans cela, cocher un
    choix mettrait tous les autres à zéro et le filtre deviendrait un cul-de-sac. */
+/**
+ * Les marques présentes dans la vue. Une marque rassemble plusieurs modèles :
+ * c'est le bon grain quand on cherche « tout ce que j'ai réglé sur du Ampeg »
+ * sans se souvenir du modèle exact.
+ */
+function facetBrand(){
+  var out = {};
+  library().forEach(function(p){
+    if (!passeKind(p) || !passeGear(p) || !passeTags(p) || !passeQ(p)) return;
+    brandsOf(p).forEach(function(b){ out[b] = (out[b] || 0) + 1; });
+  });
+  return Object.keys(out).map(function(b){ return {id:b, n:out[b], l:b}; })
+    .sort(function(a, b){
+      /* « générique » en dernier : ce sont les gabarits, pas une marque. */
+      if ((a.id === "générique") !== (b.id === "générique")) return a.id === "générique" ? 1 : -1;
+      return b.n - a.n || a.l.localeCompare(b.l, "fr");
+    });
+}
+
 function facetGear(){
   var out = {}, reg = allGear();
   library().forEach(function(p){
-    if (!passeKind(p) || !passeTags(p) || !passeQ(p)) return;
+    if (!passeKind(p) || !passeBrand(p) || !passeTags(p) || !passeQ(p)) return;
     gearsOf(p).forEach(function(id){ if (reg[id]) out[id] = (out[id] || 0) + 1; });
   });
   return Object.keys(out).map(function(id){ return {id:id, n:out[id], l:gearName(reg[id])}; })
@@ -3044,14 +3504,14 @@ function facetGear(){
 function facetTags(){
   var out = {};
   library().forEach(function(p){
-    if (!passeKind(p) || !passeGear(p) || !passeQ(p)) return;
+    if (!passeKind(p) || !passeBrand(p) || !passeGear(p) || !passeQ(p)) return;
     (p.tags || []).forEach(function(t){ out[t] = (out[t] || 0) + 1; });
   });
   return Object.keys(out).map(function(t){ return {id:t, n:out[t], l:t}; })
     .sort(function(a, b){ return b.n - a.n || a.l.localeCompare(b.l, "fr"); });
 }
 
-function activeFilters(){ return ui.gear.length + ui.tags.length; }
+function activeFilters(){ return ui.brands.length + ui.gear.length + ui.tags.length; }
 
 function chip(type, x, on){
   return '<button class="chip" data-f' + type + '="' + esc(x.id) + '" aria-pressed="' + on + '">' +
@@ -3071,7 +3531,14 @@ function renderFilters(){
   host.hidden = !ui.open;
   if (!ui.open){ host.innerHTML = ""; return; }
 
-  var mat = facetGear(), sty = facetTags(), h = "";
+  var mar = facetBrand(), mat = facetGear(), sty = facetTags(), h = "";
+  /* La marque vient en premier : elle dégrossit, le modèle précise. Une seule
+     marque dans la vue n'apprend rien à personne, donc on se tait. */
+  if (mar.length > 1){
+    h += '<div class="facet"><h3>Marque</h3><div class="chips">' +
+         mar.map(function(x){ return chip("brand", x, ui.brands.indexOf(x.id) >= 0); }).join("") +
+         '</div></div>';
+  }
   if (mat.length){
     h += '<div class="facet"><h3>Matériel</h3><div class="chips">' +
          mat.map(function(x){ return chip("gear", x, ui.gear.indexOf(x.id) >= 0); }).join("") +
@@ -3091,6 +3558,7 @@ function renderFilters(){
 function filterLabel(){
   var reg = allGear(), bouts = [];
   if (ui.kind !== "all") bouts.push(t(KINDS[ui.kind].full));
+  if (ui.brands.length) bouts.push(ui.brands.map(function(b){ return t(b); }).join(", "));
   if (ui.gear.length) bouts.push(ui.gear.map(function(id){ return reg[id] ? gearName(reg[id]) : id; }).join(", "));
   if (ui.tags.length) bouts.push(ui.tags.map(function(x){ return t(x); }).join(", "));
   if (ui.q) bouts.push("« " + ui.q + " »");
@@ -3138,6 +3606,20 @@ function render(){
       if (b === "Sans morceau") return -1;
       return a.localeCompare(b, "fr");
     }).forEach(function(k){ groups.push([k, by[k]]); });
+  } else if (ui.group === "brand"){
+    var byBrand = {}, ordre = [];
+    shown.forEach(function(p){
+      /* Un pédalier mêle les marques et une chaîne Reaper n'en a aucune : les
+         ranger sous leur famille dit la vérité, les éclater n'en dirait pas. */
+      var marques = (p.kind === "board" || p.kind === "reaper") ? [] : brandsOf(p);
+      var key = marques.length ? marques.join(" + ") : KINDS[p.kind].full;
+      if (!byBrand[key]){ byBrand[key] = []; ordre.push(key); }
+      byBrand[key].push(p);
+    });
+    ordre.sort(function(a, b){
+      return byBrand[b].length - byBrand[a].length || a.localeCompare(b, "fr");
+    });
+    ordre.forEach(function(k){ groups.push([k, byBrand[k]]); });
   } else {
     var byGear = {}, order = [];
     shown.forEach(function(p){
@@ -4291,11 +4773,11 @@ document.getElementById("btn-print").addEventListener("click", function(){
 });
 document.getElementById("filters").addEventListener("click", function(e){
   var t2 = e.target;
-  if (t2.closest("[data-fclear]")){ ui.gear = []; ui.tags = []; render(); return; }
-  var g = t2.closest("[data-fgear]"), x = t2.closest("[data-ftag]");
-  var liste = g ? ui.gear : x ? ui.tags : null;
+  if (t2.closest("[data-fclear]")){ ui.brands = []; ui.gear = []; ui.tags = []; render(); return; }
+  var m2 = t2.closest("[data-fbrand]"), g = t2.closest("[data-fgear]"), x = t2.closest("[data-ftag]");
+  var liste = m2 ? ui.brands : g ? ui.gear : x ? ui.tags : null;
   if (!liste) return;
-  var val = (g || x).getAttribute(g ? "data-fgear" : "data-ftag");
+  var val = (m2 || g || x).getAttribute(m2 ? "data-fbrand" : g ? "data-fgear" : "data-ftag");
   var i = liste.indexOf(val);
   if (i >= 0) liste.splice(i, 1); else liste.push(val);
   render();
@@ -4696,7 +5178,7 @@ window.__pb = {
   getPath: getPath, setPath: setPath,
   EN: EN, t: t, tHtml: tHtml, getLang: function(){ return LANG; }, setLang: setLang,
   hourLabel: hourLabel, balLabel: balLabel, ctrlText: ctrlText, dec: dec,
-  PEDALS: PEDALS, pedalArt: pedalArt, boardArt: boardArt, luma: luma, pedalValues: pedalValues,
+  PEDALS: PEDALS, PEDAL_STYLES: PEDAL_STYLES, pedalArt: pedalArt, boardArt: boardArt, luma: luma, pedalValues: pedalValues,
   openGearList: openGearList, openGearEditor: openGearEditor,
   gearFormBody: gearFormBody, getGDraft: function(){ return gdraft; },
   ctrlText: ctrlText, ctrlAngle: ctrlAngle, ctrlOff: ctrlOff,
@@ -4715,6 +5197,7 @@ window.__pb = {
   submitPassword: submitPassword, submitDelete: submitDelete, dangerZone: dangerZone,
   setAdmin: function(v){ session.isAdmin = !!v; },
   setInvite: function(v){ invitation = v; }, getInvite: function(){ return invitation; },
+  facetBrand: facetBrand, brandsOf: brandsOf,
   compareRows: compareRows, openCompare: openCompare, compareTable: compareTable,
   renderShared: renderShared, sharedMatch: sharedMatch,
   sharedFilterVisible: sharedFilterVisible,

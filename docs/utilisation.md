@@ -119,8 +119,13 @@ Le compte de démonstration ne publie pas : ses identifiants étant publics, ce 
 
 ## Filtrer
 
-Le bouton **Filtres** ouvre deux listes de pastilles : **Matériel** et **Styles**. Cliquer une
-pastille l'active, recliquer la retire, et le bouton affiche le nombre de filtres en cours.
+Le bouton **Filtres** ouvre trois listes de pastilles : **Marque**, **Matériel** et **Styles**.
+Cliquer une pastille l'active, recliquer la retire, et le bouton affiche le nombre de filtres en
+cours.
+
+La marque vient en premier parce qu'elle dégrossit : elle rassemble tous les modèles du même
+fabricant, quand le matériel vise un modèle précis. Elle ne s'affiche pas quand la vue ne contient
+qu'une seule marque — proposer un choix unique n'apprend rien à personne.
 
 La règle est celle qu'on attend : **plusieurs choix dans une même liste s'additionnent** (Laney *ou*
 Rumble), **les deux listes se croisent** (un Laney *et* du blues). Les nombres portés par chaque
@@ -130,10 +135,14 @@ pastille tiennent compte des autres filtres déjà posés, sans se compter eux-m
 Filtrer sur une **pédale** ramène aussi les **pédaliers** qui l'emploient : c'est le bon moyen de
 retrouver où sert un effet donné.
 
-Cinq paramètres d'URL sont lus au chargement, ce qui permet de mettre une vue en favori ou de
-l'envoyer à quelqu'un : `?q=motown`, `?kind=bass`, `?group=song`, `?gear=lionheart20,rumble40` et
-`?tag=blues,rock` — les deux derniers en listes séparées par des virgules. Un sixième,
-`?edit=<identifiant>`, ouvre directement une fiche.
+Le tri du haut de page suit la même idée : **Par matériel**, **Par marque** ou **Par morceau**. Un
+pédalier mêle les marques de ses pédales et une chaîne Reaper n'en a aucune — ce sont des plugins :
+les uns et les autres sont rangés sous leur famille plutôt qu'éclatés.
+
+Six paramètres d'URL sont lus au chargement, ce qui permet de mettre une vue en favori ou de
+l'envoyer à quelqu'un : `?q=motown`, `?kind=bass`, `?group=song|brand|kind`,
+`?gear=lionheart20,rumble40`, `?brand=Ampeg,Vox` et `?tag=blues,rock` — les trois derniers en
+listes séparées par des virgules. Un septième, `?edit=<identifiant>`, ouvre directement une fiche.
 
 ## Imprimer
 

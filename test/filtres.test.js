@@ -22,7 +22,7 @@ const ui = pb.ui();
 const total = pb.library().length;
 
 function combien() { return pb.library().filter(pb.matches).length; }
-function reset() { ui.kind = "all"; ui.q = ""; ui.gear = []; ui.tags = []; }
+function reset() { ui.kind = "all"; ui.q = ""; ui.gear = []; ui.brands = []; ui.tags = []; }
 
 /* --- filtrer par matériel --- */
 check("sans filtre, tout passe", combien() === total, combien() + " sur " + total);
@@ -47,6 +47,64 @@ ui.gear = [board.slots[1].gear];
 check("filtrer sur une pédale ramène le pédalier qui l'emploie",
   pb.library().filter(pb.matches).some((p) => p.id === board.id),
   board.slots[1].gear);
+
+/* --- filtrer par marque --- */
+reset();
+const marques = pb.facetBrand();
+check("plusieurs marques sont proposées", marques.length >= 6, String(marques.length));
+check("« générique » passe en dernier : ce sont les gabarits, pas une marque",
+  marques[marques.length - 1].id === "générique",
+  marques.map((x) => x.id).join(", "));
+
+ui.brands = ["Ampeg"];
+const ampeg = combien();
+check("une marque isole ses fiches", ampeg > 0 && ampeg < total, String(ampeg));
+check("et rien qu'elles",
+  pb.library().filter(pb.matches).every((p) => pb.brandsOf(p).indexOf("Ampeg") >= 0));
+
+ui.brands = ["Ampeg", "Vox"];
+check("deux marques s'additionnent", combien() > ampeg, String(combien()));
+
+/* Une marque rassemble plusieurs modèles : c'est tout l'intérêt. */
+reset();
+ui.brands = ["Fender"];
+const modelesFender = {};
+pb.library().filter(pb.matches).forEach((p) => { modelesFender[p.gear || "défaut"] = 1; });
+check("une marque rassemble plusieurs modèles",
+  Object.keys(modelesFender).length > 1, Object.keys(modelesFender).join(", "));
+
+/* Marque ET modèle se croisent, comme les autres facettes. */
+ui.gear = ["rumble500"];
+const croiseMarque = combien();
+check("marque ET modèle", croiseMarque > 0 && croiseMarque < combienSansModele(),
+  String(croiseMarque));
+function combienSansModele() {
+  const g = ui.gear; ui.gear = [];
+  const k = combien(); ui.gear = g;
+  return k;
+}
+
+/* Un pédalier mêle les marques de ses pédales. */
+reset();
+const ped = pb.library().filter((x) => x.kind === "board")[0];
+check("les marques d'un pédalier sont celles de ses pédales",
+  Array.isArray(pb.brandsOf(ped)), JSON.stringify(pb.brandsOf(ped)));
+check("une chaîne Reaper n'a pas de marque : ce sont des plugins",
+  pb.brandsOf(pb.library().filter((x) => x.kind === "reaper")[0]).length === 0);
+
+/* La facette marque ignore la marque déjà cochée, comme les deux autres. */
+reset();
+ui.brands = ["Fender"];
+check("la facette marque propose encore les autres",
+  pb.facetBrand().some((x) => x.id !== "Fender"),
+  pb.facetBrand().map((x) => x.id).join(", "));
+check("les comptes de la facette marque sont exacts",
+  pb.facetBrand().every((x) => {
+    const av = ui.brands; ui.brands = [x.id];
+    const k = combien(); ui.brands = av;
+    return k === x.n;
+  }), "un compte de facette ne correspond pas au résultat");
+reset();
 
 /* --- filtrer par style --- */
 reset();
@@ -86,6 +144,8 @@ check("matériel ET style", croise > 0 && croise < laney && croise < blues,
 
 /* --- le compteur et l'effacement --- */
 check("les filtres actifs sont comptés", pb.activeFilters() === 2, String(pb.activeFilters()));
+ui.brands = ["Fender"];
+check("la marque compte aussi", pb.activeFilters() === 3, String(pb.activeFilters()));
 reset();
 check("aucun filtre après effacement", pb.activeFilters() === 0);
 
@@ -161,11 +221,46 @@ check("et ouvre le panneau, sinon le filtre serait invisible", parUrl.__pb.ui().
 const cartes = (parUrl.__nodes.get("list").innerHTML.match(/<article/g) || []).length;
 check("la vue filtrée est rendue", cartes > 0 && cartes < total, String(cartes));
 
+/* --- la marque dans l'URL et dans le regroupement --- */
+const parMarque = run(page, { search: "?brand=Ampeg,Vox" });
+check("l'URL pose la marque",
+  parMarque.__pb.ui().brands.join() === "Ampeg,Vox",
+  JSON.stringify(parMarque.__pb.ui().brands));
+check("et ouvre le panneau", parMarque.__pb.ui().open === true);
+const nMarque = (parMarque.__nodes.get("list").innerHTML.match(/<article/g) || []).length;
+check("la vue filtrée par marque est rendue", nMarque > 0 && nMarque < total, String(nMarque));
+
+const groupe = run(page, { search: "?group=brand" });
+const titres = (groupe.__nodes.get("list").innerHTML.match(/<h2>[^<]*<\/h2>/g) || [])
+  .map((x) => x.replace(/<[^>]*>/g, ""));
+check("regrouper par marque produit des sections nommées par marque",
+  titres.indexOf("Fender") >= 0 && titres.length > 3, titres.join(" | "));
+check("l'onglet « Par marque » existe",
+  groupe.__nodes.get("grp").innerHTML.indexOf('data-g="brand"') > 0,
+  groupe.__nodes.get("grp").innerHTML);
+
+const teteMarque = run(page, { search: "?brand=Ampeg" }).__nodes.get("printhead").innerHTML;
+check("l'en-tête d'impression nomme la marque filtrée",
+  teteMarque.indexOf("Ampeg") > 0, teteMarque);
+
 /* --- le panneau --- */
 const p2 = run(page, { search: "?gear=lionheart20" });
 const panneau = p2.__nodes.get("filters").innerHTML;
 check("le panneau liste les deux facettes",
   panneau.indexOf("data-fgear") > 0 && panneau.indexOf("data-ftag") > 0);
+/* Ce panneau-là est filtré sur un seul modèle, donc sur une seule marque :
+   proposer « Laney (8) » tout seul ne dirait rien à personne. */
+check("une vue à marque unique n'affiche pas la facette marque",
+  panneau.indexOf("data-fbrand") < 0, panneau.slice(0, 160));
+
+const p3 = run(page, { search: "?tag=rock" });
+const panneau3 = p3.__nodes.get("filters").innerHTML;
+check("une vue à plusieurs marques les propose",
+  panneau3.indexOf("data-fbrand") > 0, panneau3.slice(0, 160));
+check("la marque vient avant le modèle : elle dégrossit, le modèle précise",
+  panneau3.indexOf("data-fbrand") >= 0
+  && panneau3.indexOf("data-fbrand") < panneau3.indexOf("data-fgear"),
+  panneau3.indexOf("data-fbrand") + " puis " + panneau3.indexOf("data-fgear"));
 check("le matériel choisi est marqué",
   panneau.indexOf('data-fgear="lionheart20" aria-pressed="true"') > 0, panneau.slice(0, 120));
 check("l'effacement est proposé", panneau.indexOf("data-fclear") > 0);

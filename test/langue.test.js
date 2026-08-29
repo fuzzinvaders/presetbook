@@ -82,6 +82,34 @@ check("tous les messages éphémères sont traduits (" + messages.size + ")",
       en.__nodes.get(p[1]).textContent);
   });
 
+/* Le registre de matériel : ses notes ne s'affichent que dans l'écran d'un
+   modèle, que l'audit écran-par-écran ci-dessous ne parcourt pas modèle par
+   modèle. Sept notes de pédales y sont passées sans traduction. */
+const sansNote = Object.keys(pb.GEAR).filter(function (k) {
+  const g = pb.GEAR[k];
+  return g.note && pb.EN[g.note] === undefined;
+});
+check("chaque note de matériel est traduite (" + Object.keys(pb.GEAR).length + " modèles)",
+  sansNote.length === 0, sansNote.join(", "));
+
+/* Un libellé de commande écrit en français doit l'être aussi. Beaucoup sont
+   déjà les mêmes dans les deux langues — Bass, Drive, Level, et « Volume »
+   lui-même — et n'ont rien à faire au dictionnaire. On retient donc l'accent,
+   plus une courte liste de mots qui ne peuvent être que français. Aucune règle
+   courte ne reconnaît le français à coup sûr : celle-ci attrape ce qui traîne,
+   pas tout. */
+const motsFr = /[éèêàçûôîœ]|\b(ampli|canal|manche|chevalet)\b/i;
+const sansLibelle = [];
+Object.keys(pb.GEAR).forEach(function (k) {
+  pb.GEAR[k].controls.forEach(function (c) {
+    if (c.l && motsFr.test(c.l) && pb.EN[c.l] === undefined && sansLibelle.indexOf(c.l) < 0) {
+      sansLibelle.push(c.l);
+    }
+  });
+});
+check("chaque libellé de commande écrit en français est traduit",
+  sansLibelle.length === 0, sansLibelle.join(" | "));
+
 /* --- l'en-tête, écrit par le script et non par le gabarit --- */
 const chrome = ["eyebrow", "btn-gear", "btn-io", "btn-new", "grp"]
   .map((id) => en.__nodes.get(id).innerHTML).join(" ");
