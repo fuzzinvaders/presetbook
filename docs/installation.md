@@ -202,6 +202,25 @@ l'application, elle n'a pas à l'être sur le disque. À vous de faire le ménag
 ls -l "$DATA_PATH/presets/" | grep deleted-
 ```
 
+### Éditer `users.json` à la main : ce qu'il faut savoir
+
+C'est possible — le rôle d'administrateur n'est qu'un champ `"admin": true` — mais **une erreur de
+syntaxe fait perdre l'édition**, et c'est la raison de préférer `tools/admin.js`, qui valide avant
+d'écrire.
+
+Le mécanisme, pour qu'il ne surprenne personne. Si `users.json` devient illisible :
+
+1. le serveur continue de tourner sur `users.bak.json` et le signale : `users.json illisible,
+   reprise de …` ;
+2. à la première écriture suivante, le fichier illisible est **mis de côté** sous
+   `users.corrompu-<horodatage>.json` et remplacé par ce que le serveur avait en mémoire. **Votre
+   édition est alors perdue** — le journal le dit explicitement ;
+3. la sauvegarde `users.bak.json` n'est **pas** touchée : la dernière copie valable survit.
+
+Si vous éditez malgré tout, faites-le **serveur arrêté**, relisez le fichier avec `node -e
+"JSON.parse(require('fs').readFileSync('users.json','utf8'))"` avant de redémarrer, et vérifiez que
+le fichier appartient toujours à l'uid 1000.
+
 ### Voir et déplacer le rôle d'administrateur
 
 ```bash

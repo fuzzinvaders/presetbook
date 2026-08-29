@@ -184,6 +184,29 @@ check("les identifiants restent distincts", deux[0].id !== deux[1].id,
       restants.join(", "));
     check("et plus rien à son nom courant",
       !restants.some((f) => f === r2.status + ".json"), restants.join(", "));
+    /* --- un fichier de comptes corrompu ne doit pas emporter la sauvegarde --- */
+    const users = path.join(dossier, "users.json");
+    const bak = path.join(dossier, "users.bak.json");
+    const bonAvant = await fsp.readFile(bak, "utf8").catch(() => null);
+    check("une sauvegarde des comptes existe", !!bonAvant);
+
+    await fsp.writeFile(users,
+      (await fsp.readFile(users, "utf8")).replace('"users": [', '"users": [,'), "utf8");
+
+    /* une écriture survient ensuite : création d'un compte par l'administrateur */
+    await fetch(BASE + "/api/register", {
+      method: "POST", headers: { "Content-Type": "application/json", Cookie: cookie },
+      body: JSON.stringify({ name: "apres", password: "encore-un-mot-de-passe" }) });
+
+    const bonApres = await fsp.readFile(bak, "utf8").catch(() => null);
+    check("la sauvegarde n'a pas été écrasée par le fichier corrompu",
+      bonApres === bonAvant, "la dernière copie valable a été perdue");
+    const restes = await fsp.readdir(dossier);
+    check("le fichier corrompu est mis de côté",
+      restes.some((f) => f.indexOf("users.corrompu-") === 0), restes.join(", "));
+    check("et le fichier courant est de nouveau lisible",
+      !!JSON.parse(await fsp.readFile(users, "utf8")).users);
+
   } catch (err) {
     failed++;
     console.log("  ÉCHEC exécution — " + err.message);
