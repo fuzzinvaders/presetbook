@@ -9,7 +9,48 @@ Le serveur n'a **aucune dépendance** : Node 18 ou plus suffit, et l'image Docke
 npm start
 ```
 
-Puis <http://localhost:8080>. Les données vont dans `./data`.
+Puis <http://localhost:8080>. Les données vont dans `./data`, à côté du dépôt.
+
+### Sur un poste, sans Docker
+
+C'est la voie la plus simple sur un Mac comme ailleurs : le serveur n'a **aucune dépendance**, il
+suffit de Node 18 ou plus.
+
+```bash
+brew install node                                          # si Node n'est pas déjà là
+git clone https://github.com/fuzzinvaders/presetbook.git
+cd presetbook
+npm start
+```
+
+Sur Windows ou Linux, seule la première ligne change — l'installateur de <https://nodejs.org> ou le
+gestionnaire de paquets de la distribution.
+
+À la première ouverture, aucun compte n'existe : **le premier créé est le vôtre**, et c'est
+l'administrateur de cette instance.
+
+Trois choses utiles à savoir :
+
+- le serveur écoute par défaut sur **toutes les interfaces**, donc les autres machines du réseau
+  local le voient. Pour une installation vraiment personnelle : `HOST=127.0.0.1 npm start` ;
+- depuis `http://localhost`, l'application est **installable** — le navigateur la traite comme un
+  site sécurisé. Chrome et Edge proposent un bouton **Installer** dans l'en-tête ; Safari 17 et plus
+  offre *Fichier → Ajouter au Dock*. Elle s'ouvre alors dans sa propre fenêtre, avec son icône ;
+- pour l'arrêter, `Ctrl+C`. Rien ne tourne en fond, rien ne s'installe dans le système.
+
+### Sans rien installer du tout
+
+`public/index.html` s'ouvre directement depuis le disque, d'un double-clic : l'application affiche
+tout le catalogue et fonctionne sans serveur. Ses limites, en revanche, sont réelles :
+
+- il n'y a **pas de comptes** — les données vivent dans le stockage local du navigateur ;
+- **Safari restreint ce stockage pour les fichiers locaux** : selon la version et les réglages, les
+  modifications peuvent ne pas survivre à la fermeture. Chrome et Edge l'autorisent. Dans le doute,
+  passez par « Sauvegarde » pour exporter avant de fermer ;
+- l'application ne s'installe pas depuis un fichier local.
+
+Bon pour regarder ou pour dépanner ; pour s'en servir vraiment, `npm start` coûte une minute de plus
+et retire ces limites.
 
 ## Avec Docker
 
