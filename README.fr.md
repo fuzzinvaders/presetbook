@@ -152,7 +152,7 @@ serveur du tout — publiée en statique, ou ouverte depuis le disque.
 npm test
 ```
 
-Vingt suites, 657 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
+Vingt suites, 668 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
 minimal, le registre des façades, celles créées depuis l'interface, le formulaire qui les crée, les
 pédales et leur dessin, le codec des chaînes d'effets sur une chaîne réelle, les types de bande de
 ReaEQ, l'export d'une fiche et son retour dans une autre bibliothèque, la licence et le widget de

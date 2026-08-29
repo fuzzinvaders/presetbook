@@ -135,6 +135,58 @@ async function appel(chemin, opts = {}) {
     }
     check("l'état de la démo est bien celui qu'on vient de vieillir", !!etat);
 
+    /* --- un jeton douteux ne ferme pas une porte ouverte par ailleurs --- */
+    const neuf2 = await fsp.mkdtemp(path.join(os.tmpdir(), "presetbook-neuf-"));
+    const port2 = PORT + 1;
+    const serveur2 = spawn(process.execPath, [path.join(RACINE, "server.js")], {
+      env: { ...process.env, PORT: String(port2), HOST: "127.0.0.1", DATA_DIR: neuf2 },
+      stdio: "ignore",
+    });
+    try {
+      for (let i = 0; i < 60; i++) {
+        try { await fetch("http://127.0.0.1:" + port2 + "/healthz"); break; }
+        catch { await attendre(100); }
+      }
+      const appel2 = async (chemin, opts = {}) => {
+        const r = await fetch("http://127.0.0.1:" + port2 + chemin, {
+          method: opts.method || "GET",
+          headers: opts.body ? { "Content-Type": "application/json" } : {},
+          body: opts.body ? JSON.stringify(opts.body) : undefined,
+        });
+        let corps = null;
+        try { corps = await r.json(); } catch { corps = null; }
+        return { code: r.status, corps };
+      };
+      /* Exactement ce que la page envoyait quand le navigateur proposait de
+         s'installer : un objet à la place d'un jeton. */
+      const premier = await appel2("/api/register", {
+        method: "POST", body: { name: "fondateur", password: "mot-de-passe-solide", invite: {} } });
+      check("sur une instance neuve, le premier compte se crée malgré un jeton douteux",
+        premier.code === 201, premier.code + " " + JSON.stringify(premier.corps));
+
+      const suivant = await appel2("/api/register", {
+        method: "POST", body: { name: "intrus", password: "mot-de-passe-solide", invite: "faux" } });
+      check("mais une fois l'instance peuplée, un faux jeton est refusé",
+        suivant.code === 410, String(suivant.code));
+    } finally {
+      serveur2.kill(); await attendre(300);
+      await fsp.rm(neuf2, { recursive: true, force: true }).catch(() => {});
+    }
+
+    /* --- un formulaire refusé ne brûle pas le lien --- */
+    const lien = await appel("/api/invites", { method: "POST", cookie: cAdmin });
+    const jeton2 = lien.corps.token;
+    const court = await appel("/api/register", {
+      method: "POST", body: { name: "timide", password: "court", invite: jeton2 } });
+    check("un mot de passe trop court est refusé", court.code === 422, String(court.code));
+    const repris = await appel("/api/register", {
+      method: "POST", body: { name: "timide", password: "mot-de-passe-solide", invite: jeton2 } });
+    check("et le lien sert encore au deuxième essai",
+      repris.code === 201, repris.code + " " + JSON.stringify(repris.corps));
+    const encore = await appel("/api/register", {
+      method: "POST", body: { name: "resquilleur", password: "mot-de-passe-solide", invite: jeton2 } });
+    check("mais une seule fois", encore.code === 410, String(encore.code));
+
     const nouveau = await appel("/api/demo", { method: "POST" });
     const vueNeuve = await appel("/api/presets", { cookie: nouveau.cookie });
     check("après une longue inactivité, le nouveau venu trouve une démo propre",
