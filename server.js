@@ -11,6 +11,7 @@
  * Comptes       : GET /api/users, POST /api/account/delete — réservés ou restreints à l'admin
  * Invitations   : GET/POST /api/invites, POST /api/invites/revoke — réservés à l'admin
  * Presets       : GET/PUT /api/presets — propres à l'utilisateur connecté
+ * Versions      : GET /api/presets/versions, POST /api/presets/restore
  * Partage       : GET/POST /api/shared, POST /api/shared/delete — l'étagère commune
  * Santé         : GET /healthz — jamais protégé
  *
@@ -69,6 +70,8 @@ const INVITE_DAYS = 7;
 const INVITE_MAX = 50;
 const SHARED_MAX = 500;         /* l'étagère entière */
 const SHARED_MAX_BY_USER = 50;  /* et par personne, pour qu'aucune ne la remplisse */
+const TRASH_MAX = 50;           /* fiches supprimées gardées de côté */
+const SNAP_KEEP = 7;            /* jours d'instantanés conservés */
 /* La démo ne se remet à zéro à l'entrée que si personne n'y a touché depuis ce
    délai : sinon un nouveau venu effacerait l'écran de celui qui explore. */
 const DEMO_IDLE_MS = 30 * 60 * 1000;
@@ -89,7 +92,7 @@ try {
   /* la page manque : /healthz le dira */
 }
 
-const EMPTY_STATE = { v: 1, custom: [], overrides: {}, gear: {}, hidden: [], updated: null };
+const EMPTY_STATE = { v: 1, custom: [], overrides: {}, gear: {}, hidden: [], trash: [], updated: null };
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -746,6 +749,10 @@ function sanitizeState(input) {
     overrides,
     gear,
     hidden: hidden.filter((id) => typeof id === "string"),
+    /* La corbeille voyage avec le reste : une fiche supprimée depuis le
+       téléphone doit pouvoir être ramenée depuis l'ordinateur. Sans cette
+       ligne elle serait jetée en silence au premier enregistrement. */
+    trash: Array.isArray(input.trash) ? input.trash.slice(-TRASH_MAX) : [],
     /* la langue choisie voyage avec les données, donc elle suit de poste en poste */
     lang: input.lang === "en" || input.lang === "fr" ? input.lang : undefined,
     updated: new Date().toISOString(),
@@ -776,6 +783,107 @@ async function ensureDemoUser() {
   }
   await writeJsonFile(presetsFile(user), { ...EMPTY_STATE, updated: new Date().toISOString() });
   return user;
+}
+
+/* ---------------------------------------------------------- instantanés */
+
+/**
+ * Un instantané par jour et par compte, sept conservés.
+ *
+ * L'écriture atomique garde déjà une génération précédente (.bak.json), mais
+ * elle est écrasée à l'enregistrement suivant : elle ne protège que de la
+ * dernière seconde. Ce qui manque, c'est de pouvoir revenir à hier — après une
+ * restauration malheureuse, ou une suppression qu'on ne remarque que le
+ * lendemain.
+ *
+ * Un seul instantané par jour suffit : les prendre à chaque enregistrement
+ * remplirait le disque sans rien apporter, l'application enregistrant à chaque
+ * modification.
+ */
+function snapFile(user, jour) {
+  return path.join(PRESETS_DIR, `${user.id}.snap-${jour}.json`);
+}
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+async function listSnapshots(user) {
+  try {
+    const noms = await fsp.readdir(PRESETS_DIR);
+    const prefixe = `${user.id}.snap-`;
+    return noms
+      .filter((f) => f.startsWith(prefixe) && f.endsWith(".json"))
+      .map((f) => f.slice(prefixe.length, -5))
+      .sort()
+      .reverse();
+  } catch {
+    return [];
+  }
+}
+
+/** Copie l'état du jour avant de l'écraser, et fait le ménage des plus vieux. */
+async function snapshotIfNeeded(user) {
+  const cible = snapFile(user, today());
+  try {
+    await fsp.access(cible);
+    return false;                       /* déjà pris aujourd'hui */
+  } catch { /* pas encore : on le prend */ }
+  try {
+    await fsp.copyFile(presetsFile(user), cible);
+  } catch {
+    return false;                       /* rien à copier : premier enregistrement */
+  }
+  const jours = await listSnapshots(user);
+  for (const vieux of jours.slice(SNAP_KEEP)) {
+    await fsp.unlink(snapFile(user, vieux)).catch(() => {});
+  }
+  return true;
+}
+
+async function handleVersions(req, res) {
+  const user = await currentUser(req);
+  if (!user) return sendJson(res, 401, { error: "Connexion requise." });
+  const jours = await listSnapshots(user);
+  const out = [];
+  for (const j of jours) {
+    try {
+      const st = await fsp.stat(snapFile(user, j));
+      const etat = await readJsonFile(snapFile(user, j), null);
+      out.push({ date: j, bytes: st.size,
+                 presets: etat ? (etat.custom || []).length : 0 });
+    } catch { /* instantané illisible : on l'ignore plutôt que de tout refuser */ }
+  }
+  return sendJson(res, 200, { versions: out });
+}
+
+/**
+ * Revenir à un instantané. L'état actuel est photographié d'abord, sinon
+ * restaurer serait à son tour irréversible.
+ */
+async function handleRestoreVersion(req, res) {
+  const user = await currentUser(req);
+  if (!user) return sendJson(res, 401, { error: "Connexion requise." });
+  let body;
+  try { body = await readJsonBody(req); }
+  catch { return sendJson(res, 400, { error: "Requête invalide." }); }
+
+  const jour = String(body.date || "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) {
+    return sendJson(res, 422, { error: "Date d'instantané inattendue." });
+  }
+  const etat = await readJsonFile(snapFile(user, jour), null);
+  if (!etat) return sendJson(res, 404, { error: "Cette version n'existe plus." });
+
+  /* Photographier l'état courant avant de l'écraser : on doit pouvoir revenir. */
+  const secours = snapFile(user, today() + "-avant-restauration");
+  await fsp.copyFile(presetsFile(user), secours).catch(() => {});
+
+  const propre = sanitizeState(etat);
+  if (!propre) return sendJson(res, 422, { error: "Cette version est illisible." });
+  await writeJsonFile(presetsFile(user), propre);
+  console.log(`[presetbook] ${user.name} revient à la version du ${jour}`);
+  return sendJson(res, 200, { ok: true, date: jour });
 }
 
 /** Le fichier unique d'avant les comptes revient au premier compte créé. */
@@ -1084,8 +1192,16 @@ async function handleDeleteAccount(req, res) {
     etagere.items = etagere.items.filter((i) => i.by !== cible.name);
     if (etagere.items.length !== avant) await writeJsonFile(SHARED_FILE, etagere);
   } catch { /* étagère absente : rien à retirer */ }
-  try { await fsp.unlink(presetsFile(cible)); } catch { /* pas de fiches : rien à retirer */ }
+  /* Mises de côté plutôt qu'effacées : une suppression de compte est
+     irréversible côté application, elle ne doit pas l'être côté disque. Le
+     fichier reste lisible par qui administre la machine. */
+  const misDeCote = path.join(PRESETS_DIR, `deleted-${cible.id}-${today()}.json`);
+  try { await fsp.rename(presetsFile(cible), misDeCote); }
+  catch { /* pas de fiches : rien à mettre de côté */ }
   try { await fsp.unlink(presetsFile(cible).replace(/\.json$/, ".bak.json")); } catch { /* idem */ }
+  for (const j of await listSnapshots(cible)) {
+    await fsp.unlink(snapFile(cible, j)).catch(() => {});
+  }
   console.log(`[presetbook] compte supprimé : ${cible.name}` + (soi ? " (par lui-même)" : ` (par ${user.name})`));
 
   const entetes = soi ? { "Set-Cookie": sessionCookie("", req) } : {};
@@ -1166,6 +1282,12 @@ const server = http.createServer(async (req, res) => {
     if (pathname === "/api/shared/delete" && req.method === "POST") {
       return await handleUnshare(req, res);
     }
+    if (pathname === "/api/presets/versions" && req.method === "GET") {
+      return await handleVersions(req, res);
+    }
+    if (pathname === "/api/presets/restore" && req.method === "POST") {
+      return await handleRestoreVersion(req, res);
+    }
     if (pathname === "/api/account/delete" && req.method === "POST") return await handleDeleteAccount(req, res);
     if (pathname === "/api/logout" && req.method === "POST") return handleLogout(req, res);
 
@@ -1186,6 +1308,7 @@ const server = http.createServer(async (req, res) => {
         }
         const state = sanitizeState(parsed);
         if (!state) return sendJson(res, 422, { error: "Structure inattendue." });
+        await snapshotIfNeeded(user);
         await writeJsonFile(presetsFile(user), state);
         console.log(
           `[presetbook] ${user.name} : ${state.custom.length} presets propres, ` +

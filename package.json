@@ -10,7 +10,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test/harness.js && node test/gear.test.js && node test/gearcustom.test.js && node test/gearform.test.js && node test/pedals.test.js && node test/rfxchain.test.js && node test/eqtypes.test.js && node test/export.test.js && node test/licence.test.js && node test/comptes.test.js && node test/demo.test.js && node test/filtres.test.js && node test/mobile.test.js && node test/compression.test.js && node test/motdepasse.test.js && node test/invitations.test.js && node test/partage.test.js && node test/langue.test.js",
+    "test": "node test/harness.js && node test/gear.test.js && node test/gearcustom.test.js && node test/gearform.test.js && node test/pedals.test.js && node test/rfxchain.test.js && node test/eqtypes.test.js && node test/export.test.js && node test/licence.test.js && node test/comptes.test.js && node test/demo.test.js && node test/filtres.test.js && node test/mobile.test.js && node test/compression.test.js && node test/motdepasse.test.js && node test/invitations.test.js && node test/partage.test.js && node test/corbeille.test.js && node test/langue.test.js",
     "import:rfx": "node tools/rfxchain-import.js",
     "learn:eqtypes": "node tools/learn-eqtypes.js",
     "captures": "node tools/captures.js",

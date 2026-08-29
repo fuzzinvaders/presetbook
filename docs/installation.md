@@ -181,6 +181,27 @@ service derrière un reverse proxy en **HTTPS** : l'authentification transmet le
 corps de la requête, ce qui n'a de sens que sous TLS. `BASIC_AUTH` peut servir de barrière
 supplémentaire pour masquer entièrement l'existence du site.
 
+### Ce qui reste sur le disque
+
+Trois choses vivent à côté du fichier de presets de chaque compte, dans `presets/` :
+
+| Fichier | Ce que c'est |
+| --- | --- |
+| `<id>.json` | les fiches du compte |
+| `<id>.bak.json` | la génération précédente, écrasée à chaque enregistrement |
+| `<id>.snap-AAAA-MM-JJ.json` | un instantané par jour, sept conservés |
+| `deleted-<id>-AAAA-MM-JJ.json` | les fiches d'un compte supprimé |
+
+Les instantanés sont pris **au premier enregistrement de chaque jour**, avant écriture : chacun fige
+donc l'état de la veille au soir. Ils se restaurent depuis l'application, écran **Sauvegarde**.
+
+Un compte supprimé voit ses fiches **renommées, pas effacées** — la suppression est irréversible dans
+l'application, elle n'a pas à l'être sur le disque. À vous de faire le ménage quand vous le jugez bon :
+
+```bash
+ls -l "$DATA_PATH/presets/" | grep deleted-
+```
+
 ### Voir et déplacer le rôle d'administrateur
 
 ```bash

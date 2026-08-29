@@ -459,6 +459,8 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
   max-width:min(520px,92vw);
 }
 .toast.show{opacity:1}
+.toast{display:flex; align-items:center; gap:12px}
+.toast .btn{flex:none; padding:3px 10px; font-size:12px}
 @media (prefers-reduced-motion:reduce){*{transition:none !important}}
 </style>
 
@@ -525,6 +527,21 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Versions précédentes": "Earlier versions",
+  "Revenir à cette version": "Go back to this version",
+  "Un état par jour, gardé une semaine. Revenir à l'un d'eux remplace ta bibliothèque — l'état actuel est photographié avant, donc c'est réversible.":
+    "One state per day, kept for a week. Going back to one replaces your library — the current state is photographed first, so it can be undone.",
+  "Cette version n'existe plus.": "That version no longer exists.",
+  "Cette version est illisible.": "That version cannot be read.",
+  "Date d'instantané inattendue.": "Unexpected snapshot date.",
+  "Corbeille": "Trash",
+  "Annuler la suppression": "Undo",
+  "Restaurer": "Restore",
+  "Vider la corbeille": "Empty the trash",
+  "Corbeille vidée.": "Trash emptied.",
+  "Fiche supprimée : {0}": "Preset deleted: {0}",
+  "Fiche restaurée : {0}": "Preset restored: {0}",
+  "Cette fiche n'est plus dans la corbeille.": "That preset is no longer in the trash.",
   "Partagés": "Shared",
   "Partager": "Share",
   "Fiches partagées": "Shared presets",
@@ -2532,9 +2549,25 @@ function normalize(j){
     overrides: (j.overrides && typeof j.overrides === "object") ? j.overrides : {},
     gear: (j.gear && typeof j.gear === "object" && !Array.isArray(j.gear)) ? j.gear : {},
     hidden: Array.isArray(j.hidden) ? j.hidden : [],
+    /* Les fiches supprimées y attendent quelques jours. Une fiche du catalogue
+       n'y passe pas : la supprimer ne fait que la masquer, c'est déjà annulable. */
+    trash: Array.isArray(j.trash) ? j.trash : [],
     lang: (j.lang === "en" || j.lang === "fr") ? j.lang : undefined,
     updated: j.updated || null
   };
+}
+
+var TRASH_DAYS = 30;
+var TRASH_MAX = 50;
+
+/** Retire de la corbeille ce qui a dépassé le délai, et borne sa taille. */
+function pruneTrash(){
+  if (!Array.isArray(S.trash)) S.trash = [];
+  var limite = Date.now() - TRASH_DAYS * 86400000;
+  S.trash = S.trash.filter(function(x){
+    return x && x.preset && Date.parse(x.at || "") > limite;
+  });
+  if (S.trash.length > TRASH_MAX) S.trash = S.trash.slice(-TRASH_MAX);
 }
 
 /* ============================ rendu ============================ */
@@ -3665,14 +3698,58 @@ function commit(){
   save().then(function(ok){ if (ok) toast("Preset enregistré."); });
 }
 function removePreset(id){
+  var p = findPreset(id);
   if (isSeed(id)){
+    /* Une fiche livrée n'est que masquée : « Réinitialiser » la ramène. */
     if (S.hidden.indexOf(id) < 0) S.hidden.push(id);
     delete S.overrides[id];
   } else {
-    S.custom = S.custom.filter(function(p){ return p.id !== id; });
+    S.custom = S.custom.filter(function(x){ return x.id !== id; });
+    if (p){
+      pruneTrash();
+      S.trash.push({at: new Date().toISOString(), preset: clone(p),
+                    gear: gearsNeeded(p)});
+    }
   }
   closeEditor(); render();
-  save().then(function(ok){ if (ok) toast("Preset supprimé."); });
+  save().then(function(ok){
+    if (!ok) return;
+    toast(tf("Fiche supprimée : {0}", p ? p.name : ""),
+          isSeed(id) ? null : {label: "Annuler la suppression", run: function(){ restoreTrash(id); }});
+  });
+}
+
+/** Les façades personnelles dont dépend une fiche : elles doivent revenir avec. */
+function gearsNeeded(p){
+  var ids = p.kind === "board" ? (p.slots || []).map(function(x){ return x.gear; })
+                               : (p.gear ? [p.gear] : []);
+  var out = {};
+  ids.forEach(function(k){ if ((S.gear || {})[k]) out[k] = clone(S.gear[k]); });
+  return out;
+}
+
+/** Ramène une fiche de la corbeille. */
+function restoreTrash(id){
+  pruneTrash();
+  var i = -1, j;
+  for (j = S.trash.length - 1; j >= 0; j--) if (S.trash[j].preset.id === id){ i = j; break; }
+  if (i < 0){ toast("Cette fiche n'est plus dans la corbeille."); return; }
+  var x = S.trash[i];
+  S.trash.splice(i, 1);
+  /* Les façades reviennent d'abord : sans elles la fiche serait illisible. */
+  Object.keys(x.gear || {}).forEach(function(k){ if (!allGear()[k]) S.gear[k] = x.gear[k]; });
+  if (findPreset(x.preset.id)){
+    x.preset.id = "u-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36);
+  }
+  S.custom.push(x.preset);
+  render();
+  save().then(function(ok){ if (ok) toast(tf("Fiche restaurée : {0}", x.preset.name)); });
+}
+
+function emptyTrash(){
+  S.trash = [];
+  render();
+  save().then(function(ok){ if (ok) toast("Corbeille vidée."); });
 }
 function duplicate(id){
   var p = findPreset(id); if (!p) return;
@@ -3774,9 +3851,84 @@ function openIO(){
         '<p class="hint">Pour restaurer : colle une sauvegarde dans le bloc, puis « Restaurer ». ' +
         'Une fiche exportée seule se colle ici aussi : elle s\'ajoute à la bibliothèque ' +
         'au lieu de la remplacer.</p>' +
+        trashBody() +
+        '<div id="versions"></div>' +
       '</div></div>');
   veil.classList.add("open");
+  loadVersions();
 }
+
+/**
+ * Les états d'avant, un par jour. Le serveur en garde une semaine.
+ *
+ * C'est le filet qui manquait : la corbeille rattrape une suppression, celui-ci
+ * rattrape le reste — une restauration malheureuse, une modification en masse,
+ * une erreur qu'on ne remarque que le lendemain.
+ */
+function loadVersions(){
+  var host = document.getElementById("versions");
+  if (!host || store.mode !== "api") return;      /* sans serveur, pas d'instantanés */
+  fetchJson("api/presets/versions").then(function(j){
+    var l = (j && j.versions) || [];
+    if (!l.length){ setHtml(host, ""); return; }
+    host.innerHTML = tHtml('<fieldset><legend>Versions précédentes</legend>' +
+      '<p class="hint">Un état par jour, gardé une semaine. Revenir à l\'un d\'eux remplace ' +
+      'ta bibliothèque — l\'état actuel est photographié avant, donc c\'est réversible.</p>' +
+      '<div class="ulist">' + l.map(function(v){
+        return '<div class="urow"><span class="uname">' + esc(v.date) + '</span>' +
+          '<span class="mini" style="opacity:.6">' + v.presets + ' ' +
+          t(v.presets > 1 ? "fiches" : "fiche") + '</span>' +
+          '<span class="spacer"></span>' +
+          '<button class="btn small" data-version="' + esc(v.date) + '">Revenir à cette version</button>' +
+          '</div>';
+      }).join("") + '</div></fieldset>');
+  }, function(){ setHtml(host, ""); });
+}
+
+var versionArmee = null;
+function restoreVersion(btn){
+  var jour = btn.getAttribute("data-version");
+  if (versionArmee !== jour){
+    versionArmee = jour;
+    setHtml(btn, "Confirmer ?");
+    window.setTimeout(function(){
+      if (btn.isConnected && versionArmee === jour){
+        versionArmee = null; setHtml(btn, "Revenir à cette version");
+      }
+    }, 4000);
+    return;
+  }
+  versionArmee = null;
+  btn.disabled = true;
+  post("api/presets/restore", {date: jour}).then(function(){
+    window.location.reload();      /* la bibliothèque a changé sous nos pieds */
+  }, function(err){
+    btn.disabled = false;
+    setHtml(btn, "Revenir à cette version");
+    toast(err.message);
+  });
+}
+
+/** Les fiches supprimées récemment, et de quoi les ramener. */
+function trashBody(){
+  pruneTrash();
+  if (!S.trash.length) return "";
+  return '<fieldset><legend>Corbeille</legend>' +
+    '<p class="hint">Les fiches supprimées y restent ' + TRASH_DAYS + ' jours, puis disparaissent.</p>' +
+    '<div class="ulist">' + S.trash.slice().reverse().map(function(x){
+      return '<div class="urow">' +
+        '<span class="kind ' + esc(x.preset.kind) + '">' +
+          esc(KINDS[x.preset.kind] ? KINDS[x.preset.kind].label : x.preset.kind) + '</span>' +
+        '<span class="uname">' + esc(x.preset.name) + '</span>' +
+        '<span class="mini" style="opacity:.6">' + esc(String(x.at).slice(0, 10)) + '</span>' +
+        '<span class="spacer"></span>' +
+        '<button class="btn small" data-untrash="' + esc(x.preset.id) + '">Restaurer</button>' +
+        '</div>';
+    }).join("") + '</div>' +
+    '<div class="acts"><button class="btn small ghost danger" data-emptytrash>Vider la corbeille</button></div>' +
+    '</fieldset>';
+}
+
 function doImport(){
   var ta = document.getElementById("io");
   var j;
@@ -3871,11 +4023,34 @@ function addPreset(env){
 
 /* ============================ événements ============================ */
 var toastTimer = null;
-function toast(msg){
+/**
+ * Un message éphémère, avec au besoin une action à portée de clic.
+ *
+ * « Annuler » ne vaut que s'il est là au moment où l'on se rend compte de son
+ * erreur : le chercher dans un écran de réglages, personne ne le fait.
+ */
+function toast(msg, action){
   var el = document.getElementById("toast");
-  el.textContent = t(msg); el.classList.add("show");
+  el.innerHTML = "";
+  /* Le message porte des noms de fiches, donc du texte que l'utilisateur a
+     écrit : il passe par textContent, jamais par innerHTML. */
+  var texte = document.createElement("span");
+  texte.textContent = t(msg);
+  el.appendChild(texte);
+  if (action && action.run){
+    var b = document.createElement("button");
+    b.className = "btn small";
+    b.textContent = t(action.label || "Annuler la suppression");
+    b.addEventListener("click", function(){
+      el.classList.remove("show");
+      action.run();
+    });
+    el.appendChild(b);
+  }
+  el.classList.add("show");
   if (toastTimer) window.clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(function(){ el.classList.remove("show"); }, 3600);
+  toastTimer = window.setTimeout(function(){ el.classList.remove("show"); },
+                                 action ? 8000 : 3600);   /* le temps de lire et de cliquer */
 }
 
 document.getElementById("tabs").addEventListener("click", function(e){
@@ -4048,6 +4223,11 @@ document.getElementById("veil").addEventListener("click", function(e){
     else toast("Sélectionne le bloc et fais Ctrl+C.");
     return;
   }
+  var version = t.closest("[data-version]");
+  if (version){ restoreVersion(version); return; }
+  var untrash = t.closest("[data-untrash]");
+  if (untrash){ restoreTrash(untrash.getAttribute("data-untrash")); closeEditor(); return; }
+  if (t.closest("[data-emptytrash]")){ emptyTrash(); closeEditor(); return; }
   if (t.closest("[data-dl]")){ doDownload(); return; }
   if (t.closest("[data-rfx-out]") && draft){ exportRfx(); return; }
   if (t.closest("[data-import]")){ doImport(); return; }
@@ -4298,6 +4478,9 @@ window.__pb = {
   openEditor: openEditor, openIO: openIO, showGate: showGate, library: library,
   tf: tf, renderChrome: renderChrome,
   presetFile: presetFile, addPreset: addPreset, findPreset: findPreset, fileName: fileName,
+  removePreset: removePreset, restoreTrash: restoreTrash, emptyTrash: emptyTrash,
+  loadVersions: loadVersions, restoreVersion: restoreVersion,
+  pruneTrash: pruneTrash, trashBody: trashBody,
   plat: plat,
   matches: matches, facetGear: facetGear, facetTags: facetTags,
   renderFilters: renderFilters, filterLabel: filterLabel, activeFilters: activeFilters,
