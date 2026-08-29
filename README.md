@@ -116,10 +116,12 @@ The public image is rebuilt on every commit, for **amd64 and arm64** — it runs
 Without Docker, the server has no dependencies at all:
 
 ```bash
+brew install node   # or the installer from nodejs.org
 git clone https://github.com/fuzzinvaders/presetbook.git && cd presetbook && npm start
 ```
 
-Then <http://localhost:8080>. On first open no account exists: the first one created is yours.
+Then <http://localhost:8080>. From localhost the app is **installable** just like on a phone: an
+**Install** button in Chrome and Edge, *Add to Dock* in Safari 17 and later. On first open no account exists: the first one created is yours.
 
 Passwords are never stored, only an scrypt derivation with a per-account salt; session tokens are not
 stored either, only their SHA-256 fingerprint. The page also works with no server at all — published

@@ -125,10 +125,12 @@ L'image publique est reconstruite à chaque commit, pour **amd64 et arm64** — 
 sur un Raspberry Pi. Sans Docker, le serveur n'a aucune dépendance :
 
 ```bash
+brew install node   # ou l'installateur de nodejs.org
 git clone https://github.com/fuzzinvaders/presetbook.git && cd presetbook && npm start
 ```
 
-Puis <http://localhost:8080>. À la première ouverture, aucun compte n'existe : le premier créé est le
+Puis <http://localhost:8080>. Depuis localhost, l'application est **installable** comme sur un
+téléphone : bouton **Installer** sous Chrome et Edge, *Ajouter au Dock* sous Safari 17 et plus. À la première ouverture, aucun compte n'existe : le premier créé est le
 vôtre.
 
 Les mots de passe ne sont jamais enregistrés, seulement une dérivation scrypt avec un sel par compte ;
