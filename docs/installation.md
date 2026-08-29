@@ -1,5 +1,7 @@
 # Installer et exploiter Presetbook
 
+*[English version](installing.md)*
+
 Le serveur n'a **aucune dépendance** : Node 18 ou plus suffit, et l'image Docker se construit sans
 étape d'installation de paquets.
 
@@ -156,7 +158,7 @@ C'est ce que fait le bouton **Comptes** de l'en-tête, et c'est la voie recomman
 Un utilisateur ordinaire ne peut que changer son mot de passe et supprimer son propre compte. Le rôle
 d'administrateur est écrit dans `users.json` (`"admin": true`) ; sur une instance antérieure à cette
 version, il est attribué au compte le plus ancien au premier démarrage, et le journal l'annonce. Pour
-le déplacer, arrêter le serveur et modifier ce champ à la main.
+le voir ou le déplacer, `tools/admin.js` — voir plus bas.
 
 Un compte créé par un utilisateur connecté **ne reçoit pas de cookie de session** : la réponse porte
 `switched: false`, donc la session de qui l'a créé n'est pas détournée vers le nouveau compte. La
@@ -296,10 +298,11 @@ identifiants restent utilisables à la main pour qui les connaît.
 
 Ses identifiants étant publics, le compte est tenu à l'écart sur quatre points :
 
-- il **ne peut pas créer de compte**. Sans cela, n'importe qui sur Internet pourrait s'ouvrir un
-  compte sur votre serveur, puisqu'un utilisateur connecté a ce droit ;
-- ses fiches **repartent de zéro à chaque démarrage** du serveur. Une démonstration abîmée se répare
-  en redémarrant, et rien ne s'accumule ;
+- il **ne peut pas créer de compte**, ni publier sur l'étagère partagée. Sans cela, n'importe qui
+  sur Internet écrirait sur votre serveur ;
+- ses fiches **repartent de zéro** au démarrage du serveur, et à l'arrivée d'un visiteur si
+  personne n'y a touché depuis une demi-heure. Le délai compte : sans lui, un curieux effacerait
+  l'écran de quelqu'un en train d'explorer ;
 - il **ne compte pas** comme propriétaire du serveur. Sur une installation neuve, sa présence ne
   ferme pas la création de comptes : le premier vrai compte créé reste le vôtre ;
 - les entrées en démonstration sont **plafonnées par adresse**, pour qu'un robot ne fabrique pas des
@@ -328,14 +331,18 @@ ses polices depuis Google Fonts, avec un repli système si elles n'arrivent pas.
 
 ```
 /data
-├── users.json                  comptes (sel + dérivation scrypt)
-├── sessions.json               sessions actives (empreintes de jetons)
-└── presets/<id-du-compte>.json presets et façades, un fichier par compte
+├── users.json      comptes (sel + dérivation scrypt, drapeau « admin »)
+├── sessions.json   sessions actives (empreintes de jetons)
+├── invites.json    invitations en attente (empreintes de jetons)
+├── shared.json     l'étagère partagée entre comptes
+└── presets/        un fichier par compte, plus ses instantanés
 ```
 
 Chaque écriture recopie l'état précédent en `*.bak.json` et remplace le fichier de façon atomique
 (fichier temporaire puis renommage), pour qu'une coupure ne laisse jamais un JSON tronqué. Si le
-fichier principal devient illisible, le serveur repart de la sauvegarde.
+fichier principal devient illisible, le serveur repart de la sauvegarde — et **ne recopie pas le
+fichier corrompu par-dessus**, ce qui détruirait la dernière copie valable ; il le met de côté sous
+`*.corrompu-<horodatage>.json` et le dit dans le journal.
 
 Sauvegarder une instance, c'est copier ce dossier. Le bouton **Sauvegarde** de l'interface offre en
 plus un export JSON par compte, à conserver ailleurs.
@@ -345,12 +352,20 @@ plus un export JSON par compte, à conserver ailleurs.
 | Méthode | Chemin | Effet |
 | --- | --- | --- |
 | `GET` | `/` | l'application |
-| `GET` | `/api/session` | qui est connecté, et si la création de comptes est ouverte |
-| `POST` | `/api/register` | crée un compte |
-| `POST` | `/api/login` | ouvre une session |
-| `POST` | `/api/logout` | ferme la session |
-| `GET` | `/api/presets` | les presets du compte connecté |
-| `PUT` | `/api/presets` | remplace les presets du compte connecté |
+| `GET` | `/api/session` | qui est connecté, son rôle, l'état de la création de comptes |
+| `POST` | `/api/register` | crée un compte — administrateur, invitation, ou première fois |
+| `POST` | `/api/login` · `/api/logout` | ouvre et ferme une session |
+| `POST` | `/api/demo` | entre en démonstration, sans mot de passe |
+| `POST` | `/api/password` | change **son** mot de passe |
+| `GET` | `/api/users` | la liste des comptes — administrateur seul |
+| `POST` | `/api/account/delete` | supprime son compte, ou un autre si l'on administre |
+| `GET`/`POST` | `/api/invites` | les invitations en attente, et en créer — administrateur seul |
+| `POST` | `/api/invites/revoke` | annule une invitation |
+| `GET`/`POST` | `/api/shared` | l'étagère partagée, et y publier une fiche |
+| `POST` | `/api/shared/delete` | retire une fiche de l'étagère |
+| `GET`/`PUT` | `/api/presets` | lit et remplace les presets du compte connecté |
+| `GET` | `/api/presets/versions` | les instantanés disponibles |
+| `POST` | `/api/presets/restore` | revient à l'un d'eux |
 | `GET` | `/healthz` | sonde de santé, jamais protégée ; publie l'empreinte de la page servie |
 
 ## « J'ai mis à jour, je ne vois pas les nouveautés »

@@ -1,5 +1,7 @@
 # Développer Presetbook
 
+*[English version](developing.md)*
+
 ## Ce qui compose l'application
 
 | Fichier | Rôle |
@@ -281,7 +283,9 @@ s'ajoutent.
 npm test
 ```
 
-Sept suites, 220 vérifications, sans rien à installer :
+Dix-neuf suites, sans rien à installer. Les unes rejouent la page dans un DOM minimal, les autres
+lancent un **vrai serveur** — les droits, les sessions et l'écriture sur disque ne se vérifient pas
+autrement.
 
 | Suite | Ce qu'elle couvre |
 | --- | --- |
@@ -289,9 +293,21 @@ Sept suites, 220 vérifications, sans rien à installer :
 | `gear.test.js` | le registre des façades, les défauts, les commandes hors circuit |
 | `gearcustom.test.js` | les façades créées, le registre fusionné, la conservation |
 | `gearform.test.js` | la liste et le formulaire de façade |
-| `rfxchain.test.js` | le codec sur une chaîne réelle, aller-retour et modifications |
 | `pedals.test.js` | le registre des pédales, leur dessin, le chaînage d'un pédalier |
+| `rfxchain.test.js` | le codec sur une chaîne réelle, aller-retour et modifications |
 | `eqtypes.test.js` | les types de bande : refus, conservation, ajout et retrait |
+| `export.test.js` | l'export d'une fiche et son retour dans une autre bibliothèque |
+| `licence.test.js` | la licence, les en-têtes SPDX, les garde-fous du widget de dons |
+| `comptes.test.js` | les écrans de compte selon le rôle, et les refus avant le réseau |
+| `filtres.test.js` | les facettes, leurs comptes croisés, la feuille d'impression |
+| `mobile.test.js` | la balise viewport, les règles étroites, le manifeste, le service worker |
+| `demo.test.js` | *serveur* — les quatre mises à l'écart du compte de démonstration |
+| `compression.test.js` | *serveur* — ce qui part réellement sur le fil, en HTTP brut |
+| `motdepasse.test.js` | *serveur* — mot de passe, rôles, suppression de compte |
+| `invitations.test.js` | *serveur* — le cycle d'une invitation, et la démo qui se rafraîchit |
+| `partage.test.js` | *serveur* — publier, reprendre, retirer, et ce qui est refusé |
+| `corbeille.test.js` | *serveur* — corbeille, instantanés, et l'intégrité des fichiers |
+| `langue.test.js` | l'audit d'anglais : treize écrans, aucun mot français toléré |
 
 `test/sandbox.js` exécute le script de la page dans un DOM minimal, sous `node:vm`. La page expose
 pour cela `window.__pb`, une **couture de test en lecture** qui donne accès aux registres et aux
