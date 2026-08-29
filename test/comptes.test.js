@@ -162,7 +162,11 @@ g.__pb.setDemo({ name: "demo" });
 g.__pb.showGate();
 const porte = g.__nodes.get("gate").innerHTML;
 check("le bouton d'entrée apparaît", porte.indexOf('id="gate-demo"') > 0, porte.slice(0, 80));
-check("l'écran prévient de la remise à zéro", porte.indexOf("repartent de zéro") > 0);
+/* La promesse, pas la tournure : le visiteur doit savoir que rien ne tient, et
+   qu'il arrive sur un écran propre plutôt que sur les essais d'un inconnu. */
+check("l'écran prévient de la remise à zéro", porte.indexOf("repart de zéro") > 0, porte.slice(0, 200));
+check("il dit que l'écran est propre à l'arrivée", porte.indexOf("à ton arrivée") > 0);
+check("et par où repartir avec ce qu'on y a fait", porte.indexOf("Sauvegarde") > 0);
 check("aucun mot de passe n'est affiché", porte.indexOf("demo</") < 0 && !/value="demo"/.test(porte));
 
 g.__pb.setSession({ id: "d", name: "demo" }, true);

@@ -15,8 +15,10 @@
  * Partage       : GET/POST /api/shared, POST /api/shared/delete — l'étagère commune
  * Santé         : GET /healthz — jamais protégé
  *
+ * Demandes      : POST /api/requests — public, GET et /delete réservés à l'admin
+ *
  * Environnement : PORT, HOST, DATA_DIR, BASIC_AUTH, ALLOW_REGISTER, SESSION_DAYS, SECURE_COOKIES,
- *                 DEMO_LOGIN
+ *                 DEMO_LOGIN, ALLOW_REQUESTS
  *
  * Les mots de passe ne sont jamais stockés : seule une dérivation scrypt l'est,
  * avec un sel propre à chaque compte. Les jetons de session ne sont pas stockés
@@ -37,12 +39,18 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const SESSIONS_FILE = path.join(DATA_DIR, "sessions.json");
 const INVITES_FILE = path.join(DATA_DIR, "invites.json");
+const REQUESTS_FILE = path.join(DATA_DIR, "requests.json");
 const SHARED_FILE = path.join(DATA_DIR, "shared.json");
 const PRESETS_DIR = path.join(DATA_DIR, "presets");
 const LEGACY_PRESETS = path.join(DATA_DIR, "presets.json");
 
 const BASIC_AUTH = process.env.BASIC_AUTH || "";
 const ALLOW_REGISTER = /^(1|true|oui|yes)$/i.test(process.env.ALLOW_REGISTER || "");
+
+/* Le formulaire public de demande de compte. Fermé par défaut : une instance
+   privée n'a aucune raison d'exposer un point d'écriture non authentifié, et
+   celui qui l'ouvre doit le vouloir. */
+const ALLOW_REQUESTS = /^(1|true|oui|yes)$/i.test(process.env.ALLOW_REQUESTS || "");
 const SESSION_DAYS = Number(process.env.SESSION_DAYS || 30);
 const SECURE_COOKIES = /^(1|true|oui|yes)$/i.test(process.env.SECURE_COOKIES || "");
 
@@ -68,6 +76,17 @@ const SCRYPT = { N: 16384, r: 8, p: 1, keylen: 64 };
 const LOGIN_MAX_FAILS = 10;
 const INVITE_DAYS = 7;
 const INVITE_MAX = 50;
+
+/* Une file de demandes qui déborde ne se lit plus : passé ce nombre, le
+   formulaire refuse poliment plutôt que d'enfler sans fin. */
+const REQUEST_MAX = 50;
+const REQUEST_WINDOW_MS = 24 * 60 * 60 * 1000;
+const REQUEST_MAX_PER_IP = 3;
+/* Une adresse est une donnée personnelle qui ne nous appartient pas : elle ne
+   sert qu'à envoyer l'invitation, et part avec la demande une fois traitée. */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const EMAIL_MAX = 120;
+const NOTE_MAX = 300;
 const SHARED_MAX = 500;         /* l'étagère entière */
 const SHARED_MAX_BY_USER = 50;  /* et par personne, pour qu'aucune ne la remplisse */
 const TRASH_MAX = 50;           /* fiches supprimées gardées de côté */
@@ -568,6 +587,26 @@ function noteFailure(req) {
   else rec.n += 1;
 }
 
+/* Les demandes de compte ont leur propre compteur, sur une fenêtre bien plus
+   large : un compte se demande une fois, pas dix. Compter avec les échecs de
+   connexion aurait fait qu'un formulaire rempli trois fois ferme la porte à
+   celui qui essaie ensuite de se connecter. */
+const demandes = new Map(); // ip -> {n, first}
+
+function requestThrottled(req) {
+  const rec = demandes.get(clientIp(req));
+  if (!rec) return false;
+  if (Date.now() - rec.first > REQUEST_WINDOW_MS) { demandes.delete(clientIp(req)); return false; }
+  return rec.n >= REQUEST_MAX_PER_IP;
+}
+
+function noteRequest(req) {
+  const ip = clientIp(req);
+  const rec = demandes.get(ip);
+  if (!rec || Date.now() - rec.first > REQUEST_WINDOW_MS) demandes.set(ip, { n: 1, first: Date.now() });
+  else rec.n += 1;
+}
+
 /* --------------------------------------------------------------- partage */
 
 /**
@@ -735,6 +774,95 @@ async function useInvite(token) {
   pruneInvites(db);
   await writeJsonFile(INVITES_FILE, db);
   return true;
+}
+
+/* ------------------------------------------------ demandes de compte ----
+ *
+ * La création de comptes est réservée à l'administrateur, ce qui laissait le
+ * visiteur sans issue : il essayait la démonstration, y prenait goût, et
+ * n'avait nulle part où demander la suite. Ce formulaire est cette issue.
+ *
+ * Rien n'est envoyé par l'application : elle n'a aucune dépendance, donc pas de
+ * client de courrier. Elle range la demande, la montre à l'administrateur à sa
+ * prochaine connexion, et lui prépare l'invitation à copier. L'envoi reste un
+ * geste humain — c'est aussi ce qui évite qu'un serveur d'envoi soit détourné.
+ */
+async function readRequests() {
+  const db = await readJsonFile(REQUESTS_FILE, { v: 1, requests: [] });
+  return Array.isArray(db.requests) ? db : { v: 1, requests: [] };
+}
+
+async function handleRequestCreate(req, res) {
+  /* Fermé : on répond comme si la route n'existait pas, plutôt que d'annoncer
+     une porte close à qui n'avait pas à la connaître. */
+  if (!ALLOW_REQUESTS) return sendJson(res, 404, { error: "Introuvable." });
+
+  if (requestThrottled(req)) {
+    return sendJson(res, 429, { error: "Trop de demandes depuis cette adresse. Réessaie demain." });
+  }
+
+  let body;
+  try { body = await readJsonBody(req); }
+  catch { return sendJson(res, 400, { error: "Requête invalide." }); }
+
+  const name = String(body.name || "").trim();
+  const email = String(body.email || "").trim();
+  const note = String(body.note || "").trim().slice(0, NOTE_MAX);
+
+  if (!NAME_RE.test(name)) {
+    return sendJson(res, 422, { error: "Identifiant : 2 à 40 caractères, lettres, chiffres, espace, point, tiret." });
+  }
+  if (email.length > EMAIL_MAX || !EMAIL_RE.test(email)) {
+    return sendJson(res, 422, { error: "Cette adresse ne ressemble pas à une adresse de courriel." });
+  }
+
+  noteRequest(req);
+
+  const db = await readRequests();
+  if (db.requests.length >= REQUEST_MAX) {
+    return sendJson(res, 429, { error: "Trop de demandes en attente. Réessaie plus tard." });
+  }
+
+  /* Deux fois la même adresse : on accepte sans rien ajouter. Répondre « déjà
+     demandé » dirait à un inconnu qui a écrit ici. */
+  const dejaLa = db.requests.some((r) => r.email.toLowerCase() === email.toLowerCase());
+  if (!dejaLa) {
+    db.requests.push({
+      id: crypto.randomUUID(), name, email, note,
+      created: new Date().toISOString(),
+    });
+    await writeJsonFile(REQUESTS_FILE, db);
+    console.log(`[presetbook] demande de compte : « ${name} »`);
+  }
+  return sendJson(res, 201, { ok: true });
+}
+
+async function handleRequestList(req, res) {
+  const user = await currentUser(req);
+  if (!isAdmin(user)) return sendJson(res, 403, { error: "Réservé à l'administrateur." });
+  const db = await readRequests();
+  return sendJson(res, 200, { requests: db.requests });
+}
+
+async function handleRequestDelete(req, res) {
+  const user = await currentUser(req);
+  if (!isAdmin(user)) return sendJson(res, 403, { error: "Réservé à l'administrateur." });
+  let body;
+  try { body = await readJsonBody(req); }
+  catch { return sendJson(res, 400, { error: "Requête invalide." }); }
+  const db = await readRequests();
+  const avant = db.requests.length;
+  db.requests = db.requests.filter((r) => r.id !== String(body.id || ""));
+  if (db.requests.length === avant) return sendJson(res, 404, { error: "Cette demande n'existe plus." });
+  await writeJsonFile(REQUESTS_FILE, db);
+  return sendJson(res, 200, { ok: true });
+}
+
+/** Combien de demandes attendent ? Pour la pastille de l'administrateur. */
+async function pendingRequests(user) {
+  if (!ALLOW_REQUESTS || !isAdmin(user)) return 0;
+  const db = await readRequests();
+  return db.requests.length;
 }
 
 async function handleInvites(req, res) {
@@ -1050,6 +1178,9 @@ async function handleSession(req, res) {
     firstRun: vrais.length === 0,
     demo: DEMO_NAME ? { name: DEMO_NAME } : null,
     isDemo: isDemo(user),
+    /* Demander un compte n'a de sens que si personne ne peut s'en créer un. */
+    canRequest: ALLOW_REQUESTS && !user && vrais.length > 0 && !ALLOW_REGISTER,
+    requests: await pendingRequests(user),
   });
 }
 
@@ -1329,6 +1460,15 @@ const server = http.createServer(async (req, res) => {
     if (pathname === "/api/demo" && req.method === "POST") return await handleDemo(req, res);
     if (pathname === "/api/password" && req.method === "POST") return await handlePassword(req, res);
     if (pathname === "/api/users" && req.method === "GET") return await handleUsers(req, res);
+    if (pathname === "/api/requests" && req.method === "POST") {
+      return await handleRequestCreate(req, res);
+    }
+    if (pathname === "/api/requests" && req.method === "GET") {
+      return await handleRequestList(req, res);
+    }
+    if (pathname === "/api/requests/delete" && req.method === "POST") {
+      return await handleRequestDelete(req, res);
+    }
     if (pathname === "/api/invites" && (req.method === "GET" || req.method === "POST")) {
       return await handleInvites(req, res);
     }
