@@ -233,13 +233,42 @@ async function readJsonFile(file, fallback) {
   }
 }
 
+/**
+ * Écriture atomique, avec une génération de secours.
+ *
+ * Le fichier en place est copié en .bak.json avant d'être remplacé — sauf s'il
+ * est illisible. C'est le point délicat : recopier un fichier corrompu
+ * par-dessus la sauvegarde détruirait la dernière copie valable, et en silence.
+ * Un fichier illisible est donc mis de côté, la sauvegarde reste intacte, et le
+ * journal le dit assez fort pour qu'on aille voir.
+ */
 async function writeJsonFile(file, obj) {
   await fsp.mkdir(path.dirname(file), { recursive: true });
+  const bak = file.replace(/\.json$/, ".bak.json");
+
+  let enPlace = null;
   try {
-    await fsp.copyFile(file, file.replace(/\.json$/, ".bak.json"));
+    enPlace = await fsp.readFile(file, "utf8");
   } catch (err) {
     if (err.code !== "ENOENT") throw err;
   }
+
+  if (enPlace !== null) {
+    let lisible = true;
+    try { JSON.parse(enPlace); } catch { lisible = false; }
+    if (lisible) {
+      await fsp.copyFile(file, bak);
+    } else {
+      const aPart = file.replace(/\.json$/, `.corrompu-${Date.now()}.json`);
+      await fsp.rename(file, aPart).catch(() => {});
+      console.error(
+        `[presetbook] ${file} était illisible : mis de côté dans ${aPart}. ` +
+        `La sauvegarde ${bak} n'a pas été touchée. Ce qui avait été écrit à la ` +
+        `main dans ce fichier est perdu — aller voir avant de recommencer.`
+      );
+    }
+  }
+
   const tmp = `${file}.${process.pid}.tmp`;
   await fsp.writeFile(tmp, JSON.stringify(obj, null, 1), "utf8");
   await fsp.rename(tmp, file);
