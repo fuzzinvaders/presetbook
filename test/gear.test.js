@@ -29,6 +29,81 @@ check("nom complet d'un modèle nommé", pb.gearName(pb.GEAR.bb734a) === "Yamaha
 check("un gabarit générique ne porte pas de marque",
   pb.gearName(pb.GEAR.amp3) === "Ampli 3 bandes", pb.gearName(pb.GEAR.amp3));
 
+/* --- le registre tient debout, entrée par entrée ---
+   Un modèle mal déclaré ne casse rien au chargement : il rend une fiche vide ou
+   une commande muette, ce qui se voit bien plus tard. Autant le refuser ici. */
+const cles = Object.keys(pb.GEAR);
+check("le catalogue s'est étoffé", cles.length >= 20, cles.length + " modèles");
+
+const abimes = cles.filter(function (k) {
+  const g = pb.GEAR[k];
+  if (!g.kind || !g.brand || !g.model || !g.face) return true;
+  /* Un accordeur n'a aucun bouton : la liste peut être vide, pas absente. */
+  if (!Array.isArray(g.controls)) return true;
+  return g.controls.some(function (c) {
+    if (!c.k || !c.t || !c.l) return true;
+    if (c.t === "scale") return typeof c.min !== "number" || typeof c.max !== "number"
+                              || typeof c.d !== "number" || c.d < c.min || c.d > c.max;
+    return false;
+  });
+});
+check("chaque modèle est complet et ses valeurs par défaut tiennent dans l'échelle",
+  abimes.length === 0, abimes.join(", "));
+
+const doublons = cles.filter(function (k) {
+  const vues = {};
+  return pb.GEAR[k].controls.some(function (c) {
+    if (vues[c.k]) return true;
+    vues[c.k] = 1;
+    return false;
+  });
+});
+check("aucun modèle ne déclare deux fois la même commande",
+  doublons.length === 0, doublons.join(", "));
+
+const sansMode = cles.filter(function (k) {
+  const m = pb.GEAR[k].modes;
+  /* Le formulaire de matériel n'affiche que deux modes : en déclarer trois en
+     rendrait un inaccessible. */
+  return m && (!Array.isArray(m.options) || m.options.length !== 2);
+});
+check("un matériel à modes en déclare exactement deux", sansMode.length === 0, sansMode.join(", "));
+
+/* Les modèles nommés demandés au catalogue. */
+[["svtcl", "Ampeg"], ["littlemark", "Markbass"], ["bh250", "TC Electronic"],
+ ["rumble500", "Fender"], ["bluesjr", "Fender"], ["ac30", "Vox"], ["dsl40", "Marshall"],
+ ["katana50", "Boss"], ["precision", "Fender"], ["jazzbass", "Fender"],
+ ["stingray3", "Music Man"], ["ibanezsr", "Ibanez"]].forEach(function (p) {
+  check("« " + p[0] + " » est au registre, chez " + p[1],
+    !!pb.GEAR[p[0]] && pb.GEAR[p[0]].brand === p[1],
+    pb.GEAR[p[0]] ? pb.GEAR[p[0]].brand : "absent");
+});
+
+/* Les valeurs par défaut d'un modèle nommé se posent comme les autres. */
+const svt = pb.applyGearDefaults({ kind: "amp", gear: "svtcl", eq: {} });
+check("les commandes du SVT sont remplies",
+  svt.gain === 5 && svt.eq.mf === 3 && svt.master === 5, JSON.stringify(svt));
+check("le sélecteur de fréquence reste dans ses cinq crans",
+  svt.eq.mf >= 1 && svt.eq.mf <= 5, String(svt.eq.mf));
+
+/* --- les pédales : des types génériques, plus quelques modèles nommés --- */
+const pedales = pb.gearList("pedal");
+const nommees = pedales.filter(function (x) { return pb.GEAR[x.id].brand !== "générique"; });
+check("les types génériques restent la majorité : un pédalier se décrit par fonction",
+  pedales.length - nommees.length >= 15, (pedales.length - nommees.length) + " types");
+check("des modèles nommés s'y ajoutent", nommees.length >= 5, nommees.length + " modèles");
+[["pd-bigmuff", "Electro-Harmonix"], ["pd-ts9", "Ibanez"], ["pd-ds1", "Boss"],
+ ["pd-sansamp", "Tech 21"], ["pd-b7k", "Darkglass"]].forEach(function (p) {
+  check("« " + p[0] + " » est chez " + p[1],
+    !!pb.GEAR[p[0]] && pb.GEAR[p[0]].brand === p[1],
+    pb.GEAR[p[0]] ? pb.GEAR[p[0]].brand : "absent");
+});
+check("une pédale nommée reste une pédale",
+  nommees.every(function (x) { return pb.GEAR[x.id].kind === "pedal"; }));
+check("et garde un style de boîtier connu",
+  nommees.every(function (x) { return !!pb.PEDAL_STYLES[pb.GEAR[x.id].style]; }),
+  nommees.map(function (x) { return pb.GEAR[x.id].style; }).join(", "));
+
 /* --- compatibilité : une fiche sans matériel garde celui d'origine --- */
 check("fiche basse sans matériel → BB734A", pb.gearOf({ kind: "bass" }) === pb.GEAR.bb734a);
 check("fiche ampli sans matériel → Rumble 40", pb.gearOf({ kind: "amp" }) === pb.GEAR.rumble40);

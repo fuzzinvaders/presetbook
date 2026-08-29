@@ -6,12 +6,23 @@
 entier, et les chaînes de plugins d'un logiciel d'enregistrement — rangés dans une seule page qu'on
 peut chercher, dupliquer et modifier.
 
-Né pour la basse, et le catalogue livré s'en ressent : une Yamaha BB734A, un Fender Rumble 40. Mais
-**rien dans l'outil n'est propre à la basse.** Une façade se décrit — ses boutons, ses modes, ses
-commandes hors circuit — et l'interface en découle. La preuve est dans le catalogue : le combo
-guitare **Laney Lionheart L20T-112** y est entré sans une ligne de code, avec ses deux canaux, son
-Tone global, et jusqu'à ses boutons blancs à repère bleu sur panneau inox. Clavier, synthé, boîte à
-rythmes : si ça a des boutons, ça se range ici.
+Né pour la basse, et le catalogue livré s'en ressent. Mais **rien dans l'outil n'est propre à la
+basse.** Une façade se décrit — ses boutons, ses modes, ses commandes hors circuit — et l'interface
+en découle. Pas un des modèles ci-dessous n'a coûté une ligne de code.
+
+Amplis basse nommés : **Ampeg SVT-CL** avec son sélecteur de médiums à cinq crans et ses deux
+contours Ultra, **Markbass Little Mark** et ses filtres VLE/VPF, **TC Electronic BH250**, **Fender
+Rumble 40** et **Rumble 500**. Amplis guitare : **Fender Blues Junior**, **Vox AC30C2** et ses deux
+canaux indépendants, **Marshall DSL40**, **Boss Katana 50**, **Laney Lionheart L20T-112** jusqu'à ses
+boutons blancs à repère bleu sur panneau inox. Instruments : **Yamaha BB734A**, **Fender Precision**
+et **Jazz Bass**, **Music Man StingRay**, **Ibanez SR**. Les pédales viennent en dix-huit types
+génériques — un pédalier se décrit par ce que fait chaque boîtier — plus quelques modèles nommés là
+où les boutons exacts comptent : **Big Muff Pi**, **Tube Screamer TS9**, **Boss DS-1** et **OC-2**,
+**MXR Dyna Comp**, **SansAmp Bass Driver DI**, **Darkglass Microtubes B7K**.
+
+Des gabarits génériques les accompagnent pour tout ce qui n'est pas dans la liste, et on dessine sa
+propre façade depuis l'interface. Clavier, synthé, boîte à rythmes : si ça a des boutons, ça se range
+ici.
 
 ![La reprise d'All Star, regroupée par morceau : la fiche de basse et ses cadrans en heures
 d'horloge, à côté de la chaîne Reaper avec les paramètres du TSE BOD et le tableau des bandes de
@@ -152,7 +163,7 @@ serveur du tout — publiée en statique, ou ouverte depuis le disque.
 npm test
 ```
 
-Vingt suites, 669 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
+Vingt suites, 719 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
 minimal, le registre des façades, celles créées depuis l'interface, le formulaire qui les crée, les
 pédales et leur dessin, le codec des chaînes d'effets sur une chaîne réelle, les types de bande de
 ReaEQ, l'export d'une fiche et son retour dans une autre bibliothèque, la licence et le widget de

@@ -5,12 +5,22 @@
 **A settings notebook.** The presets of an instrument, an amp, a single pedal, a whole pedalboard,
 and the plugin chains of a recording program — kept in one page you can search, duplicate and edit.
 
-It was born for bass, and the shipped catalogue shows it: a Yamaha BB734A, a Fender Rumble 40. But
-**nothing in the tool is specific to bass.** A front panel is described — its knobs, its modes, which
-controls leave the circuit — and the interface follows. The catalogue proves it: the **Laney
-Lionheart L20T-112** guitar combo went in without a line of code, with its two channels, its global
-Tone, down to its white blue-marked knobs on a stainless panel. Keys, a modular synth, a drum
-machine: if it has knobs, it belongs here.
+It was born for bass, and the shipped catalogue shows it. But **nothing in the tool is specific to
+bass.** A front panel is described — its knobs, its modes, which controls leave the circuit — and the
+interface follows. Not one of the models below cost a line of code.
+
+Named bass amps: **Ampeg SVT-CL** with its five-position mid selector and its two Ultra contours,
+**Markbass Little Mark** and its VLE/VPF filters, **TC Electronic BH250**, **Fender Rumble 40** and
+**Rumble 500**. Guitar amps: **Fender Blues Junior**, **Vox AC30C2** and its two independent
+channels, **Marshall DSL40**, **Boss Katana 50**, **Laney Lionheart L20T-112** down to its white
+blue-marked knobs on a stainless panel. Instruments: **Yamaha BB734A**, **Fender Precision** and
+**Jazz Bass**, **Music Man StingRay**, **Ibanez SR**. Pedals come as eighteen generic types — a
+pedalboard is described by what each box does — plus a few named models where the exact knobs matter:
+**Big Muff Pi**, **Tube Screamer TS9**, **Boss DS-1** and **OC-2**, **MXR Dyna Comp**, **SansAmp Bass
+Driver DI**, **Darkglass Microtubes B7K**.
+
+Generic templates sit alongside them for anything not on the list, and you can draw your own front
+panel from the interface. Keys, a modular synth, a drum machine: if it has knobs, it belongs here.
 
 ![The All Star cover, grouped by song: the bass preset with its clock-hour dials next to the Reaper
 chain, showing TSE BOD parameters and a ReaEQ band table](docs/images/par-morceau.png)
@@ -142,7 +152,7 @@ as a static page, or opened straight from disk.
 npm test
 ```
 
-Twenty suites, 669 checks, nothing to install: the page rendered again in a minimal DOM, the front
+Twenty suites, 719 checks, nothing to install: the page rendered again in a minimal DOM, the front
 panel registry, panels created from the interface, the form that creates them, pedals and their
 drawing, the effect-chain codec against a real chain, ReaEQ band types, exporting a preset and
 bringing it back into another library, the licence and the donation widget, account creation, the

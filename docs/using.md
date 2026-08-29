@@ -118,8 +118,12 @@ whole internet.
 
 ## Filtering
 
-The **Filters** button opens two lists of chips: **Gear** and **Styles**. Clicking a chip activates
-it, clicking again removes it, and the button shows how many filters are in play.
+The **Filters** button opens three lists of chips: **Brand**, **Gear** and **Styles**. Clicking a
+chip activates it, clicking again removes it, and the button shows how many filters are in play.
+
+Brand comes first because it paints with a broad brush: it gathers every model from the same maker,
+where gear targets one precise model. It does not appear when the view holds a single brand —
+offering a choice of one teaches nobody anything.
 
 The rule is the one you expect: **several choices within one list add up** (Laney *or* Rumble), **the
 two lists intersect** (a Laney *and* blues). The number on each chip accounts for the other filters
@@ -129,9 +133,14 @@ nothing.
 Filtering on a **pedal** also brings back the **pedalboards** that use it: that is the right way to
 find where a given effect earns its place.
 
-Five URL parameters are read at load time, so a view can be bookmarked or sent to someone:
-`?q=motown`, `?kind=bass`, `?group=song`, `?gear=lionheart20,rumble40` and `?tag=blues,rock` — the
-last two as comma-separated lists. A sixth, `?edit=<id>`, opens one preset directly.
+The sorting bar at the top follows the same idea: **By gear**, **By brand** or **By song**. A
+pedalboard mixes the brands of its pedals and a Reaper chain has none — those are plugins: both are
+filed under their family rather than split apart.
+
+Six URL parameters are read at load time, so a view can be bookmarked or sent to someone:
+`?q=motown`, `?kind=bass`, `?group=song|brand|kind`, `?gear=lionheart20,rumble40`,
+`?brand=Ampeg,Vox` and `?tag=blues,rock` — the last three as comma-separated lists. A seventh,
+`?edit=<id>`, opens one preset directly.
 
 ## Printing
 
