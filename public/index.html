@@ -89,6 +89,18 @@ p{margin:0}
   text-transform:uppercase; color:var(--ink-3); margin:0;
 }
 .chips{display:flex; flex-wrap:wrap; gap:6px}
+.cmp{width:100%; border-collapse:collapse; font-size:13px; margin-top:6px}
+.cmp th, .cmp td{padding:5px 8px; text-align:left; border-bottom:1px solid var(--line)}
+.cmp thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.07em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.cmp tbody th{font-weight:500; color:var(--ink-2); width:34%}
+.cmp td{font-variant-numeric:tabular-nums}
+/* L'écart se voit à la ligne entière : chercher la différence colonne par
+   colonne est exactement le travail qu'on veut éviter à l'œil. */
+.cmp tr.d{background:var(--panel-2)}
+.cmp tr.d td{font-weight:600; color:var(--ink)}
 .ulist{display:flex; flex-direction:column; gap:4px; width:100%}
 .urow{display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--line)}
 .urow:last-child{border-bottom:0}
@@ -527,6 +539,18 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Comparer": "Compare",
+  "Avec": "With",
+  "écart": "difference",
+  "écarts": "differences",
+  "Réglages identiques.": "Settings are identical.",
+  "Il faut une seconde fiche du même genre pour comparer.":
+    "A second preset of the same kind is needed in order to compare.",
+  "absente de l'autre façade": "not on the other panel",
+  "Met deux fiches côte à côte, écarts marqués": "Puts two presets side by side, differences marked",
+  "Accordage": "Tuning",
+  "coupée": "bypassed",
+  "hors circuit": "out of circuit",
   "Versions précédentes": "Earlier versions",
   "Revenir à cette version": "Go back to this version",
   "Un état par jour, gardé une semaine. Revenir à l'un d'eux remplace ta bibliothèque — l'état actuel est photographié avant, donc c'est réversible.":
@@ -2929,6 +2953,8 @@ function card(p){
        '<button class="btn small ghost" data-act="dup">Dupliquer</button>' +
        '<button class="btn small ghost" data-act="exp"' +
        ' title="Écrit la fiche dans un fichier, façades comprises">Exporter</button>' +
+       '<button class="btn small ghost" data-act="cmp"' +
+       ' title="Met deux fiches côte à côte, écarts marqués">Comparer</button>' +
        (session.user && !session.isDemo
          ? '<button class="btn small ghost" data-act="share"' +
            ' title="La propose aux autres comptes de ce serveur">Partager</button>' : "") +
@@ -3760,11 +3786,142 @@ function duplicate(id){
   save().then(function(ok){ if (ok) toast("Copie créée."); });
 }
 
+/* ============================ comparaison ============================
+   « Qu'est-ce qui change entre mon réglage Motown et mon Jazz ? » est la
+   question suivante d'un carnet de réglages. Y répondre en ouvrant deux cartes
+   et en faisant l'aller-retour des yeux, c'est justement ce qu'un carnet
+   devrait éviter.                                                            */
+
+/**
+ * Les lignes d'une comparaison : un libellé, les deux valeurs, et s'il y a
+ * écart. Les valeurs sont lues et formatées **par les mêmes fonctions que les
+ * cartes**, sinon la comparaison dirait autre chose que ce qu'on voit.
+ */
+function compareRows(a, b){
+  var out = [];
+  function ligne(l, va, vb, note){
+    out.push({l:l, a:va, b:vb, diff: String(va) !== String(vb), note:note || ""});
+  }
+
+  if (a.kind !== b.kind) return out;          /* deux genres différents n'ont rien à confronter */
+
+  var ga = gearOf(a), gb = gearOf(b);
+  if (gearId(a) !== gearId(b)) ligne("Matériel", gearName(ga), gearName(gb));
+
+  if (a.kind === "board"){
+    /* Un pédalier se compare emplacement par emplacement : c'est l'ordre du
+       signal qui fait le pédalier, pas seulement les réglages. */
+    var sa = a.slots || [], sb = b.slots || [];
+    var max = Math.max(sa.length, sb.length), i;
+    for (i = 0; i < max; i++){
+      out.push({l: String(i + 1) + ".",
+                a: nomEmplacement(sa[i]), b: nomEmplacement(sb[i]),
+                diff: nomEmplacement(sa[i]) !== nomEmplacement(sb[i]), note:""});
+    }
+    return out;
+  }
+
+  if (a.kind === "reaper"){
+    if (a.tempo || b.tempo) ligne("Tempo", a.tempo || "—", b.tempo || "—");
+    if (a.tuning || b.tuning) ligne("Accordage", a.tuning || "—", b.tuning || "—");
+    var ca = a.chain || [], cb = b.chain || [];
+    var m = Math.max(ca.length, cb.length), j;
+    for (j = 0; j < m; j++){
+      out.push({l: String(j + 1) + ".",
+                a: nomMaillon(ca[j]), b: nomMaillon(cb[j]),
+                diff: nomMaillon(ca[j]) !== nomMaillon(cb[j]), note:""});
+    }
+    return out;
+  }
+
+  /* Instrument, ampli, pédale : commande par commande, dans l'ordre de la
+     façade. Si les deux façades diffèrent, on parcourt celle de la première et
+     on signale ce que la seconde n'a pas. */
+  if (ga.modes) ligne("Mode", a.mode || ga.modes.options[0], b.mode || gb.modes && gb.modes.options[0]);
+
+  ga.controls.forEach(function(c){
+    /* findCtrl() attend une fiche et retombe sur le matériel par défaut : lui
+       passer une façade inventerait des commandes que l'autre n'a pas. */
+    var d = ctrlOfGear(gb, c.k);
+    var va = ctrlOff(ga, a, c) ? "—" : ctrlText(c, ctrlValue(a, c));
+    var vb = !d ? "" : (ctrlOff(gb, b, d) ? "—" : ctrlText(d, ctrlValue(b, d)));
+    out.push({l: ctrlLabel(ga, a, c), a: va, b: vb,
+              diff: !!d && String(va) !== String(vb),
+              note: d ? "" : "absente de l'autre façade"});
+  });
+
+  (ga.extras || []).forEach(function(x){
+    if (a[x.k] || b[x.k]) ligne(x.l, a[x.k] || "—", b[x.k] || "—");
+  });
+  return out;
+}
+
+/** Une commande d'une façade donnée, par sa clé. Rien d'implicite. */
+function ctrlOfGear(g, key){
+  var i;
+  for (i = 0; i < g.controls.length; i++) if (g.controls[i].k === key) return g.controls[i];
+  return null;
+}
+
+function nomEmplacement(slot){
+  if (!slot) return "—";
+  var g = allGear()[slot.gear];
+  return (g ? g.model : slot.gear) + (slot.on === false ? " (coupée)" : "");
+}
+
+function nomMaillon(m){
+  if (!m) return "—";
+  return m.plugin + (m.on === false ? " (hors circuit)" : "");
+}
+
 /* ============================ étagère partagée ============================
    Ce que quelqu'un publie est une copie figée, façades comprises. On la reprend
    chez soi par le même chemin qu'un fichier importé — donc avec les mêmes
    garde-fous : identifiant refait s'il est déjà pris, refus si une façade
    manque.                                                                    */
+
+var compareA = null;
+
+/** Ouvre la comparaison, la première fiche étant celle d'où l'on vient. */
+function openCompare(id, autre){
+  compareA = id;
+  var a = findPreset(id);
+  if (!a) return;
+  var candidats = library().filter(function(p){ return p.kind === a.kind && p.id !== a.id; });
+  var b = autre ? findPreset(autre) : candidats[0];
+
+  var veil = document.getElementById("veil");
+  veil.innerHTML = tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Comparer">' +
+    '<div class="sheet-h"><h2>Comparer</h2>' +
+      '<button class="btn small ghost" data-close>Fermer</button></div>' +
+    '<div class="sheet-b">' +
+      (candidats.length ?
+        '<label class="fld">Avec' +
+          '<select data-compare-b>' + candidats.map(function(p){
+            return '<option value="' + esc(p.id) + '"' + (b && p.id === b.id ? " selected" : "") +
+                   '>' + esc(p.name) + '</option>';
+          }).join("") + '</select></label>' +
+        compareTable(a, b)
+        : '<p class="hint">Il faut une seconde fiche du même genre pour comparer.</p>') +
+    '</div></div>');
+  veil.classList.add("open");
+}
+
+function compareTable(a, b){
+  if (!b) return "";
+  var rows = compareRows(a, b);
+  var ecarts = rows.filter(function(r){ return r.diff; }).length;
+  return '<p class="hint">' + (ecarts ? ecarts + " " + t(ecarts > 1 ? "écarts" : "écart")
+                                      : t("Réglages identiques.")) + '</p>' +
+    '<table class="cmp"><thead><tr><th></th><th>' + esc(a.name) + '</th><th>' + esc(b.name) +
+    '</th></tr></thead><tbody>' +
+    rows.map(function(r){
+      return '<tr' + (r.diff ? ' class="d"' : "") + '><th>' + esc(r.l) + '</th>' +
+        '<td>' + esc(r.a) + '</td><td>' + esc(r.b) +
+        (r.note ? ' <span class="mini" style="opacity:.6">' + esc(r.note) + '</span>' : "") +
+        '</td></tr>';
+    }).join("") + '</tbody></table>';
+}
 
 function openShared(){
   var veil = document.getElementById("veil");
@@ -4095,6 +4252,7 @@ document.getElementById("list").addEventListener("click", function(e){
   else if (act === "rfx"){ var q = findPreset(id); if (q) exportRfx(q); }
   else if (act === "exp") exportPreset(id);
   else if (act === "share") sharePreset(id);
+  else if (act === "cmp") openCompare(id, null);
   else if (act === "del"){
     if (btn.getAttribute("data-armed") === "1") removePreset(id);
     else {
@@ -4281,6 +4439,10 @@ document.getElementById("veil").addEventListener("submit", function(e){
 });
 document.getElementById("veil").addEventListener("change", function(e){
   var f = e.target;
+  if (f && f.hasAttribute && f.hasAttribute("data-compare-b")){
+    openCompare(compareA, f.value);
+    return;
+  }
   if (!draft || !f.hasAttribute || !f.hasAttribute("data-rfx-in")) return;
   var file = f.files && f.files[0];
   if (!file) return;
@@ -4489,6 +4651,7 @@ window.__pb = {
   submitPassword: submitPassword, submitDelete: submitDelete, dangerZone: dangerZone,
   setAdmin: function(v){ session.isAdmin = !!v; },
   setInvite: function(v){ invitation = v; }, getInvite: function(){ return invitation; },
+  compareRows: compareRows, openCompare: openCompare, compareTable: compareTable,
   openShared: openShared, sharePreset: sharePreset, takeShared: takeShared,
   setShared: function(l){ sharedCache = l; },
   readInvite: readInvite, inviteLink: inviteLink, showGate2: showGate,

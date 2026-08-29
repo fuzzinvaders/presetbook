@@ -9,7 +9,7 @@
 | `public/index.html` | l'application entière : styles, catalogue, registres, interface |
 | `public/rfxchain.js` | lecture et écriture des chaînes d'effets de Reaper |
 | `server.js` | serveur sans dépendance : statique, comptes, API de persistance |
-| `test/` | dix-neuf suites, exécutables sans rien installer |
+| `test/` | vingt suites, exécutables sans rien installer |
 | `tools/` | six outils en ligne de commande, embarqués dans l'image |
 
 Deux partis pris tiennent tout le reste. **L'application est une page unique et autonome**, ce qui
@@ -307,6 +307,7 @@ autrement.
 | `invitations.test.js` | *serveur* — le cycle d'une invitation, et la démo qui se rafraîchit |
 | `partage.test.js` | *serveur* — publier, reprendre, retirer, et ce qui est refusé |
 | `corbeille.test.js` | *serveur* — corbeille, instantanés, et l'intégrité des fichiers |
+| `comparer.test.js` | la comparaison : ce qui compte comme un écart, et ce qui n'en est pas un |
 | `langue.test.js` | l'audit d'anglais : treize écrans, aucun mot français toléré |
 
 `test/sandbox.js` exécute le script de la page dans un DOM minimal, sous `node:vm`. La page expose

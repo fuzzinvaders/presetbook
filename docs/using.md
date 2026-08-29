@@ -68,6 +68,26 @@ service worker goes to the network first and falls back on its copy only when th
 answer. An update therefore shows up on the first reload, with nothing to clear — the opposite of the
 usual reflex, and the reason is to avoid running a stale version without knowing it.
 
+## Comparing two presets
+
+**Compare**, on a card, puts two presets side by side and **marks the rows that differ**. The
+dropdown at the top picks the second one, among presets of the same kind. The number of differences
+is announced before the table: *4 differences*, or *Settings are identical*.
+
+The values shown are the cards' own, read by the same functions — a comparison saying something other
+than what you see would be worthless.
+
+What is **not** counted as a difference:
+
+- a control **out of circuit on both sides** — two `—` are not a difference;
+- a control **not on the other panel**, when the two presets do not share the same gear. It stays
+  listed, with a "not on the other panel" note, but comparing a Contour that does not exist elsewhere
+  would be a false difference. The change of gear itself is flagged at the top.
+
+Each kind compares in its own way: an instrument or an amp control by control, **a pedalboard slot by
+slot** — signal order makes a pedalboard as much as the settings do — and a chain link by link. Two
+different kinds have nothing to confront, and the screen says so.
+
 ## Sharing a preset with the other accounts
 
 In a self-hosted deployment, the **Share** button on each card offers your preset to the other
