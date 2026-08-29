@@ -1,6 +1,6 @@
 # Presetbook
 
-*[Version française](README.fr.md) — the documentation in `docs/` is in French for now.*
+*[Version française](README.fr.md)*
 
 **A settings notebook.** The presets of an instrument, an amp, a single pedal, a whole pedalboard,
 and the plugin chains of a recording program — kept in one page you can search, duplicate and edit.
@@ -132,9 +132,9 @@ as a static page, or opened straight from disk.
 | | |
 | --- | --- |
 | [Running it on a Mac](docs/install-mac.md) 🇬🇧 | a step-by-step guide for people who do not use a terminal: no Docker, no Homebrew, no git |
-| [Using Presetbook](docs/utilisation.md) 🇫🇷 | reading and editing a preset, building a pedalboard, creating a front panel, importing a Reaper chain, sharing, filtering, printing, exporting |
-| [Installing and running it](docs/installation.md) 🇫🇷 | Docker, reverse proxy, updates, accounts, the demo account, security, the third-party script |
-| [Developing](docs/developpement.md) 🇫🇷 | architecture, data model, registries, the `.RfxChain` codec, both languages, tests |
+| [Using Presetbook](docs/using.md) | reading and editing a preset, building a pedalboard, creating a front panel, importing a Reaper chain, sharing, filtering, printing, exporting |
+| [Installing and running it](docs/installing.md) | Docker, reverse proxy, updates, accounts, the demo account, security, the third-party script |
+| [Developing](docs/developing.md) | architecture, data model, registries, the `.RfxChain` codec, both languages, tests |
 
 ## Tests
 

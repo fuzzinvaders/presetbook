@@ -1,5 +1,7 @@
 # Utiliser Presetbook
 
+*[English version](using.md)*
+
 Presetbook range des réglages : ceux d'un instrument, d'un ampli, d'une pédale d'effet, d'un
 pédalier entier, et les chaînes de plugins d'un logiciel d'enregistrement. Une fiche décrit un
 réglage complet, et s'affiche telle qu'on la lirait sur le matériel — pas sur une échelle abstraite.
@@ -383,9 +385,9 @@ La pastille en haut à droite l'indique en permanence :
 | **Rouge** | aucun stockage : exportez avant de fermer |
 
 En déploiement autonome, chaque compte a ses propres fiches. À la première ouverture, aucun compte
-n'existe : le premier créé est le vôtre, et les presets déjà enregistrés lui sont rattachés. La
-création de comptes se ferme ensuite d'elle-même — un utilisateur connecté peut toujours ouvrir un
-compte à quelqu'un d'autre.
+n'existe : le premier créé est le vôtre, il devient l'**administrateur** de l'instance, et les presets
+déjà enregistrés lui sont rattachés. La création de comptes se ferme ensuite d'elle-même — seul
+l'administrateur peut en ouvrir un autre, ou envoyer un lien d'invitation.
 
 Il n'y a **pas de récupération de mot de passe par courriel** : un serveur auto-hébergé sans service
 de messagerie ne peut pas en offrir. Gardez le mot de passe dans un gestionnaire.

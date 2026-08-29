@@ -1,5 +1,7 @@
 # Running Presetbook on your Mac
 
+*Part of the [English documentation](using.md). En français : [Installer et exploiter](installation.md).*
+
 No Docker, no Homebrew, no command-line experience needed. About five minutes.
 
 You will end up with Presetbook running on your own machine, with your presets stored in a folder you
@@ -87,7 +89,7 @@ window, or something else uses port 8080. Try `PORT=8081 npm start` and open
 <http://localhost:8081>.
 
 **The page does not load** — check the Terminal window is still open and shows no error. The address
-is `http://localhost:8080`, not the `0.0.0.0` you may see elsewhere.
+to use is the one Terminal printed: `http://localhost:8080`.
 
 **You forgot your password** — there is no email recovery, but nothing is lost. In Terminal, in the
 same folder:
