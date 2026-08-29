@@ -67,6 +67,28 @@ en cache.** Le service worker va au réseau d'abord et ne se replie sur sa copie
 répond pas. Une mise à jour se voit donc au premier rechargement, sans vider quoi que ce soit — c'est
 l'inverse du réflexe habituel, et c'est pour éviter de tourner sur une version périmée sans le savoir.
 
+## Partager une fiche avec les autres comptes
+
+En déploiement autonome, le bouton **Partager** de chaque carte propose votre fiche aux autres comptes
+du serveur, et le bouton **Partagés** de l'en-tête ouvre l'étagère commune : ce que les autres ont
+publié, avec **Reprendre chez moi** en face de chacune.
+
+Trois choses à comprendre, et elles tiennent en une phrase chacune :
+
+- **ce qui est publié est une copie figée**, pas un lien. Retoucher votre fiche ne change rien pour
+  ceux qui l'ont déjà reprise, ni pour ce que l'étagère affiche — republiez pour mettre à jour ;
+- **la copie emporte vos façades personnelles.** Une pédale que vous avez dessinée voyage avec le
+  réglage qui l'utilise, sinon la fiche serait illisible chez l'autre ;
+- **reprendre, c'est copier.** La fiche devient la vôtre, vous la modifiez sans toucher à l'original,
+  et la reprendre deux fois donne deux fiches plutôt que d'écraser la première.
+
+Vous retirez vos propres fiches de l'étagère quand vous voulez ; l'administrateur peut retirer
+n'importe laquelle, ce qui permet de modérer. Un compte supprimé emporte ses publications avec lui —
+une fiche signée d'un nom qui n'existe plus n'aurait rien à faire là.
+
+Le compte de démonstration ne publie pas : ses identifiants étant publics, ce serait ouvrir l'étagère
+à tout Internet.
+
 ## Filtrer
 
 Le bouton **Filtres** ouvre deux listes de pastilles : **Matériel** et **Styles**. Cliquer une

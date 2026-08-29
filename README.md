@@ -132,7 +132,7 @@ as a static page, or opened straight from disk.
 | | |
 | --- | --- |
 | [Running it on a Mac](docs/install-mac.md) 🇬🇧 | a step-by-step guide for people who do not use a terminal: no Docker, no Homebrew, no git |
-| [Using Presetbook](docs/utilisation.md) 🇫🇷 | reading and editing a preset, building a pedalboard, creating a front panel, importing a Reaper chain, switching language, filtering, printing, exporting |
+| [Using Presetbook](docs/utilisation.md) 🇫🇷 | reading and editing a preset, building a pedalboard, creating a front panel, importing a Reaper chain, sharing, filtering, printing, exporting |
 | [Installing and running it](docs/installation.md) 🇫🇷 | Docker, reverse proxy, updates, accounts, the demo account, security, the third-party script |
 | [Developing](docs/developpement.md) 🇫🇷 | architecture, data model, registries, the `.RfxChain` codec, both languages, tests |
 
@@ -142,7 +142,7 @@ as a static page, or opened straight from disk.
 npm test
 ```
 
-Seventeen suites, 569 checks, nothing to install: the page rendered again in a minimal DOM, the front
+Eighteen suites, 591 checks, nothing to install: the page rendered again in a minimal DOM, the front
 panel registry, panels created from the interface, the form that creates them, pedals and their
 drawing, the effect-chain codec against a real chain, ReaEQ band types, exporting a preset and
 bringing it back into another library, the licence and the donation widget, account creation, the

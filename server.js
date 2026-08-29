@@ -11,6 +11,7 @@
  * Comptes       : GET /api/users, POST /api/account/delete — réservés ou restreints à l'admin
  * Invitations   : GET/POST /api/invites, POST /api/invites/revoke — réservés à l'admin
  * Presets       : GET/PUT /api/presets — propres à l'utilisateur connecté
+ * Partage       : GET/POST /api/shared, POST /api/shared/delete — l'étagère commune
  * Santé         : GET /healthz — jamais protégé
  *
  * Environnement : PORT, HOST, DATA_DIR, BASIC_AUTH, ALLOW_REGISTER, SESSION_DAYS, SECURE_COOKIES,
@@ -35,6 +36,7 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const SESSIONS_FILE = path.join(DATA_DIR, "sessions.json");
 const INVITES_FILE = path.join(DATA_DIR, "invites.json");
+const SHARED_FILE = path.join(DATA_DIR, "shared.json");
 const PRESETS_DIR = path.join(DATA_DIR, "presets");
 const LEGACY_PRESETS = path.join(DATA_DIR, "presets.json");
 
@@ -65,6 +67,8 @@ const SCRYPT = { N: 16384, r: 8, p: 1, keylen: 64 };
 const LOGIN_MAX_FAILS = 10;
 const INVITE_DAYS = 7;
 const INVITE_MAX = 50;
+const SHARED_MAX = 500;         /* l'étagère entière */
+const SHARED_MAX_BY_USER = 50;  /* et par personne, pour qu'aucune ne la remplisse */
 /* La démo ne se remet à zéro à l'entrée que si personne n'y a touché depuis ce
    délai : sinon un nouveau venu effacerait l'écran de celui qui explore. */
 const DEMO_IDLE_MS = 30 * 60 * 1000;
@@ -532,6 +536,101 @@ function noteFailure(req) {
   else rec.n += 1;
 }
 
+/* --------------------------------------------------------------- partage */
+
+/**
+ * L'étagère commune : des fiches qu'un compte publie pour les autres.
+ *
+ * Ce qui est publié est une **copie figée**, pas un lien vers la fiche : ce que
+ * les autres voient ne change pas dans leur dos quand l'auteur retouche la
+ * sienne. Republier remplace la copie, la retirer la fait disparaître.
+ *
+ * L'enveloppe est celle de l'export d'une fiche — elle emporte donc déjà les
+ * façades personnelles dont la fiche dépend, sans quoi elle serait illisible
+ * chez qui la reprend.
+ */
+async function readShared() {
+  const db = await readJsonFile(SHARED_FILE, { v: 1, items: [] });
+  return Array.isArray(db.items) ? db : { v: 1, items: [] };
+}
+
+function sharedSummary(it) {
+  return {
+    id: it.id, by: it.by, at: it.at,
+    name: it.preset && it.preset.name, kind: it.preset && it.preset.kind,
+    preset: it.preset, gear: it.gear || {},
+  };
+}
+
+async function handleShared(req, res) {
+  const user = await currentUser(req);
+  if (!user) return sendJson(res, 401, { error: "Connexion requise." });
+
+  if (req.method === "GET") {
+    const db = await readShared();
+    return await sendJsonGz(req, res, 200, { items: db.items.map(sharedSummary) });
+  }
+
+  /* Le compte de démonstration est ouvert à tous : le laisser publier
+     reviendrait à laisser tout Internet écrire sur l'étagère. */
+  if (isDemo(user)) {
+    return sendJson(res, 403, { error: "Le compte de démonstration ne publie pas." });
+  }
+
+  let body;
+  try { body = await readJsonBody(req); }
+  catch { return sendJson(res, 400, { error: "Requête invalide." }); }
+
+  const preset = body.preset;
+  if (!preset || typeof preset !== "object" || !preset.id || !preset.kind || !preset.name) {
+    return sendJson(res, 422, { error: "Cette fiche est incomplète." });
+  }
+
+  const db = await readShared();
+  const aMoi = db.items.filter((i) => i.by === user.name);
+  const dejaLa = db.items.find((i) => i.by === user.name && i.preset && i.preset.id === preset.id);
+
+  if (!dejaLa && aMoi.length >= SHARED_MAX_BY_USER) {
+    return sendJson(res, 429, { error: "Tu as déjà publié beaucoup de fiches." });
+  }
+  if (!dejaLa && db.items.length >= SHARED_MAX) {
+    return sendJson(res, 429, { error: "L'étagère partagée est pleine." });
+  }
+
+  const item = {
+    id: dejaLa ? dejaLa.id : crypto.randomUUID(),
+    by: user.name,
+    at: new Date().toISOString(),
+    preset: preset,
+    gear: body.gear && typeof body.gear === "object" ? body.gear : {},
+  };
+  if (dejaLa) db.items[db.items.indexOf(dejaLa)] = item;
+  else db.items.push(item);
+  await writeJsonFile(SHARED_FILE, db);
+  console.log(`[presetbook] ${dejaLa ? "republiée" : "publiée"} par ${user.name} : ${preset.name}`);
+  return sendJson(res, dejaLa ? 200 : 201, { id: item.id, replaced: !!dejaLa });
+}
+
+/** Retirer de l'étagère : la sienne, ou n'importe laquelle si l'on modère. */
+async function handleUnshare(req, res) {
+  const user = await currentUser(req);
+  if (!user) return sendJson(res, 401, { error: "Connexion requise." });
+  let body;
+  try { body = await readJsonBody(req); }
+  catch { return sendJson(res, 400, { error: "Requête invalide." }); }
+
+  const db = await readShared();
+  const it = db.items.find((i) => i.id === String(body.id || ""));
+  if (!it) return sendJson(res, 404, { error: "Fiche introuvable sur l'étagère." });
+  if (it.by !== user.name && !isAdmin(user)) {
+    return sendJson(res, 403, { error: "Seul l'auteur ou l'administrateur peut retirer une fiche." });
+  }
+  db.items = db.items.filter((i) => i !== it);
+  await writeJsonFile(SHARED_FILE, db);
+  console.log(`[presetbook] retirée de l'étagère par ${user.name} : ${it.preset && it.preset.name}`);
+  return sendJson(res, 200, { ok: true });
+}
+
 /* ------------------------------------------------------------ invitations */
 
 /**
@@ -976,6 +1075,15 @@ async function handleDeleteAccount(req, res) {
   db.users = db.users.filter((u) => u.id !== cibleId);
   await writeJsonFile(USERS_FILE, db);
   dropSessions(cibleId);
+
+  /* Ses publications partent avec lui : laisser des fiches signées d'un compte
+     qui n'existe plus laisserait un nom sans personne derrière. */
+  try {
+    const etagere = await readShared();
+    const avant = etagere.items.length;
+    etagere.items = etagere.items.filter((i) => i.by !== cible.name);
+    if (etagere.items.length !== avant) await writeJsonFile(SHARED_FILE, etagere);
+  } catch { /* étagère absente : rien à retirer */ }
   try { await fsp.unlink(presetsFile(cible)); } catch { /* pas de fiches : rien à retirer */ }
   try { await fsp.unlink(presetsFile(cible).replace(/\.json$/, ".bak.json")); } catch { /* idem */ }
   console.log(`[presetbook] compte supprimé : ${cible.name}` + (soi ? " (par lui-même)" : ` (par ${user.name})`));
@@ -1051,6 +1159,12 @@ const server = http.createServer(async (req, res) => {
     }
     if (pathname === "/api/invites/revoke" && req.method === "POST") {
       return await handleRevokeInvite(req, res);
+    }
+    if (pathname === "/api/shared" && (req.method === "GET" || req.method === "POST")) {
+      return await handleShared(req, res);
+    }
+    if (pathname === "/api/shared/delete" && req.method === "POST") {
+      return await handleUnshare(req, res);
     }
     if (pathname === "/api/account/delete" && req.method === "POST") return await handleDeleteAccount(req, res);
     if (pathname === "/api/logout" && req.method === "POST") return handleLogout(req, res);
