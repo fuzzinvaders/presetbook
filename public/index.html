@@ -473,6 +473,7 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
       <span id="who"></span>
       <button class="btn" id="btn-gear"></button>
       <button class="btn" id="btn-io"></button>
+      <button class="btn" id="btn-shared" hidden></button>
       <button class="btn" id="btn-install" hidden></button>
       <button class="btn primary" id="btn-new"></button>
       <span class="tabs" id="lang" role="group" aria-label="Langue / Language"></span>
@@ -524,6 +525,28 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Partagés": "Shared",
+  "Partager": "Share",
+  "Fiches partagées": "Shared presets",
+  "Reprendre chez moi": "Copy to my library",
+  "Retirer": "Remove",
+  "par": "by",
+  "Ce que les autres comptes de ce serveur ont publié. Reprendre une fiche en fait une copie chez toi : la modifier ensuite ne touche à rien de ce que les autres voient.":
+    "What the other accounts on this server have published. Copying a preset makes it yours: editing it afterwards changes nothing for anyone else.",
+  "Personne n'a encore publié de fiche. Sois le premier : « Partager » sur une carte.":
+    "Nobody has published a preset yet. Be the first: “Share” on any card.",
+  "Étagère indisponible.": "Shared shelf unavailable.",
+  "Fiche partagée : {0}": "Preset shared: {0}",
+  "Fiche republiée : {0}": "Preset re-published: {0}",
+  "Fiche retirée de l'étagère.": "Preset removed from the shelf.",
+  "La propose aux autres comptes de ce serveur": "Offers it to the other accounts on this server",
+  "Le compte de démonstration ne publie pas.": "The demo account does not publish.",
+  "Cette fiche est incomplète.": "This preset is incomplete.",
+  "Tu as déjà publié beaucoup de fiches.": "You have already published a lot of presets.",
+  "L'étagère partagée est pleine.": "The shared shelf is full.",
+  "Fiche introuvable sur l'étagère.": "Preset not found on the shelf.",
+  "Seul l'auteur ou l'administrateur peut retirer une fiche.":
+    "Only the author or the administrator can remove a preset.",
   "Inviter quelqu'un": "Invite someone",
   "Créer un lien d'invitation": "Create an invitation link",
   "Fabrique un lien à usage unique : la personne choisit elle-même son identifiant et son mot de passe. Rien de secret ne passe par la messagerie du forum, et le lien expire au bout d'une semaine.":
@@ -1129,6 +1152,7 @@ function renderChrome(){
   setHtml(el("btn-new"), "Nouveau preset");
   setHtml(el("btn-print"), "Imprimer");
   setHtml(el("btn-install"), "Installer");
+  setHtml(el("btn-shared"), "Partagés");
   var q = document.getElementById("q");
   q.setAttribute("placeholder", t("Chercher un style, un morceau, un plugin…"));
   q.setAttribute("aria-label", t("Chercher"));
@@ -1962,6 +1986,11 @@ function post(url, body){
 }
 
 function renderWho(){
+  /* L'étagère commune suppose un serveur et plusieurs comptes : elle n'a pas de
+     sens dans la page publiée ni depuis un fichier local. */
+  var bs = document.getElementById("btn-shared");
+  if (bs) bs.hidden = !session.user;
+
   var host = document.getElementById("who");
   if (!session.user){ host.innerHTML = ""; return; }
   host.innerHTML = tHtml('<span class="store' + (session.isDemo ? " warn" : "") + '">' +
@@ -2867,6 +2896,9 @@ function card(p){
        '<button class="btn small ghost" data-act="dup">Dupliquer</button>' +
        '<button class="btn small ghost" data-act="exp"' +
        ' title="Écrit la fiche dans un fichier, façades comprises">Exporter</button>' +
+       (session.user && !session.isDemo
+         ? '<button class="btn small ghost" data-act="share"' +
+           ' title="La propose aux autres comptes de ce serveur">Partager</button>' : "") +
        (p.kind === "reaper" && window.RFX && (p.chain || []).length
          ? '<button class="btn small ghost" data-act="rfx"' +
            ' title="Écrit un fichier de chaîne pour Reaper">.RfxChain</button>' : "") +
@@ -3651,6 +3683,79 @@ function duplicate(id){
   save().then(function(ok){ if (ok) toast("Copie créée."); });
 }
 
+/* ============================ étagère partagée ============================
+   Ce que quelqu'un publie est une copie figée, façades comprises. On la reprend
+   chez soi par le même chemin qu'un fichier importé — donc avec les mêmes
+   garde-fous : identifiant refait s'il est déjà pris, refus si une façade
+   manque.                                                                    */
+
+function openShared(){
+  var veil = document.getElementById("veil");
+  veil.innerHTML = tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Fiches partagées">' +
+    '<div class="sheet-h"><h2>Fiches partagées</h2>' +
+      '<button class="btn small ghost" data-close>Fermer</button></div>' +
+    '<div class="sheet-b">' +
+      '<p class="hint">Ce que les autres comptes de ce serveur ont publié. ' +
+      'Reprendre une fiche en fait une copie chez toi : la modifier ensuite ne touche à rien ' +
+      'de ce que les autres voient.</p>' +
+      '<div id="shared-list"><p class="hint">Chargement…</p></div>' +
+    '</div></div>');
+  veil.classList.add("open");
+  loadShared();
+}
+
+var sharedCache = [];
+
+function loadShared(){
+  var host = document.getElementById("shared-list");
+  if (!host) return;
+  fetchJson("api/shared").then(function(j){
+    sharedCache = (j && j.items) || [];
+    if (!sharedCache.length){
+      setHtml(host, "Personne n'a encore publié de fiche. Sois le premier : « Partager » sur une carte.");
+      return;
+    }
+    host.innerHTML = tHtml('<div class="ulist">' + sharedCache.map(function(it){
+      var mien = session.user && it.by === session.user.name;
+      return '<div class="urow">' +
+        '<span class="kind ' + esc(it.kind) + '">' + esc(KINDS[it.kind] ? KINDS[it.kind].label : it.kind) + '</span>' +
+        '<span class="uname">' + esc(it.name) + '</span>' +
+        '<span class="mini" style="opacity:.6">' + t("par") + " " + esc(it.by) + '</span>' +
+        '<span class="spacer"></span>' +
+        '<button class="btn small" data-take="' + esc(it.id) + '">Reprendre chez moi</button>' +
+        (mien || session.isAdmin ?
+          '<button class="btn small ghost danger" data-unshare="' + esc(it.id) + '">Retirer</button>' : "") +
+        '</div>';
+    }).join("") + '</div>');
+  }, function(){
+    setHtml(host, "Étagère indisponible.");
+  });
+}
+
+/** Reprendre : exactement le chemin d'un fichier importé, garde-fous compris. */
+function takeShared(id){
+  var it = sharedCache.filter(function(x){ return x.id === id; })[0];
+  if (!it) return;
+  addPreset({v:1, presetbook:"preset", preset: it.preset, gear: it.gear || {}});
+}
+
+function unshare(id){
+  post("api/shared/delete", {id:id}).then(function(){
+    toast("Fiche retirée de l'étagère.");
+    loadShared();
+  }, function(err){ toast(err.message); });
+}
+
+/** Publier une de ses fiches. L'enveloppe est celle de l'export. */
+function sharePreset(id){
+  var p = findPreset(id);
+  if (!p) return;
+  var env = JSON.parse(presetFile(p));
+  post("api/shared", {preset: env.preset, gear: env.gear}).then(function(j){
+    toast(j && j.replaced ? tf("Fiche republiée : {0}", p.name) : tf("Fiche partagée : {0}", p.name));
+  }, function(err){ toast(err.message); });
+}
+
 /* ============================ sauvegarde / restauration ============================ */
 function openIO(){
   var veil = document.getElementById("veil");
@@ -3814,6 +3919,7 @@ document.getElementById("list").addEventListener("click", function(e){
   else if (act === "dup") duplicate(id);
   else if (act === "rfx"){ var q = findPreset(id); if (q) exportRfx(q); }
   else if (act === "exp") exportPreset(id);
+  else if (act === "share") sharePreset(id);
   else if (act === "del"){
     if (btn.getAttribute("data-armed") === "1") removePreset(id);
     else {
@@ -3843,6 +3949,7 @@ function openNewSheet(){
 }
 document.getElementById("btn-new").addEventListener("click", openNewSheet);
 document.getElementById("btn-io").addEventListener("click", openIO);
+document.getElementById("btn-shared").addEventListener("click", openShared);
 document.getElementById("btn-gear").addEventListener("click", openGearList);
 document.getElementById("lang").addEventListener("click", function(e){
   var b = e.target.closest("[data-lang]");
@@ -3855,6 +3962,10 @@ document.getElementById("veil").addEventListener("click", function(e){
 
   var udel = t.closest && t.closest("[data-udel]");
   if (udel){ adminDelete(udel); return; }
+  var pris = t.closest && t.closest("[data-take]");
+  if (pris){ takeShared(pris.getAttribute("data-take")); return; }
+  var retire = t.closest && t.closest("[data-unshare]");
+  if (retire){ unshare(retire.getAttribute("data-unshare")); return; }
   var neuf = t.closest && t.closest("[data-newinvite]");
   if (neuf){ newInvite(neuf); return; }
   if (t.closest && t.closest("[data-copyinvite]")){ copyInvite(); return; }
@@ -4195,6 +4306,8 @@ window.__pb = {
   submitPassword: submitPassword, submitDelete: submitDelete, dangerZone: dangerZone,
   setAdmin: function(v){ session.isAdmin = !!v; },
   setInvite: function(v){ invitation = v; }, getInvite: function(){ return invitation; },
+  openShared: openShared, sharePreset: sharePreset, takeShared: takeShared,
+  setShared: function(l){ sharedCache = l; },
   readInvite: readInvite, inviteLink: inviteLink, showGate2: showGate,
   setSession: function(u, demo){ session.user = u; session.isDemo = !!demo; },
   setDemo: function(d){ session.demo = d; },

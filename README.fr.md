@@ -142,7 +142,7 @@ serveur du tout — publiée en statique, ou ouverte depuis le disque.
 | | |
 | --- | --- |
 | [L'installer sur un Mac](docs/install-mac.md) 🇬🇧 | pas à pas, pour qui n'ouvre jamais un terminal : ni Docker, ni Homebrew, ni git |
-| [Utiliser Presetbook](docs/utilisation.md) | lire et modifier une fiche, composer un pédalier, créer une façade, importer une chaîne de Reaper, changer de langue, filtrer, imprimer, exporter, sauvegarder |
+| [Utiliser Presetbook](docs/utilisation.md) | lire et modifier une fiche, composer un pédalier, créer une façade, importer une chaîne de Reaper, partager, filtrer, imprimer, exporter, sauvegarder |
 | [Installer et exploiter](docs/installation.md) | Docker, reverse proxy, mise à jour, comptes, compte de démonstration, sécurité, script tiers |
 | [Développer](docs/developpement.md) | architecture, modèle de données, registres, codec `.RfxChain`, les deux langues, tests |
 
@@ -152,7 +152,7 @@ serveur du tout — publiée en statique, ou ouverte depuis le disque.
 npm test
 ```
 
-Dix-sept suites, 569 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
+Dix-huit suites, 591 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
 minimal, le registre des façades, celles créées depuis l'interface, le formulaire qui les crée, les
 pédales et leur dessin, le codec des chaînes d'effets sur une chaîne réelle, les types de bande de
 ReaEQ, l'export d'une fiche et son retour dans une autre bibliothèque, la licence et le widget de
