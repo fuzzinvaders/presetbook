@@ -142,7 +142,7 @@ as a static page, or opened straight from disk.
 npm test
 ```
 
-Twenty suites, 668 checks, nothing to install: the page rendered again in a minimal DOM, the front
+Twenty suites, 669 checks, nothing to install: the page rendered again in a minimal DOM, the front
 panel registry, panels created from the interface, the form that creates them, pedals and their
 drawing, the effect-chain codec against a real chain, ReaEQ band types, exporting a preset and
 bringing it back into another library, the licence and the donation widget, account creation, the

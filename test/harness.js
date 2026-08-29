@@ -59,6 +59,29 @@ setTimeout(() => {
   check("pédale coupée signalée", /· coupée/.test(list));
   check("ordre du signal numéroté", list.indexOf("1. Accordeur") >= 0);
 
+  /* --- deux fois le même nom au niveau supérieur, c'est une seule variable ---
+     La page tient en un seul script de plusieurs milliers de lignes et de plus
+     de deux cents noms au niveau supérieur. Un « var » redéclaré n'est ni une
+     erreur ni un avertissement : le second écrase simplement le premier, et
+     rien ne le signale. C'est arrivé une fois — l'invite d'installation du
+     navigateur et le jeton d'invitation partageaient « invitation », si bien
+     que la création du premier compte d'une instance neuve échouait sur une
+     invitation qui n'existait pas. Seuls « var » et « function » se prêtent à
+     ça : « let » et « const » redéclarés sont refusés par le moteur. */
+  const source = require("node:fs").readFileSync(file, "utf8");
+  const declares = new Map();
+  source.split(/\r?\n/).forEach((ligne, i) => {
+    const m = ligne.match(/^var ([A-Za-z_$][\w$]*)/)
+           || ligne.match(/^function ([A-Za-z_$][\w$]*)\s*\(/);
+    if (!m) return;
+    if (!declares.has(m[1])) declares.set(m[1], []);
+    declares.get(m[1]).push(i + 1);
+  });
+  const doubles = [...declares].filter(([, l]) => l.length > 1);
+  check("aucun nom déclaré deux fois au niveau supérieur (" + declares.size + " noms)",
+    doubles.length === 0,
+    doubles.map(([n2, l]) => n2 + " lignes " + l.join(" et ")).join(" | "));
+
   const n = (list.match(/class="card k-/g) || []).length;
   console.log("\n" + n + " cartes rendues, " + (failed ? failed + " échec(s)" : "aucun échec"));
   process.exit(failed ? 1 : 0);
