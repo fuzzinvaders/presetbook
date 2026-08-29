@@ -216,6 +216,18 @@ bloc **Façade** : le matériel choisi, une note sur ses particularités, puis s
 curseurs affichent leur valeur dans l'unité du matériel pendant qu'on les déplace, et une commande
 hors circuit est grisée plutôt que masquée — pour qu'on sache qu'elle existe.
 
+Dès la deuxième lettre tapée dans le **nom**, les fiches proches s'affichent juste en dessous. Une
+bibliothèque finit toujours par contenir deux « Motown doux » écrits à six mois d'intervalle, et le
+moment de s'en apercevoir est celui où l'on tape le nom. Un nom déjà pris est signalé plus fermement
+que de simples voisins.
+
+Cliquer une proposition ouvre la fiche existante : c'est en général ce qu'on voulait faire. La saisie
+en cours n'est pas perdue pour autant, le bandeau la rend en un clic.
+
+La correspondance se fait en **début de mot** : « motown » retrouve « Compression Motown », mais
+« zz » ne ramène pas tous les Jazz et les Fuzz de la bibliothèque. Le champ **Morceau** fonctionne
+pareil et propose les titres déjà saisis, artiste compris — un titre s'écrit d'une seule façon.
+
 **Dupliquer** crée une copie modifiable, ce qui est la bonne façon de partir d'une fiche du
 catalogue. **Supprimer** demande confirmation par un second clic.
 
@@ -227,9 +239,12 @@ côtés et complète le reste avec les défauts du nouveau modèle, sans rien ef
 Le bouton **Matériel** ouvre la liste des façades, avec pour chacune son nombre de commandes et le
 nombre de fiches qui l'utilisent.
 
-Les façades **livrées** — Yamaha BB734A, Fender Rumble 40 et Laney Lionheart L20T-112, décrites
-d'après leurs façades réelles, plus des gabarits génériques — ne sont pas modifiables. On les
-**duplique** pour partir d'une base.
+Les façades **livrées** ne sont pas modifiables. On les **duplique** pour partir d'une base. Elles
+couvrent une vingtaine de modèles nommés — amplis basse (Ampeg SVT-CL, Markbass Little Mark, TC
+Electronic BH250, Fender Rumble 40 et 500), amplis guitare (Fender Blues Junior, Vox AC30C2,
+Marshall DSL40, Boss Katana 50, Laney Lionheart L20T-112), instruments (Yamaha BB734A, Fender
+Precision et Jazz Bass, Music Man StingRay, Ibanez SR) et quelques pédales nommées — plus des
+gabarits génériques pour tout le reste.
 
 Le Lionheart montre au passage ce que le registre sait faire sans code : deux canaux qui partagent
 l'égaliseur, un Tone global, un canal saturé qui grise ses propres commandes quand il est coupé, et

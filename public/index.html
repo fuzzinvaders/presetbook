@@ -304,6 +304,17 @@ legend{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.11
 .sl .v{font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .sl input[type="range"]{width:100%; accent-color:var(--acc,var(--ink))}
 .sl.dim{opacity:.4}
+.sug{margin:-4px 0 10px; display:flex; flex-direction:column; gap:3px}
+.sug:empty{margin:0}
+.sug .t{font-size:12px; color:var(--ink-2); padding:2px 0}
+.sug .t.dup{color:var(--warn); font-weight:600}
+.sug button{
+  text-align:left; font:inherit; font-size:13px; cursor:pointer;
+  border:1px solid var(--line); border-radius:3px; background:var(--panel-2);
+  color:var(--ink); padding:5px 8px;
+}
+.sug button:hover{background:var(--panel)}
+.sug button .k{color:var(--ink-2); font-size:11.5px; margin-left:6px}
 .toggles{display:flex; flex-wrap:wrap; gap:7px; margin-top:4px}
 .tg{border:1px solid var(--line-2); background:var(--panel); color:var(--ink-3); padding:5px 11px; border-radius:3px;
   font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase}
@@ -539,6 +550,11 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Une fiche porte déjà ce nom :": "A preset already goes by that name:",
+  "Des fiches proches existent déjà :": "Close presets already exist:",
+  "Déjà saisi :": "Already entered:",
+  "Fiche existante ouverte.": "Opened the existing preset.",
+  "Revenir à ma saisie": "Back to what I was typing",
   "Sustain monte la saturation et la compression ensemble ; Tone bascule d'un extrême à l'autre autour d'un creux de médiums qu'on ne peut pas retirer.":
     "Sustain raises the drive and the compression together; Tone swings from one extreme to the other around a mid scoop you cannot remove.",
   "Bosse de médiums et grave coupé : elle sert surtout à pousser un ampli déjà au bord, pas à saturer toute seule.":
@@ -4120,11 +4136,13 @@ function editorBody(){
   h += '<div class="row">' +
     '<label class="fld">Nom<input type="text" data-f="name" value="' + esc(p.name) + '" placeholder="Ex. Motown doux"></label>' +
     '<label class="fld">Styles (séparés par des virgules)<input type="text" data-f="tags" value="' + esc((p.tags||[]).join(", ")) + '"></label>' +
-    '</div>';
+    '</div>' +
+    '<div class="sug" id="sug-name" data-sug="name"></div>';
   h += '<div class="row">' +
-    '<label class="fld">Morceau<input type="text" data-f="song.title" value="' + esc(p.song ? p.song.title : "") + '" placeholder="Titre de la cover"></label>' +
-    '<label class="fld">Artiste<input type="text" data-f="song.artist" value="' + esc(p.song ? p.song.artist : "") + '"></label>' +
-    '</div>';
+    '<label class="fld">Morceau<input type="text" id="f-song-title" data-f="song.title" value="' + esc(p.song ? p.song.title : "") + '" placeholder="Titre de la cover"></label>' +
+    '<label class="fld">Artiste<input type="text" id="f-song-artist" data-f="song.artist" value="' + esc(p.song ? p.song.artist : "") + '"></label>' +
+    '</div>' +
+    '<div class="sug" id="sug-song" data-sug="song.title"></div>';
 
   if (p.kind === "bass" || p.kind === "amp" || p.kind === "pedal"){
     h += gearEditor(p);
@@ -4156,6 +4174,108 @@ function editorBody(){
 
   h += '<label class="fld">Notes<textarea data-f="notes" rows="3" placeholder="À quoi sert ce preset, ce qu\'il faut surveiller…">' + esc(p.notes || "") + '</textarea></label>';
   return h;
+}
+
+/* ============ éviter les doublons ============
+   Une bibliothèque de plusieurs centaines de fiches finit par contenir deux
+   « Motown doux » écrits à six mois d'intervalle. Le moment de s'en apercevoir
+   est celui où l'on tape le nom, pas trois écrans plus loin. */
+
+/** Sous deux caractères, tout ressemble à tout : on se tait. */
+var SUGGEST_FROM = 2;
+var SUGGEST_MAX = 5;
+
+/**
+ * Le nom commence-t-il par ce qu'on tape, au début d'un de ses mots ?
+ *
+ * Chercher la suite n'importe où ramenait « Jazz » et « Fuzz » dès qu'on tapait
+ * « zz » : les deux premières lettres d'un nom neuf ratissaient toute la
+ * bibliothèque. Un début de mot suffit à retrouver « Compression Motown » en
+ * tapant « motown », sans le bruit.
+ */
+function debutDeMot(nom, q){
+  var a = plat(nom), b = plat(q);
+  if (!b) return false;
+  if (a.indexOf(b) === 0) return true;
+  return a.split(/[^a-z0-9]+/).some(function(mot){ return mot.indexOf(b) === 0; });
+}
+
+/** Les fiches dont le nom contient ce qu'on est en train de taper. */
+function suggestName(q, saufId){
+  if (plat(q).length < SUGGEST_FROM) return [];
+  var aplati = plat(q);
+  return library().filter(function(p){
+    return p.id !== saufId && debutDeMot(p.name, q);
+  }).sort(function(a, b){
+    /* Le même nom exactement d'abord : c'est celui qui compte. */
+    var ea = plat(a.name) === aplati, eb = plat(b.name) === aplati;
+    if (ea !== eb) return ea ? -1 : 1;
+    return plat(a.name).length - plat(b.name).length;
+  }).slice(0, SUGGEST_MAX);
+}
+
+/** Les morceaux déjà saisis, sans répétition : un titre s'écrit d'une seule façon. */
+function suggestSong(q){
+  if (plat(q).length < SUGGEST_FROM) return [];
+  var aplati = plat(q), vus = {}, out = [];
+  library().forEach(function(p){
+    if (!p.song || !p.song.title) return;
+    var cle = plat(p.song.title) + "|" + plat(p.song.artist || "");
+    if (vus[cle]) return;
+    if (!debutDeMot(p.song.title, q)) return;
+    vus[cle] = 1;
+    out.push({title:p.song.title, artist:p.song.artist || ""});
+  });
+  return out.slice(0, SUGGEST_MAX);
+}
+
+/** Le bloc de propositions sous un champ. Rendu à part : la frappe ne
+    reconstruit pas le formulaire, seulement cette zone-là. */
+function renderSuggest(champ){
+  /* Par identifiant plutôt que par attribut : il n'y a que deux zones, et un
+     getElementById se laisse éprouver hors navigateur. */
+  var host = document.getElementById(champ === "name" ? "sug-name" : "sug-song");
+  if (!host || !draft) return;
+  var val = champ === "name" ? draft.name : (draft.song ? draft.song.title : "");
+  var h = "";
+
+  if (champ === "name"){
+    var vues = suggestName(val || "", isNew ? null : draft.id);
+    if (vues.length){
+      var exact = plat(vues[0].name) === plat(val);
+      h += '<p class="t' + (exact ? " dup" : "") + '">' +
+           (exact ? "Une fiche porte déjà ce nom :"
+                  : "Des fiches proches existent déjà :") + '</p>';
+      h += vues.map(function(p){
+        return '<button type="button" data-sugopen="' + esc(p.id) + '">' + esc(p.name) +
+               '<span class="k">' + esc(KINDS[p.kind].full) + '</span></button>';
+      }).join("");
+    }
+  } else {
+    var morceaux = suggestSong(val || "");
+    if (morceaux.length){
+      h += '<p class="t">Déjà saisi :</p>';
+      h += morceaux.map(function(m){
+        return '<button type="button" data-sugsong="' + esc(m.title) + '" data-sugart="' +
+               esc(m.artist) + '">' + esc(m.title) +
+               (m.artist ? '<span class="k">' + esc(m.artist) + '</span>' : "") + '</button>';
+      }).join("");
+    }
+  }
+  host.innerHTML = tHtml(h);
+}
+
+/** Ouvrir la fiche proposée. La saisie en cours n'est pas perdue pour autant :
+    le bandeau la rend en un clic, comme pour une suppression. */
+function openSuggestion(id){
+  var perdu = draft, neuf = isNew;
+  var cible = library().filter(function(p){ return p.id === id; })[0];
+  if (!cible) return;
+  openEditor(cible, false);
+  toast("Fiche existante ouverte.", {
+    label: "Revenir à ma saisie",
+    run: function(){ openEditor(perdu, neuf); }
+  });
 }
 
 function openEditor(p, fresh){
@@ -4970,6 +5090,24 @@ document.getElementById("veil").addEventListener("click", function(e){
   }
 });
 
+document.getElementById("veil").addEventListener("click", function(e){
+  var t2 = e.target;
+  if (!t2 || !t2.closest) return;
+  var ouvre = t2.closest("[data-sugopen]");
+  if (ouvre){ openSuggestion(ouvre.getAttribute("data-sugopen")); return; }
+  var morceau = t2.closest("[data-sugsong]");
+  if (morceau && draft){
+    var titre = morceau.getAttribute("data-sugsong");
+    var artiste = morceau.getAttribute("data-sugart") || "";
+    setPath(draft, "song.title", titre);
+    setPath(draft, "song.artist", artiste);
+    var ct = document.getElementById("f-song-title");
+    var ca = document.getElementById("f-song-artist");
+    if (ct) ct.value = titre;
+    if (ca) ca.value = artiste;
+    renderSuggest("song.title");
+  }
+});
 document.getElementById("veil").addEventListener("input", function(e){
   var f = e.target;
   if (!f || !f.hasAttribute || !f.hasAttribute("data-shared-q")) return;
@@ -5074,6 +5212,7 @@ document.getElementById("veil").addEventListener("input", function(e){
   if (f){
     if (f === "tags") draft.tags = t.value.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
     else setPath(draft, f, t.value);
+    if (f === "name" || f === "song.title") renderSuggest(f);
     return;
   }
   var key = t.getAttribute("data-sl");
@@ -5181,6 +5320,7 @@ window.__pb = {
   PEDALS: PEDALS, PEDAL_STYLES: PEDAL_STYLES, pedalArt: pedalArt, boardArt: boardArt, luma: luma, pedalValues: pedalValues,
   openGearList: openGearList, openGearEditor: openGearEditor,
   gearFormBody: gearFormBody, getGDraft: function(){ return gdraft; },
+  getDraft: function(){ return draft; }, isNewDraft: function(){ return isNew; },
   ctrlText: ctrlText, ctrlAngle: ctrlAngle, ctrlOff: ctrlOff,
   hourLabel: hourLabel, balLabel: balLabel, pctToCrans: pctToCrans,
   openEditor: openEditor, openIO: openIO, showGate: showGate, library: library,
@@ -5198,6 +5338,9 @@ window.__pb = {
   setAdmin: function(v){ session.isAdmin = !!v; },
   setInvite: function(v){ invitation = v; }, getInvite: function(){ return invitation; },
   facetBrand: facetBrand, brandsOf: brandsOf,
+  suggestName: suggestName, suggestSong: suggestSong, renderSuggest: renderSuggest,
+  debutDeMot: debutDeMot,
+  openSuggestion: openSuggestion,
   compareRows: compareRows, openCompare: openCompare, compareTable: compareTable,
   renderShared: renderShared, sharedMatch: sharedMatch,
   sharedFilterVisible: sharedFilterVisible,
