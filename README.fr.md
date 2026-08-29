@@ -1,6 +1,6 @@
 # Presetbook
 
-*[English version](README.md)*
+*[English version](README.md)* · *[Journal des changements](CHANGELOG.fr.md)*
 
 **Le carnet de réglages.** Les presets d'un instrument, d'un ampli, d'une pédale, d'un pédalier
 entier, et les chaînes de plugins d'un logiciel d'enregistrement — rangés dans une seule page qu'on

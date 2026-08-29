@@ -1,6 +1,6 @@
 # Presetbook
 
-*[Version française](README.fr.md)*
+*[Version française](README.fr.md)* · *[Changelog](CHANGELOG.md)*
 
 **A settings notebook.** The presets of an instrument, an amp, a single pedal, a whole pedalboard,
 and the plugin chains of a recording program — kept in one page you can search, duplicate and edit.
