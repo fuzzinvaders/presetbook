@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.2.1   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.3.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,21 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.3.0 — 30 August 2026
+
+### Added
+
+- **"Open in my mail app"**, beside a prepared invitation. The button opens whatever mail software is
+  already set up on the machine — Thunderbird, Outlook, the phone's own — with the recipient, the
+  subject and a complete message: the link, the fact that it works only once, that it expires in a
+  week, and that the person will choose their own password. All that is left is to send it.
+
+  It is a plain `mailto:` link, so **the app gains no dependency and still sends nothing itself**: it
+  writes, the client sends. The body is encoded with CRLF as the specification requires — with plain
+  line feeds, some clients glue the paragraphs into one block.
 
 ---
 

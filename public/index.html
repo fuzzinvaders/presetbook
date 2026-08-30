@@ -565,6 +565,10 @@ var EN = {
   "{0} personnes demandent un compte.": "{0} people are asking for an account.",
   "Voir": "Open",
   "Demandes de compte": "Account requests",
+  "Ouvrir dans la messagerie": "Open in my mail app",
+  "Ton invitation pour Presetbook": "Your Presetbook invitation",
+  "Bonjour {0},\n\nVoici ton lien d'invitation pour Presetbook :\n\n{1}\n\nIl ne sert qu'une fois et expire dans une semaine. Tu choisiras toi-même ton identifiant et ton mot de passe : personne d'autre ne les connaîtra.\n\nÀ bientôt.":
+    "Hello {0},\n\nHere is your invitation link for Presetbook:\n\n{1}\n\nIt works only once and expires in a week. You will pick your own username and password: nobody else will know them.\n\nSee you there.",
   "Personne n'attend de compte.": "Nobody is waiting for an account.",
   "Demandes indisponibles.": "Requests unavailable.",
   "Préparer l'invitation": "Prepare the invitation",
@@ -2714,7 +2718,8 @@ function loadRequests(){
     host.innerHTML = tHtml('<div class="ulist">' + l.map(function(r){
       /* L'adresse voyage en attribut plutôt que d'être relue dans le texte
          affiché : la mise en forme n'a pas à décider de ce qu'on envoie. */
-      return '<div class="urow" data-req="' + esc(r.id) + '" data-email="' + esc(r.email) + '">' +
+      return '<div class="urow" data-req="' + esc(r.id) + '" data-email="' + esc(r.email) + '"' +
+        ' data-name="' + esc(r.name) + '">' +
         '<span class="uname">' + esc(r.name) + '</span>' +
         '<span class="mini tel-quel" style="opacity:.7">' + esc(r.email) + '</span>' +
         (r.note ? '<span class="mini tel-quel" style="opacity:.6">' + esc(r.note) + '</span>' : "") +
@@ -2727,9 +2732,36 @@ function loadRequests(){
 }
 
 /** Fabriquer le lien pour une demande précise, et rappeler à qui l'envoyer. */
+/**
+ * Le message d'invitation, prêt à partir depuis le client du poste.
+ *
+ * Un lien « mailto: » confie l'envoi au logiciel déjà configuré — Thunderbird,
+ * Outlook, celui du téléphone. L'application ne gagne aucune dépendance et
+ * n'envoie toujours rien elle-même : elle rédige, le client expédie.
+ *
+ * Les sauts de ligne d'un corps mailto s'écrivent %0D%0A ; encodeURIComponent
+ * s'en charge à partir de vrais retours à la ligne.
+ */
+function mailtoInvite(nom, adresse, lien){
+  var objet = t("Ton invitation pour Presetbook");
+  var corps = tf(
+    "Bonjour {0},\n\n" +
+    "Voici ton lien d'invitation pour Presetbook :\n\n{1}\n\n" +
+    "Il ne sert qu'une fois et expire dans une semaine. Tu choisiras toi-même ton " +
+    "identifiant et ton mot de passe : personne d'autre ne les connaîtra.\n\n" +
+    "À bientôt.",
+    nom, lien);
+  return "mailto:" + encodeURIComponent(adresse) +
+         "?subject=" + encodeURIComponent(objet) +
+         /* RFC 6068 veut des CRLF dans le corps. Avec des LF seuls, certains
+            clients — Outlook le premier — recollent les paragraphes. */
+         "&body=" + encodeURIComponent(corps.replace(/\n/g, "\r\n"));
+}
+
 function inviteForRequest(id, btn){
   var ligne = document.querySelector('[data-req="' + id + '"]');
   var adresse = ligne ? ligne.getAttribute("data-email") || "" : "";
+  var nom = ligne ? ligne.getAttribute("data-name") || "" : "";
   btn.disabled = true;
   post("api/invites").then(function(j){
     btn.disabled = false;
@@ -2739,12 +2771,19 @@ function inviteForRequest(id, btn){
       'l\'application n\'a pas de client de courrier.</p>' +
       '<label class="fld">À<input type="text" id="req-to" readonly></label>' +
       '<label class="fld">Lien d\'invitation<textarea id="inv-lien" rows="2" readonly></textarea></label>' +
-      '<div class="acts"><button class="btn" data-copyinvite>Copier le lien</button>' +
+      '<div class="acts">' +
+      '<a class="btn primary" id="req-mail" href="#">Ouvrir dans la messagerie</a>' +
+      '<button class="btn" data-copyinvite>Copier le lien</button>' +
       '<button class="btn ghost" data-reqdel="' + esc(id) + '">Demande traitée, l\'écarter</button></div>');
     var a = document.getElementById("req-to");
     if (a) a.value = adresse;
     var champ = document.getElementById("inv-lien");
     if (champ){ champ.value = inviteLink(j.token); champ.select(); }
+    /* L'adresse « mailto: » est posée après coup : elle porte le jeton, et un
+       href écrit dans la chaîne de gabarit passerait par tHtml, qui laisse les
+       attributs tranquilles mais n'a aucune raison de voir ça. */
+    var lienMail = document.getElementById("req-mail");
+    if (lienMail) lienMail.setAttribute("href", mailtoInvite(nom, adresse, inviteLink(j.token)));
     loadInvites();
   }, function(err){
     btn.disabled = false;
@@ -5550,6 +5589,7 @@ window.__pb = {
   setShared: function(l){ sharedCache = l; },
   readInvite: readInvite, inviteLink: inviteLink, showGate2: showGate,
   submitRequest: submitRequest, loadRequests: loadRequests, inviteForRequest: inviteForRequest,
+  mailtoInvite: mailtoInvite,
   refreshSession: refreshSession,
   announceRequests: announceRequests,
   setGateMode: function(m){ gateMode = m; },

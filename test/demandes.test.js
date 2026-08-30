@@ -264,6 +264,61 @@ async function serveur(port, env) {
     bloc.indexOf('ask-form') < bloc.indexOf('elements.password'),
     bloc.indexOf('ask-form') + ' contre ' + bloc.indexOf('elements.password'));
 
+  /* --- le message prêt à partir --- */
+  const lienMail = pb.mailtoInvite("Test", "quelquun@exemple.fr",
+    "https://presetbook.exemple.fr/?invite=UN-JETON");
+  const corps = decodeURIComponent((lienMail.match(/body=(.*)$/) || [])[1] || "");
+
+  check("c'est bien une adresse mailto", lienMail.indexOf("mailto:") === 0, lienMail.slice(0, 40));
+  check("le destinataire est prérempli",
+    decodeURIComponent(lienMail.slice(7).split("?")[0]) === "quelquun@exemple.fr",
+    lienMail.slice(0, 60));
+  check("l'objet est prérempli",
+    decodeURIComponent((lienMail.match(/subject=([^&]*)/) || [])[1] || "")
+      === "Ton invitation pour Presetbook",
+    lienMail.slice(0, 90));
+  check("le corps salue la personne par le nom qu'elle a demandé",
+    corps.indexOf("Bonjour Test,") === 0, corps.slice(0, 40));
+  check("il porte le lien d'invitation",
+    corps.indexOf("https://presetbook.exemple.fr/?invite=UN-JETON") > 0, corps);
+  check("il dit ce qu'il faut savoir : une fois, une semaine, mot de passe choisi",
+    /une fois/.test(corps) && /une semaine/.test(corps) && /mot de passe/.test(corps), corps);
+
+  /* RFC 6068 veut des CRLF. Avec des LF seuls, certains clients — Outlook le
+     premier — recollent les paragraphes en un seul bloc. */
+  check("les sauts de ligne sont des CRLF", /%0D%0A/.test(lienMail),
+    "des LF seuls colleraient les paragraphes dans certains clients");
+  check("et aucun LF n'est resté isolé",
+    !/%0A/.test(lienMail.replace(/%0D%0A/g, "")), lienMail.slice(-120));
+
+  /* Un mailto trop long est tronqué par certains clients : le nôtre doit rester
+     très en deçà, jeton compris. */
+  check("l'adresse reste courte", lienMail.length < 900, String(lienMail.length));
+
+  /* Une apostrophe ou un accent dans le nom ne doit rien casser. */
+  const accents = pb.mailtoInvite("Rémi l'Ancien", "a@b.fr", "https://x/?invite=Z");
+  check("un nom accentué ou apostrophé passe l'encodage",
+    decodeURIComponent((accents.match(/body=(.*)$/) || [])[1] || "")
+      .indexOf("Bonjour Rémi l'Ancien,") === 0,
+    accents.slice(0, 80));
+
+  const enMail = run(page, { search: "?lang=en" }).__pb
+    .mailtoInvite("Test", "a@b.fr", "https://x/?invite=Z");
+  check("le message suit la langue",
+    decodeURIComponent((enMail.match(/subject=([^&]*)/) || [])[1] || "")
+      === "Your Presetbook invitation",
+    enMail.slice(0, 80));
+  check("et son corps aussi",
+    decodeURIComponent((enMail.match(/body=(.*)$/) || [])[1] || "").indexOf("Hello Test,") === 0);
+
+  const srcMail = require("node:fs").readFileSync(page, "utf8");
+  check("le bouton est posé à côté de « Copier le lien »",
+    srcMail.indexOf('id="req-mail"') > 0 && /Ouvrir dans la messagerie/.test(srcMail));
+  check("son href est écrit après coup, jeton compris",
+    /req-mail"\)/.test(srcMail.replace(/getElementById\("req-mail"\)/g, 'req-mail")'))
+    || /lienMail\.setAttribute\("href"/.test(srcMail),
+    "sans cela le lien resterait sur « # »");
+
   /* --- la session est relue après une connexion --- */
   const src = require("node:fs").readFileSync(page, "utf8");
   check("la connexion relit la session, sinon l'administrateur ne l'est pas encore",
