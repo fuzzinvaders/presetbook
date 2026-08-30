@@ -485,7 +485,12 @@ Next time you sign in, a banner tells you and a badge counts the requests on the
 Beside each one, *Prepare the invitation* builds the link and reminds you of the address to send it
 to; *Dismiss* removes it.
 
-**The app sends nothing.** It has no dependencies, so no mail client: sending stays your own move.
+**Open in my mail app** writes the message for you and hands it to whatever software is already set
+up on your machine — Thunderbird, Outlook, the phone's own: recipient, subject and full text, all
+that is left is to send it. If no client is configured, nothing happens; *Copy the link* is still
+there.
+
+**The app sends nothing itself.** It has no dependencies, so no mail client: it writes, yours sends.
 That is also what stops a sending server from being hijacked by whoever finds the form.
 
 The address is used for nothing else and goes away with the request as soon as you dismiss it. Three

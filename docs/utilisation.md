@@ -510,9 +510,13 @@ elle.
 bouton **Comptes**. En face de chacune, *Préparer l'invitation* fabrique le lien et vous rappelle
 l'adresse à qui l'envoyer ; *Écarter* la retire.
 
-**L'application n'envoie rien.** Elle n'a aucune dépendance, donc pas de client de courrier :
-l'envoi reste votre geste. C'est aussi ce qui évite qu'un serveur d'envoi soit détourné par
-quelqu'un qui aurait trouvé le formulaire.
+**Ouvrir dans la messagerie** rédige le message pour vous et le passe au logiciel déjà configuré sur
+votre poste — Thunderbird, Outlook, celui du téléphone : destinataire, objet et texte complet, il ne
+reste qu'à envoyer. Si aucun client n'est configuré, rien ne se passe ; *Copier le lien* reste là.
+
+**L'application n'envoie rien elle-même.** Elle n'a aucune dépendance, donc pas de client de
+courrier : elle rédige, le vôtre expédie. C'est aussi ce qui évite qu'un serveur d'envoi soit
+détourné par quelqu'un qui aurait trouvé le formulaire.
 
 L'adresse ne sert qu'à ça et disparaît avec la demande dès que vous l'écartez. Trois demandes par
 adresse IP et par jour, cinquante en attente au plus : c'est un point d'écriture sans

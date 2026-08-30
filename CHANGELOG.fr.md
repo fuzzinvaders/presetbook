@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.2.1   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.3.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,22 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.3.0 — 30 août 2026
+
+### Ajouté
+
+- **« Ouvrir dans la messagerie »**, à côté d'une invitation préparée. Le bouton ouvre le logiciel
+  déjà configuré sur le poste — Thunderbird, Outlook, celui du téléphone — avec le destinataire,
+  l'objet et un message complet : le lien, qu'il ne sert qu'une fois, qu'il expire dans une semaine,
+  et que la personne choisira elle-même son mot de passe. Il ne reste qu'à envoyer.
+
+  C'est un simple lien `mailto:`, donc **l'application ne gagne aucune dépendance et n'envoie
+  toujours rien elle-même** : elle rédige, le client expédie. Le corps est encodé avec des CRLF comme
+  le veut la spécification — avec des sauts de ligne simples, certains clients recollent les
+  paragraphes en un bloc.
 
 ---
 
