@@ -45,14 +45,34 @@ const PRESETS_DIR = path.join(DATA_DIR, "presets");
 const LEGACY_PRESETS = path.join(DATA_DIR, "presets.json");
 
 const BASIC_AUTH = process.env.BASIC_AUTH || "";
-const ALLOW_REGISTER = /^(1|true|oui|yes)$/i.test(process.env.ALLOW_REGISTER || "");
+/**
+ * Un interrupteur d'environnement, lu sans se laisser prendre aux blancs.
+ *
+ * La comparaison était stricte : un .env enregistré avec des fins de ligne
+ * Windows donne « 1\r », et « 1\r » ne vaut pas « 1 ». Le réglage restait donc
+ * sans effet, sans un mot — on croit avoir ouvert une porte qui ne bouge pas.
+ * Une valeur présente mais incomprise est désormais signalée au démarrage :
+ * mieux vaut une ligne dans le journal qu'une demi-heure à chercher.
+ */
+const drapeauxDouteux = [];
+function drapeau(nom) {
+  const brut = process.env[nom];
+  if (brut === undefined || brut === null) return false;
+  const propre = String(brut).trim();
+  if (propre === "") return false;
+  if (/^(1|true|oui|yes|on)$/i.test(propre)) return true;
+  if (!/^(0|false|non|no|off)$/i.test(propre)) drapeauxDouteux.push(`${nom}="${brut}"`);
+  return false;
+}
+
+const ALLOW_REGISTER = drapeau("ALLOW_REGISTER");
 
 /* Le formulaire public de demande de compte. Fermé par défaut : une instance
    privée n'a aucune raison d'exposer un point d'écriture non authentifié, et
    celui qui l'ouvre doit le vouloir. */
-const ALLOW_REQUESTS = /^(1|true|oui|yes)$/i.test(process.env.ALLOW_REQUESTS || "");
+const ALLOW_REQUESTS = drapeau("ALLOW_REQUESTS");
 const SESSION_DAYS = Number(process.env.SESSION_DAYS || 30);
-const SECURE_COOKIES = /^(1|true|oui|yes)$/i.test(process.env.SECURE_COOKIES || "");
+const SECURE_COOKIES = drapeau("SECURE_COOKIES");
 
 /* Compte de démonstration, « identifiant:motdepasse », vide pour le désactiver.
    Ses identifiants sont publics par construction, donc il est tenu à l'écart :
@@ -1559,8 +1579,16 @@ loadSessions()
           vrais === 0 ? "ouverte (aucun compte)" : ALLOW_REGISTER ? "ouverte" : "réservée à l'administrateur"
         }`
       );
+      console.log(
+        `[presetbook] demandes de compte : ${ALLOW_REQUESTS ? "ouvertes (formulaire public)" : "fermées"}`
+      );
       if (DEMO_NAME) {
         console.log(`[presetbook] démonstration : « ${DEMO_NAME} », fiches remises à zéro à ce démarrage`);
+      }
+      /* Une valeur qu'on ne comprend pas est presque toujours une coquille, un
+         blanc de fin, ou un retour chariot venu d'un .env Windows. */
+      for (const d of drapeauxDouteux) {
+        console.error(`[presetbook] réglage ignoré, valeur non reconnue : ${d} — attendu 1 ou vide`);
       }
       if (BASIC_AUTH) console.log("[presetbook] authentification basique activée en amont");
     })

@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.2.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.2.1   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,26 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.2.1 — 30 août 2026
+
+### Corrigé
+
+- **Un réglage d'environnement pouvait rester sans effet, sans un mot.** Les interrupteurs
+  `ALLOW_REQUESTS`, `ALLOW_REGISTER` et `SECURE_COOKIES` étaient comparés sans rogner la valeur : un
+  fichier `.env` enregistré avec des fins de ligne Windows donne « 1\r », et « 1\r » ne vaut pas
+  « 1 ». On ajoutait la ligne, on redémarrait, et rien ne bougeait — sans que rien ne le signale.
+  Les valeurs sont désormais rognées, `on`, `true`, `oui` et `yes` sont acceptés comme `1`, et
+  `0`/`false`/`non`/`off` ferment explicitement.
+
+### Modifié
+
+- **Le démarrage dit ce qu'il a compris.** Le journal du serveur annonce l'état du formulaire de
+  demande de compte, à côté de celui de la création de comptes. Et une valeur présente mais non
+  reconnue est signalée en clair — mieux vaut une ligne dans le journal qu'une demi-heure à chercher
+  une erreur qu'on n'a pas commise.
 
 ---
 

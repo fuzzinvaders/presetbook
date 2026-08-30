@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.2.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.2.1   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,24 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.2.1 — 30 August 2026
+
+### Fixed
+
+- **An environment setting could have no effect at all, without a word.** The `ALLOW_REQUESTS`,
+  `ALLOW_REGISTER` and `SECURE_COOKIES` switches were compared without trimming the value: a `.env`
+  file saved with Windows line endings yields "1\r", and "1\r" is not "1". You added the line, you
+  restarted, and nothing moved — with nothing to say why. Values are now trimmed, `on`, `true`,
+  `oui` and `yes` are accepted like `1`, and `0`/`false`/`non`/`off` close explicitly.
+
+### Changed
+
+- **Startup says what it understood.** The server log announces the state of the account-request
+  form, next to the state of account creation. And a value that is present but not recognised is
+  reported plainly — better one line in the log than half an hour hunting a mistake you did not make.
 
 ---
 

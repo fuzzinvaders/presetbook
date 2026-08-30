@@ -149,6 +149,52 @@ async function serveur(port, env) {
       (await libre.appel("/api/session")).corps.canRequest === false);
   } finally { await libre.arret(); }
 
+  /* ---------------- le réglage se laisse lire ----------------
+     La comparaison était stricte : un .env enregistré avec des fins de ligne
+     Windows donne « 1\r », qui ne vaut pas « 1 ». Le formulaire restait fermé
+     sans un mot, et on cherche longtemps une erreur qu'on n'a pas faite. */
+  for (const [etiquette, valeur, attendu] of [
+    ["une valeur propre", "1", true],
+    ["un retour chariot de .env Windows", "1\r", true],
+    ["une espace en fin de ligne", "1 ", true],
+    ["« true » plutôt que « 1 »", "true", true],
+    ["une valeur vide", "", false],
+    ["un « 0 » explicite", "0", false],
+  ]) {
+    const srv = await serveur(BASE_PORT + 10, { ALLOW_REQUESTS: valeur });
+    try {
+      await srv.appel("/api/register", {
+        method: "POST", body: { name: "chef", password: "mot-de-passe-du-chef" } });
+      const ouvert2 = (await srv.appel("/api/session")).corps.canRequest;
+      check("ALLOW_REQUESTS accepte " + etiquette, ouvert2 === attendu,
+        JSON.stringify(valeur) + " -> " + ouvert2);
+    } finally { await srv.arret(); }
+  }
+
+  /* Une valeur qu'on ne comprend pas ne doit pas disparaître en silence. */
+  {
+    const { spawn: lancer } = require("node:child_process");
+    const dossier = await fsp.mkdtemp(path.join(os.tmpdir(), "pb-drap-"));
+    let sortie = "";
+    const p = lancer(process.execPath, [path.join(RACINE, "server.js")], {
+      env: { ...process.env, PORT: String(BASE_PORT + 11), HOST: "127.0.0.1",
+             DATA_DIR: dossier, ALLOW_REQUESTS: "oui!" },
+    });
+    p.stdout.on("data", (c) => { sortie += c; });
+    p.stderr.on("data", (c) => { sortie += c; });
+    for (let i = 0; i < 60; i++) {
+      try { await fetch(`http://127.0.0.1:${BASE_PORT + 11}/healthz`); break; }
+      catch { await attendre(100); }
+    }
+    check("une valeur non reconnue est signalée au démarrage",
+      /réglage ignoré, valeur non reconnue : ALLOW_REQUESTS/.test(sortie),
+      sortie.slice(0, 300));
+    check("et le démarrage annonce l'état du formulaire",
+      /demandes de compte : fermées/.test(sortie), sortie.slice(0, 300));
+    p.kill(); await attendre(250);
+    await fsp.rm(dossier, { recursive: true, force: true }).catch(() => {});
+  }
+
   /* ---------------- l'écran ---------------- */
   const w = run(page, { search: "" });
   const pb = w.__pb;
