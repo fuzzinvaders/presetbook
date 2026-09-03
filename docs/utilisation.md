@@ -243,7 +243,7 @@ Les façades **livrées** ne sont pas modifiables. On les **duplique** pour part
 couvrent une vingtaine de modèles nommés — amplis basse (Ampeg SVT-CL, Markbass Little Mark, TC
 Electronic BH250, Fender Rumble 40 et 500), amplis guitare (Fender Blues Junior, Vox AC30C2,
 Marshall DSL40, Boss Katana 50, Laney Lionheart L20T-112), instruments (Yamaha BB734A, Fender
-Precision et Jazz Bass, Music Man StingRay, Ibanez SR) et quelques pédales nommées — plus des
+Precision et Jazz Bass, Music Man StingRay, Ibanez SR, Squier Rascal Bass HH) et quelques pédales nommées — plus des
 gabarits génériques pour tout le reste.
 
 Le Lionheart montre au passage ce que le registre sait faire sans code : deux canaux qui partagent
