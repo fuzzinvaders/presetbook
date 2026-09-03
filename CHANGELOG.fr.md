@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.3.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.4.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,34 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.4.0 — 31 août 2026
+
+Signalé en voulant décrire une Squier Rascal HH : deux volumes ne conviennent pas à une basse qui a
+un sélecteur, et créer sa propre façade demandait de sortir de la fiche qu'on écrivait.
+
+### Ajouté
+
+- **Un type de commande « sélecteur »**, à positions nommées : *Manche / Les deux / Chevalet*, un
+  canal, une fréquence. La fiche enregistre le **nom** de la position et non son rang — lisible dans
+  un export, et insensible à un réordonnancement. Sur une carte il se lit en étiquette, parce qu'on
+  choisit une position, on ne la dose pas.
+- **Deux gabarits pour les instruments à deux micros** : *sélecteur 3 positions* pour les modèles qui
+  choisissent, *balance* pour ceux qui dosent en continu.
+- **Créer ou dupliquer une façade depuis l'éditeur d'une fiche.** C'était possible, mais seulement
+  depuis l'écran *Matériel* — c'est-à-dire loin du moment où l'on s'aperçoit qu'elle manque.
+  *Dupliquer cette façade* est le chemin le plus court : on part de la plus proche et on corrige ce
+  qui diffère. Une fois enregistrée, on revient à la fiche qu'on écrivait, avec la façade neuve déjà
+  choisie.
+
+### Modifié
+
+- **Deux bricolages remplacés par de vrais sélecteurs.** Faute de ce type, le *Mid Freq* de l'Ampeg
+  SVT-CL et le *type d'ampli* du Boss Katana étaient des échelles de 1 à 5, avec la correspondance
+  expliquée en note. Ils portent maintenant leurs vrais noms — *450 Hz*, *Crunch*. Une fiche
+  enregistrée avec l'ancien chiffre retombe sur la position par défaut plutôt que de casser.
 
 ---
 

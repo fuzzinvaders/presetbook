@@ -248,14 +248,26 @@ order. Each control has a label and a type:
 | Detented dial | a knob neutral at the centre, read in hours |
 | Bounded scale | a graduated knob, 1 to 10 for instance |
 | Blend | a balance between two pickups |
+| Selector | named positions: *Neck / Both / Bridge*, a channel, a frequency |
 | Switch | a push button or a two-state selector |
 | Vertical slider | a graphic EQ band, in decibels |
+
+A **selector** is entered by writing its positions separated by commas. The preset stores the
+position's **name**, not its rank: that is readable in an export, and it survives a reordering. On a
+card it reads as a label — *Pickups Bridge* — because you pick a position, you do not dial it.
 
 Two mechanisms make a panel faithful without code:
 
 - **two modes**, the second of which can put some controls **out of circuit** — that is how the
   BB734A's passive mode works;
 - a control that **only matters if** a switch is engaged — the Drive of a saturated channel.
+
+**From a preset's editor**, two buttons under the gear choice save you the detour: *New panel*, and
+*Duplicate this panel* — the shortest route, since you start from the closest one and correct what
+differs. Once saved, you are back in the preset you were writing, with the new panel already chosen.
+
+Two templates cover two-pickup instruments: *Two-pickup bass, 3-way selector* for models with a
+selector, and *Two-pickup bass, blend control* for those that dial continuously.
 
 A panel used by presets cannot be deleted: the interface says how many hold it.
 

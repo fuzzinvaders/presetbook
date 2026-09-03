@@ -6,6 +6,7 @@
  * couture de test window.__pb.
  */
 "use strict";
+const fs = require("node:fs");
 const path = require("node:path");
 const { run } = require("./sandbox.js");
 
@@ -82,9 +83,11 @@ check("un matériel à modes en déclare exactement deux", sansMode.length === 0
 /* Les valeurs par défaut d'un modèle nommé se posent comme les autres. */
 const svt = pb.applyGearDefaults({ kind: "amp", gear: "svtcl", eq: {} });
 check("les commandes du SVT sont remplies",
-  svt.gain === 5 && svt.eq.mf === 3 && svt.master === 5, JSON.stringify(svt));
-check("le sélecteur de fréquence reste dans ses cinq crans",
-  svt.eq.mf >= 1 && svt.eq.mf <= 5, String(svt.eq.mf));
+  svt.gain === 5 && svt.master === 5, JSON.stringify(svt));
+/* Le sélecteur de fréquence était une échelle de 1 à 5, faute d'un type qui
+   sache nommer des positions. Il porte maintenant sa fréquence. */
+check("le sélecteur de fréquence porte un nom de position, pas un rang",
+  svt.eq.mf === "800 Hz", String(svt.eq.mf));
 
 /* --- les pédales : des types génériques, plus quelques modèles nommés --- */
 const pedales = pb.gearList("pedal");
@@ -103,6 +106,79 @@ check("une pédale nommée reste une pédale",
 check("et garde un style de boîtier connu",
   nommees.every(function (x) { return !!pb.PEDAL_STYLES[pb.GEAR[x.id].style]; }),
   nommees.map(function (x) { return pb.GEAR[x.id].style; }).join(", "));
+
+/* --- le sélecteur à positions nommées ---
+   Il manquait : une basse à deux humbuckers se décrit par un sélecteur, pas par
+   deux volumes. Faute de ce type, le Mid Freq de l'Ampeg et le type d'ampli du
+   Katana étaient bricolés en échelles de 1 à 5. */
+const mf = pb.GEAR.svtcl.controls.filter((c) => c.k === "eq.mf")[0];
+check("l'Ampeg a un vrai sélecteur de fréquence", mf.t === "select", mf.t);
+check("ses positions portent leur fréquence",
+  pb.selOpts(mf).join("/") === "220 Hz/450 Hz/800 Hz/1,6 kHz/3 kHz", pb.selOpts(mf).join("/"));
+const voice = pb.GEAR.katana50.controls.filter((c) => c.k === "voice")[0];
+check("le Katana nomme ses types d'ampli",
+  voice.t === "select" && pb.selOpts(voice).indexOf("Crunch") >= 0, pb.selOpts(voice).join("/"));
+
+/* La valeur enregistrée est le nom de la position, pas son rang : lisible dans
+   un export, et elle survit à un réordonnancement. */
+check("une position valable est rendue telle quelle", pb.selValue(mf, "1,6 kHz") === "1,6 kHz");
+check("une valeur inconnue retombe sur le défaut", pb.selValue(mf, 2) === "800 Hz",
+  pb.selValue(mf, 2));
+check("et sur la première position si le défaut est absent lui aussi",
+  pb.selValue({ opts: ["a", "b"], d: "zz" }, "yy") === "a",
+  pb.selValue({ opts: ["a", "b"], d: "zz" }, "yy"));
+check("des positions écrites d'un trait sont acceptées",
+  pb.selOpts({ opts: "Manche, Les deux ,Chevalet" }).join("/") === "Manche/Les deux/Chevalet",
+  pb.selOpts({ opts: "Manche, Les deux ,Chevalet" }).join("/"));
+check("un sélecteur sans position ne casse rien",
+  pb.selOpts({}).length === 0 && pb.selValue({}, "x") === "");
+
+/* Les valeurs par défaut : un nom, jamais zéro. */
+const hh = pb.applyGearDefaults({ kind: "bass", gear: "bassHHsel" });
+check("un sélecteur part de sa position par défaut", hh.pickups === "Les deux", String(hh.pickups));
+
+/* --- les deux façades génériques à deux micros --- */
+check("une façade à sélecteur est livrée", !!pb.GEAR.bassHHsel);
+check("une façade à balance aussi, pour les modèles qui dosent",
+  !!pb.GEAR.bassHHbal
+  && pb.GEAR.bassHHbal.controls.some((c) => c.t === "balance"));
+check("la façade à sélecteur propose les trois positions attendues",
+  pb.selOpts(pb.GEAR.bassHHsel.controls.filter((c) => c.t === "select")[0]).join("/")
+    === "Manche/Les deux/Chevalet");
+
+/* --- l'affichage --- */
+const carte = run(path.join(__dirname, "..", "public", "index.html"),
+  { search: "?q=Rock 70s au SVT" });
+const etiquettes = (carte.__nodes.get("list").innerHTML.match(/<span class="tag[^>]*>[^<]*</g) || [])
+  .map((x) => x.replace(/<[^>]*>?/g, ""));
+check("un sélecteur se lit en étiquette, pas en cadran",
+  etiquettes.some((x) => x.indexOf("Mid Freq") === 0), etiquettes.join(" | "));
+check("l'étiquette porte le nom de la position",
+  etiquettes.some((x) => /Mid Freq 450 Hz/.test(x)), etiquettes.join(" | "));
+
+/* --- l'éditeur d'une fiche --- */
+const ed = run(path.join(__dirname, "..", "public", "index.html"), { search: "" });
+ed.__pb.openEditor({ kind: "bass", gear: "bassHHsel", name: "essai", tags: [] }, true);
+const corpsEd = ed.__nodes.get("veil").innerHTML;
+check("l'éditeur offre un menu déroulant et non un curseur",
+  corpsEd.indexOf('data-sel="pickups"') > 0 && corpsEd.indexOf('data-sl="pickups"') < 0,
+  corpsEd.slice(corpsEd.indexOf("pickups") - 60, corpsEd.indexOf("pickups") + 60));
+check("les trois positions y sont",
+  /Manche<\/option>/.test(corpsEd) && /Chevalet<\/option>/.test(corpsEd));
+
+/* --- créer une façade sans quitter la fiche --- */
+check("l'éditeur propose de dupliquer la façade affichée",
+  corpsEd.indexOf("data-gdupid=") > 0, "sinon il faut sortir vers l'écran Matériel");
+check("et d'en créer une neuve", corpsEd.indexOf('data-gnewfrom="bass"') > 0);
+
+const srcG = fs.readFileSync(path.join(__dirname, "..", "public", "index.html"), "utf8");
+check("le retour vers la fiche est mémorisé avant de basculer",
+  /retourFiche = \{draft: draft, isNew: isNew\}/.test(srcG),
+  "sans cela, on décrit sa basse et on perd la fiche de vue");
+check("enregistrer la façade y ramène, avec la nouvelle choisie",
+  /fiche\.gear = neuve/.test(srcG) && /openEditor\(fiche, frais\)/.test(srcG));
+check("fermer sans enregistrer oublie le retour",
+  /retourFiche = null; openGearList\(\)/.test(srcG));
 
 /* --- compatibilité : une fiche sans matériel garde celui d'origine --- */
 check("fiche basse sans matériel → BB734A", pb.gearOf({ kind: "bass" }) === pb.GEAR.bb734a);

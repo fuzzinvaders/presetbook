@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.3.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.4.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,33 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.4.0 — 31 August 2026
+
+Reported while trying to describe a Squier Rascal HH: two volumes do not suit a bass that has a
+selector, and creating your own panel meant leaving the preset you were writing.
+
+### Added
+
+- **A "selector" control type**, with named positions: *Neck / Both / Bridge*, a channel, a
+  frequency. The preset stores the position's **name**, not its rank — readable in an export, and
+  immune to a reordering. On a card it reads as a label, because you pick a position, you do not dial
+  it.
+- **Two templates for two-pickup instruments**: *3-way selector* for models that choose, *blend
+  control* for those that dial continuously.
+- **Creating or duplicating a panel from a preset's editor.** It was possible, but only from the
+  *Gear* screen — that is, far from the moment you notice one is missing. *Duplicate this panel* is
+  the shortest route: you start from the closest one and correct what differs. Once saved, you are
+  back in the preset you were writing, with the new panel already chosen.
+
+### Changed
+
+- **Two workarounds replaced by real selectors.** Lacking this type, the Ampeg SVT-CL's *Mid Freq*
+  and the Boss Katana's *amp type* were 1-to-5 scales, with the mapping spelled out in a note. They
+  now carry their real names — *450 Hz*, *Crunch*. A preset saved with the old number falls back to
+  the default position rather than breaking.
 
 ---
 

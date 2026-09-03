@@ -259,14 +259,28 @@ commandes dans l'ordre. Chaque commande a un libellé et un type :
 | Cadran cranté | un bouton neutre au milieu, lu en heures |
 | Échelle bornée | un bouton gradué, 1 à 10 par exemple |
 | Balance | un balancer entre deux micros |
+| Sélecteur | des positions nommées : *Manche / Les deux / Chevalet*, un canal, une fréquence |
 | Interrupteur | un bouton poussoir ou un sélecteur à deux états |
 | Curseur vertical | une bande d'égaliseur graphique, en décibels |
+
+Le **sélecteur** se saisit en écrivant ses positions séparées par des virgules. La fiche enregistre
+le **nom** de la position, pas son rang : c'est lisible dans un export, et ça survit à un
+réordonnancement. Sur une carte, il se lit en étiquette — *Micros Chevalet* — parce qu'on choisit une
+position, on ne la dose pas.
 
 Deux mécanismes rendent une façade fidèle sans code :
 
 - **deux modes**, dont le second peut mettre certaines commandes **hors circuit** — c'est ainsi que
   fonctionne le passif de la BB734A ;
 - une commande qui **ne sert que si** un interrupteur est engagé — le Drive d'un canal saturé.
+
+**Depuis l'éditeur d'une fiche**, deux boutons sous le choix du matériel évitent le détour : *Nouvelle
+façade*, et *Dupliquer cette façade* — le chemin le plus court, puisqu'on part de la plus proche et
+qu'on corrige ce qui diffère. Une fois enregistrée, on revient à la fiche qu'on écrivait, avec la
+façade neuve déjà choisie.
+
+Deux gabarits couvrent les instruments à deux micros : *Basse deux micros, sélecteur 3 positions*
+pour les modèles à sélecteur, et *Basse deux micros, balance* pour ceux qui dosent en continu.
 
 Une façade utilisée par des fiches ne peut pas être supprimée : l'interface dit combien la
 retiennent.

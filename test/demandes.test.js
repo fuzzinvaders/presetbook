@@ -177,15 +177,16 @@ async function serveur(port, env) {
     const dossier = await fsp.mkdtemp(path.join(os.tmpdir(), "pb-drap-"));
     let sortie = "";
     const p = lancer(process.execPath, [path.join(RACINE, "server.js")], {
-      env: { ...process.env, PORT: String(BASE_PORT + 11), HOST: "127.0.0.1",
+      /* Le port 0 laisse le système en choisir un libre. Un port fixe rendait
+         ce contrôle tributaire de ce qui traîne sur la machine — il a échoué
+         une fois pour cette seule raison, sans qu'aucun code soit en cause. */
+      env: { ...process.env, PORT: "0", HOST: "127.0.0.1",
              DATA_DIR: dossier, ALLOW_REQUESTS: "oui!" },
     });
     p.stdout.on("data", (c) => { sortie += c; });
     p.stderr.on("data", (c) => { sortie += c; });
-    for (let i = 0; i < 60; i++) {
-      try { await fetch(`http://127.0.0.1:${BASE_PORT + 11}/healthz`); break; }
-      catch { await attendre(100); }
-    }
+    /* On attend la ligne du journal, pas une réponse HTTP : c'est elle qu'on éprouve. */
+    for (let i = 0; i < 60 && !/demandes de compte/.test(sortie); i++) await attendre(100);
     check("une valeur non reconnue est signalée au démarrage",
       /réglage ignoré, valeur non reconnue : ALLOW_REQUESTS/.test(sortie),
       sortie.slice(0, 300));

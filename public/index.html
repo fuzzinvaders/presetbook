@@ -306,6 +306,7 @@ legend{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.11
 .sl.dim{opacity:.4}
 .sug{margin:-4px 0 10px; display:flex; flex-direction:column; gap:3px}
 .sug:empty{margin:0}
+.sel-c select{font-weight:600}
 .gate-what{font-size:13.5px; line-height:1.5; color:var(--ink-2); margin:0 0 14px; max-width:44ch}
 .gate-ok{font-size:14px; line-height:1.55; color:var(--ink); margin:12px 0 0}
 .badge{
@@ -558,6 +559,20 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "Basse deux micros, sélecteur 3 positions":
+    "Two-pickup bass, 3-way selector",
+  "Basse deux micros, balance":
+    "Two-pickup bass, blend control",
+  "Le schéma des basses à deux humbuckers : un volume, une tonalité, et un sélecteur plutôt qu'un volume par micro. La position centrale met les deux ensemble.":
+    "The layout of two-humbucker basses: one volume, one tone, and a selector rather than a volume per pickup. The middle position puts both together.",
+  "Même chose, mais avec une balance continue au lieu d'un sélecteur : on dose les deux micros au lieu de choisir entre trois positions.":
+    "The same, but with a continuous blend instead of a selector: you dial the two pickups against each other rather than picking one of three positions.",
+  "Le sélecteur de fréquence médium a cinq crans, nommés par leur fréquence. Les deux contours Ultra se prennent au panneau et changent le son bien plus que l'égaliseur.":
+    "The midrange frequency selector has five positions, each named by its frequency. The two Ultra contours are panel switches and change the sound far more than the EQ does.",
+  "Les quatre boutons d'effets règlent un dosage, pas l'effet lui-même : lequel est chargé se décide dans le logiciel, donc note-le à part.":
+    "The four effect knobs set an amount, not the effect itself: which one is loaded is decided in the software, so write that down separately.",
+  "Médiums sur 220 Hz : c'est là que ce son parle. Aigus baissés, aucun contour, tout vient de la main droite.":
+    "Mids on 220 Hz: that is where this sound speaks. Treble down, no contour, everything comes from the right hand.",
   "Le carnet où retrouver ses réglages : ce qu'on avait mis sur l'ampli pour ce morceau, dans quel ordre étaient les pédales, comment la chaîne de plugins était réglée.":
     "The notebook where your settings live: what you had on the amp for that song, what order the pedals were in, how the plugin chain was set.",
   "Demander un compte": "Ask for an account",
@@ -565,6 +580,18 @@ var EN = {
   "{0} personnes demandent un compte.": "{0} people are asking for an account.",
   "Voir": "Open",
   "Demandes de compte": "Account requests",
+  "Sélecteur à positions nommées (micros, canaux…)": "Selector with named positions (pickups, channels…)",
+  "Dupliquer cette façade": "Duplicate this panel",
+  "Nouvelle façade": "New panel",
+  "Le sélecteur « {0} » a besoin d'au moins deux positions.":
+    "The \"{0}\" selector needs at least two positions.",
+  "Positions, séparées par des virgules": "Positions, comma-separated",
+  "Position par défaut": "Default position",
+  "Manche, Les deux, Chevalet": "Neck, Both, Bridge",
+  "Manche": "Neck",
+  "Les deux": "Both",
+  "Chevalet": "Bridge",
+  "Micros": "Pickups",
   "Ouvrir dans la messagerie": "Open in my mail app",
   "Ton invitation pour Presetbook": "Your Presetbook invitation",
   "Bonjour {0},\n\nVoici ton lien d'invitation pour Presetbook :\n\n{1}\n\nIl ne sert qu'une fois et expire dans une semaine. Tu choisiras toi-même ton identifiant et ton mot de passe : personne d'autre ne les connaîtra.\n\nÀ bientôt.":
@@ -1821,13 +1848,13 @@ var SEED = [
 
   /* --- de quoi montrer le reste du catalogue : une fiche par modèle nommé --- */
   mat("a-svt-rock70", "svtcl", "amp", "Rock 70s au SVT", ["rock"],
-    {gain:6, ultralo:true, ultrahi:false, "eq.b":6, "eq.m":4, "eq.mf":2, "eq.tr":5.5, master:5},
+    {gain:6, ultralo:true, ultrahi:false, "eq.b":6, "eq.m":4, "eq.mf":"450 Hz", "eq.tr":5.5, master:5},
     "Ultra Lo enfoncé pour le creux de médiums, et le gain assez haut pour que l'étage " +
     "d'entrée commence à chauffer. Le master fait le reste."),
   mat("a-svt-motown", "svtcl", "amp", "Motown au doigt", ["motown", "soul"],
-    {gain:4, ultralo:false, ultrahi:false, "eq.b":6.5, "eq.m":6, "eq.mf":1, "eq.tr":3, master:5},
-    "Médiums au premier cran, à 220 Hz : c'est là que le son parle. Aigus baissés, " +
-    "aucun contour, tout vient de la main droite."),
+    {gain:4, ultralo:false, ultrahi:false, "eq.b":6.5, "eq.m":6, "eq.mf":"220 Hz", "eq.tr":3, master:5},
+    "Médiums sur 220 Hz : c'est là que ce son parle. Aigus baissés, aucun contour, " +
+    "tout vient de la main droite."),
   mat("a-lm-jazz", "littlemark", "amp", "Jazz rond au Little Mark", ["jazz"],
     {gain:5, vle:4, vpf:0, "eq.b":5.5, "eq.lm":5, "eq.hm":4.5, "eq.tr":4, master:5},
     "VLE à 4 pour arrondir le haut sans toucher à l'égaliseur, VPF à zéro : creuser " +
@@ -1856,7 +1883,7 @@ var SEED = [
     "Canal Ultra Gain. Deep et Presence remontent les deux bouts après l'égaliseur : " +
     "c'est ce qui donne le poids sans embrouiller les médiums."),
   mat("a-katana-repet", "katana50", "amp", "Répétition polyvalente", ["répétition", "polyvalent"],
-    {voice:3, gain:4, vol:5, "eq.b":5, "eq.m":5.5, "eq.tr":5, presence:5,
+    {voice:"Crunch", gain:4, vol:5, "eq.b":5, "eq.m":5.5, "eq.tr":5, presence:5,
      "fx.boost":0, "fx.mod":0, "fx.delay":3, "fx.rev":2, master:5},
     "Type Crunch, gain bas : le son se salit à l'attaque et se nettoie au volume " +
     "de la guitare. Un peu de delay pour ne pas jouer sec."),
@@ -1988,6 +2015,28 @@ var GEAR = {
     ],
     extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
   },
+  "bassHHsel": {
+    kind:"bass", brand:"générique", model:"Basse deux micros, sélecteur 3 positions", face:"plain",
+    note:"Le schéma des basses à deux humbuckers : un volume, une tonalité, et un sélecteur " +
+         "plutôt qu'un volume par micro. La position centrale met les deux ensemble.",
+    controls:[
+      {k:"vol", t:"clock", l:"Volume", d:5},
+      {k:"pickups", t:"select", l:"Micros", opts:["Manche", "Les deux", "Chevalet"], d:"Les deux"},
+      {k:"tone", t:"clock", l:"Tonalité", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+  "bassHHbal": {
+    kind:"bass", brand:"générique", model:"Basse deux micros, balance", face:"plain",
+    note:"Même chose, mais avec une balance continue au lieu d'un sélecteur : on dose " +
+         "les deux micros au lieu de choisir entre trois positions.",
+    controls:[
+      {k:"vol", t:"clock", l:"Volume", d:5},
+      {k:"balance", t:"balance", l:"Balance", a:"M", b:"C", min:0, max:100, step:1, d:50},
+      {k:"tone", t:"clock", l:"Tonalité", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
   "active2": {
     kind:"bass", brand:"générique", model:"Basse active, EQ 2 bandes", face:"plain",
     note:"Volume, balance, grave et aigu crantés au neutre.",
@@ -2055,16 +2104,16 @@ var GEAR = {
   },
   "svtcl": {
     kind:"amp", brand:"Ampeg", model:"SVT-CL", face:"amp",
-    note:"Le sélecteur de fréquence médium a cinq crans, notés ici de 1 à 5 : " +
-         "1 = 220 Hz, 2 = 450 Hz, 3 = 800 Hz, 4 = 1,6 kHz, 5 = 3 kHz. Les deux contours " +
-         "Ultra se prennent au panneau et changent le son bien plus que l'égaliseur.",
+    note:"Le sélecteur de fréquence médium a cinq crans, nommés par leur fréquence. Les deux " +
+         "contours Ultra se prennent au panneau et changent le son bien plus que l'égaliseur.",
     controls:[
       {k:"gain", t:"scale", l:"Gain", min:1, max:10, step:0.5, d:5},
       {k:"ultralo", t:"switch", l:"Ultra Lo"},
       {k:"ultrahi", t:"switch", l:"Ultra Hi"},
       {k:"eq.b", t:"scale", l:"Bass", min:1, max:10, step:0.5, d:5.5},
       {k:"eq.m", t:"scale", l:"Midrange", min:1, max:10, step:0.5, d:5.5},
-      {k:"eq.mf", t:"scale", l:"Mid Freq", min:1, max:5, step:1, d:3},
+      {k:"eq.mf", t:"select", l:"Mid Freq",
+       opts:["220 Hz", "450 Hz", "800 Hz", "1,6 kHz", "3 kHz"], d:"800 Hz"},
       {k:"eq.tr", t:"scale", l:"Treble", min:1, max:10, step:0.5, d:5.5},
       {k:"master", t:"scale", l:"Master", min:1, max:10, step:0.5, d:5}
     ]
@@ -2152,12 +2201,11 @@ var GEAR = {
   },
   "katana50": {
     kind:"amp", brand:"Boss", model:"Katana 50", face:"amp",
-    note:"Le sélecteur de type a cinq positions, notées ici de 1 à 5 : 1 = Acoustic, " +
-         "2 = Clean, 3 = Crunch, 4 = Lead, 5 = Brown. Les quatre boutons d'effets règlent " +
-         "un dosage, pas l'effet lui-même : lequel est chargé se décide dans le logiciel, " +
-         "donc note-le à part.",
+    note:"Les quatre boutons d'effets règlent un dosage, pas l'effet lui-même : lequel est " +
+         "chargé se décide dans le logiciel, donc note-le à part.",
     controls:[
-      {k:"voice", t:"scale", l:"Type d'ampli", min:1, max:5, step:1, d:2},
+      {k:"voice", t:"select", l:"Type d'ampli",
+       opts:["Acoustic", "Clean", "Crunch", "Lead", "Brown"], d:"Clean"},
       {k:"gain", t:"scale", l:"Gain", min:0, max:10, step:0.5, d:5},
       {k:"vol", t:"scale", l:"Volume", min:0, max:10, step:0.5, d:5},
       {k:"eq.b", t:"scale", l:"Bass", min:0, max:10, step:0.5, d:5},
@@ -3307,6 +3355,7 @@ function ctrlText(c, v){
   if (v === null) return "—";
   if (c.t === "clock") return hourLabel(v);
   if (c.t === "balance") return balLabel(v);
+  if (c.t === "select") return t(selValue(c, v));
   if (c.t === "switch") return v ? "ON" : "OFF";
   if (c.t === "slider") return fmtDb(v);
   return numLabel(v, c.step);
@@ -3337,7 +3386,8 @@ function gearStrip(p){
   var g = gearOf(p), h = '<div class="strip ' + g.face + '">', i, c, v, off, cls;
   for (i=0;i<g.controls.length;i++){
     c = g.controls[i];
-    if (c.t === "switch" || c.t === "balance") continue;      /* rendus en étiquettes */
+    /* Un sélecteur n'a pas d'aiguille : il se lit comme la balance, en étiquette. */
+    if (c.t === "switch" || c.t === "balance" || c.t === "select") continue;
     v = ctrlValue(p, c);
     off = ctrlOff(g, p, c);
     if (c.t === "slider"){
@@ -3541,6 +3591,8 @@ function gearTags(p){
       out.push('<span class="tag ' + (v ? "on" : "off") + '">' + esc(c.l) + '</span>');
     } else if (c.t === "balance"){
       out.push('<span class="tag">' + esc(c.l) + " " + esc(balLabel(v)) + '</span>');
+    } else if (c.t === "select"){
+      out.push('<span class="tag">' + esc(c.l) + " " + esc(t(selValue(c, v))) + '</span>');
     }
   }
   return out.length ? '<div class="tags">' + out.join("") + '</div>' : "";
@@ -4029,9 +4081,31 @@ var CTRL_KINDS = [
   {t:"clock",   l:"Cadran cranté au milieu (lu en heures)"},
   {t:"scale",   l:"Échelle bornée (par exemple 1 à 10)"},
   {t:"balance", l:"Balance entre deux micros"},
+  {t:"select",  l:"Sélecteur à positions nommées (micros, canaux…)"},
   {t:"switch",  l:"Interrupteur"},
   {t:"slider",  l:"Curseur vertical (bande d'égaliseur)"}
 ];
+
+/**
+ * Les positions d'un sélecteur, toujours sous forme de liste propre.
+ *
+ * La valeur enregistrée est le **nom** de la position, pas son rang : c'est ce
+ * qui reste lisible dans un export, et ce qui survit à un réordonnancement des
+ * positions. Le mode d'un matériel se stocke déjà comme ça.
+ */
+function selOpts(c){
+  var l = c && c.opts;
+  if (typeof l === "string") l = l.split(",");
+  if (!Array.isArray(l)) return [];
+  return l.map(function(x){ return String(x).trim(); }).filter(Boolean);
+}
+
+/** La position retenue, ou la première si ce qui est enregistré n'existe plus. */
+function selValue(c, v){
+  var l = selOpts(c);
+  if (!l.length) return "";
+  return l.indexOf(String(v)) >= 0 ? String(v) : (l.indexOf(String(c.d)) >= 0 ? String(c.d) : l[0]);
+}
 var FACES = [
   {f:"plain", l:"Neutre"},
   {f:"bass",  l:"Bouton noir, repère laiton"},
@@ -4080,6 +4154,11 @@ function openGearList(){
       '</div></div>');
   veil.classList.add("open");
 }
+
+/* Quand on part de l'éditeur d'une fiche, on doit y revenir : sinon on décrit
+   sa basse, on enregistre, et on se retrouve dans la liste du matériel avec sa
+   saisie perdue de vue. On retient la fiche et son état. */
+var retourFiche = null;
 
 function openGearEditor(id, kind, copyOf){
   if (copyOf){
@@ -4184,6 +4263,13 @@ function gearFormBody(){
       h += '<label class="mini">Défaut, en crans depuis midi ' +
            '<input type="number" data-gc="d" value="' + esc(c.d === undefined ? 0 : c.d) +
            '" min="-5" max="5" step="0.25"></label>';
+    } else if (c.t === "select"){
+      h += '<label class="mini tel-quel">Positions, séparées par des virgules ' +
+           '<input type="text" data-gc="opts" value="' + esc(selOpts(c).join(", ")) +
+           '" placeholder="Manche, Les deux, Chevalet"></label>' +
+           '<label class="mini tel-quel">Position par défaut ' +
+           '<input type="text" data-gc="d" value="' + esc(c.d === undefined ? "" : c.d) +
+           '" placeholder="' + esc(selOpts(c)[0] || "") + '"></label>';
     } else if (c.t === "balance"){
       h += '<label class="mini">Côté 0 <input type="text" data-gc="a" value="' + esc(c.a || "") + '"></label>' +
            '<label class="mini">Côté 100 <input type="text" data-gc="b" value="' + esc(c.b || "") + '"></label>' +
@@ -4223,12 +4309,29 @@ function commitGear(){
   var i;
   for (i=0;i<g.controls.length;i++){
     if (!g.controls[i].l){ toast(tf("La commande {0} n'a pas de libellé.", i+1)); return; }
+    /* Un sélecteur à une position n'en est pas un, et à zéro il rend un menu
+       vide : autant le dire avant d'enregistrer. */
+    if (g.controls[i].t === "select" && selOpts(g.controls[i]).length < 2){
+      toast(tf("Le sélecteur « {0} » a besoin d'au moins deux positions.", g.controls[i].l));
+      return;
+    }
   }
   S.gear = S.gear || {};
   S.gear[gdraftId] = clone(g);
+  var neuve = gdraftId;
   gdraft = null;
   render();
-  openGearList();
+  if (retourFiche){
+    /* De retour dans la fiche, avec la façade qu'on vient de décrire déjà
+       choisie : c'est ce qu'on voulait en partant. */
+    var fiche = retourFiche.draft, frais = retourFiche.isNew;
+    retourFiche = null;
+    fiche.gear = neuve;
+    applyGearDefaults(fiche);
+    openEditor(fiche, frais);
+  } else {
+    openGearList();
+  }
   save().then(function(ok){ if (ok) toast("Façade enregistrée."); });
 }
 
@@ -4298,6 +4401,14 @@ function gearEditor(p){
       return '<option value="' + esc(x.id) + '"' + (x.id === gearId(p) ? " selected" : "") + '>' +
              esc(gearName(x.g)) + '</option>';
     }).join("") + '</select></label>';
+  /* Créer une façade était possible, mais seulement depuis l'écran Matériel :
+     c'est-à-dire loin du moment où l'on s'aperçoit qu'elle manque. Dupliquer
+     la façade affichée est le chemin le plus court — on part de la plus proche
+     et on corrige ce qui diffère. */
+  h += '<div class="acts" style="margin:-4px 0 10px">' +
+    '<button class="btn small ghost" data-gdupid="' + esc(gearId(p)) + '">Dupliquer cette façade</button>' +
+    '<button class="btn small ghost" data-gnewfrom="' + esc(p.kind) + '">Nouvelle façade</button>' +
+    '</div>';
   if (g.note) h += '<p class="hint">' + esc(g.note) + '</p>';
 
   if (g.modes){
@@ -4323,6 +4434,17 @@ function gearEditor(p){
     if (c.t === "switch") continue;
     v = ctrlValue(p, c);
     off = ctrlOff(g, p, c);
+    if (c.t === "select"){
+      /* Un curseur pour trois positions nommées serait un contresens : on choisit
+         une position, on ne la dose pas. */
+      h += '<label class="fld sel-c">' + esc(ctrlLabel(g, p, c)) +
+        '<select data-sel="' + esc(c.k) + '"' + (off ? " disabled" : "") + '>' +
+        selOpts(c).map(function(o){
+          return '<option value="' + esc(o) + '"' + (selValue(c, v) === o ? " selected" : "") +
+                 '>' + esc(o) + '</option>';
+        }).join("") + '</select></label>';
+      continue;
+    }
     if (c.t === "clock"){
       h += sl(c.k, ctrlLabel(g, p, c), v, -5, 5, 0.25, off ? "hors circuit" : hourLabel(v), off);
     } else if (c.t === "balance"){
@@ -4354,7 +4476,11 @@ function applyGearDefaults(p){
   for (i=0;i<g.controls.length;i++){
     c = g.controls[i];
     if (getPath(p, c.k) === undefined){
-      setPath(p, c.k, c.t === "switch" ? false : (c.d !== undefined ? c.d : 0));
+      /* Un sélecteur retombe sur sa première position, jamais sur zéro : sa
+         valeur est un nom, et « 0 » n'en est pas un. */
+      setPath(p, c.k, c.t === "switch" ? false
+                    : c.t === "select" ? selValue(c, c.d)
+                    : (c.d !== undefined ? c.d : 0));
     }
   }
   return p;
@@ -5212,6 +5338,19 @@ document.getElementById("veil").addEventListener("click", function(e){
 
   if (t.closest("[data-close]")){ closeEditor(); return; }
 
+  /* Depuis l'éditeur d'une fiche : on note où revenir avant de basculer. */
+  var dupIci = t.closest("[data-gdupid]");
+  if (dupIci && draft){
+    retourFiche = {draft: draft, isNew: isNew};
+    openGearEditor(null, null, dupIci.getAttribute("data-gdupid"));
+    return;
+  }
+  var neufIci = t.closest("[data-gnewfrom]");
+  if (neufIci && draft){
+    retourFiche = {draft: draft, isNew: isNew};
+    openGearEditor(null, neufIci.getAttribute("data-gnewfrom"), null);
+    return;
+  }
   var gnew = t.closest("[data-gnew]");
   if (gnew){ openGearEditor(null, gnew.getAttribute("data-gnew"), null); return; }
   var grow = t.closest("[data-gid]");
@@ -5227,7 +5366,7 @@ document.getElementById("veil").addEventListener("click", function(e){
     }
   }
   if (t.closest("[data-gsave]")){ commitGear(); return; }
-  if (t.closest("[data-gback]")){ gdraft = null; openGearList(); return; }
+  if (t.closest("[data-gback]")){ gdraft = null; retourFiche = null; openGearList(); return; }
 
   if (draft && draft.kind === "board"){
     var bact = t.closest("[data-bact]");
@@ -5455,6 +5594,8 @@ document.getElementById("veil").addEventListener("input", function(e){
     if (f === "name" || f === "song.title") renderSuggest(f);
     return;
   }
+  var sel = t.getAttribute("data-sel");
+  if (sel){ setPath(draft, sel, t.value); return; }
   var key = t.getAttribute("data-sl");
   if (key){
     var v = parseFloat(t.value);
@@ -5578,6 +5719,9 @@ window.__pb = {
   setAdmin: function(v){ session.isAdmin = !!v; },
   setInvite: function(v){ invitation = v; }, getInvite: function(){ return invitation; },
   facetBrand: facetBrand, brandsOf: brandsOf,
+  selOpts: selOpts, selValue: selValue,
+  openGearEditor: openGearEditor, commitGear: commitGear,
+  setRetourFiche: function(v){ retourFiche = v; }, getRetourFiche: function(){ return retourFiche; },
   suggestName: suggestName, suggestSong: suggestSong, renderSuggest: renderSuggest,
   debutDeMot: debutDeMot,
   openSuggestion: openSuggestion,
