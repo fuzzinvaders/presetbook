@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.4.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.5.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,16 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.5.0 — 31 August 2026
+
+### Added
+
+- **The Squier Rascal Bass HH in the shipped catalogue**, described from its front panel: two
+  humbuckers, a three-way selector, one volume, one tone, and nothing else — it is passive. It is the
+  first model to use the selector type for what it was made for.
 
 ---
 

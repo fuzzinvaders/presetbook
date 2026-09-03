@@ -233,7 +233,7 @@ The **shipped** panels cannot be edited. You **duplicate** one to start from a b
 some twenty named models — bass amps (Ampeg SVT-CL, Markbass Little Mark, TC Electronic BH250,
 Fender Rumble 40 and 500), guitar amps (Fender Blues Junior, Vox AC30C2, Marshall DSL40, Boss
 Katana 50, Laney Lionheart L20T-112), instruments (Yamaha BB734A, Fender Precision and Jazz Bass,
-Music Man StingRay, Ibanez SR) and a few named pedals — plus generic templates for everything else.
+Music Man StingRay, Ibanez SR, Squier Rascal Bass HH) and a few named pedals — plus generic templates for everything else.
 
 The Lionheart shows in passing what the registry can do without code: two channels sharing the EQ, a
 global Tone, a drive channel that greys out its own controls when it is off, and a look of its own —

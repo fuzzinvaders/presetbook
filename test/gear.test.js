@@ -74,7 +74,8 @@ check("un matériel à modes en déclare exactement deux", sansMode.length === 0
 [["svtcl", "Ampeg"], ["littlemark", "Markbass"], ["bh250", "TC Electronic"],
  ["rumble500", "Fender"], ["bluesjr", "Fender"], ["ac30", "Vox"], ["dsl40", "Marshall"],
  ["katana50", "Boss"], ["precision", "Fender"], ["jazzbass", "Fender"],
- ["stingray3", "Music Man"], ["ibanezsr", "Ibanez"]].forEach(function (p) {
+ ["stingray3", "Music Man"], ["ibanezsr", "Ibanez"],
+ ["rascalhh", "Squier"]].forEach(function (p) {
   check("« " + p[0] + " » est au registre, chez " + p[1],
     !!pb.GEAR[p[0]] && pb.GEAR[p[0]].brand === p[1],
     pb.GEAR[p[0]] ? pb.GEAR[p[0]].brand : "absent");
@@ -136,6 +137,22 @@ check("un sélecteur sans position ne casse rien",
 /* Les valeurs par défaut : un nom, jamais zéro. */
 const hh = pb.applyGearDefaults({ kind: "bass", gear: "bassHHsel" });
 check("un sélecteur part de sa position par défaut", hh.pickups === "Les deux", String(hh.pickups));
+
+/* La Rascal HH, décrite d'après sa façade sur indication de son propriétaire :
+   deux humbuckers, un sélecteur trois positions, un volume, une tonalité, passive.
+   Ces quatre contrôles disent exactement ça — si l'un cède, c'est que la façade
+   a été modifiée sans que personne ne l'ait voulu. */
+const rascal = pb.GEAR.rascalhh;
+check("la Rascal HH a exactement trois commandes", rascal.controls.length === 3,
+  rascal.controls.map(function (c) { return c.l; }).join(" · "));
+check("un volume, un sélecteur, une tonalité — et rien d'autre",
+  rascal.controls.map(function (c) { return c.t; }).join() === "clock,select,clock",
+  rascal.controls.map(function (c) { return c.t; }).join());
+check("passive : aucun mode, donc rien qui sorte du circuit",
+  !rascal.modes, JSON.stringify(rascal.modes));
+check("son sélecteur a bien trois positions",
+  pb.selOpts(rascal.controls[1]).join("/") === "Manche/Les deux/Chevalet",
+  pb.selOpts(rascal.controls[1]).join("/"));
 
 /* --- les deux façades génériques à deux micros --- */
 check("une façade à sélecteur est livrée", !!pb.GEAR.bassHHsel);

@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.4.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.5.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,16 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.5.0 — 31 août 2026
+
+### Ajouté
+
+- **La Squier Rascal Bass HH au catalogue livré**, décrite d'après sa façade : deux humbuckers, un
+  sélecteur à trois positions, un volume, une tonalité, et rien d'autre — elle est passive. C'est le
+  premier modèle qui emploie le type sélecteur pour ce qu'il a été fait.
 
 ---
 
