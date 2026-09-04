@@ -559,6 +559,8 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
+  "La Jazz Bass, une électronique plus loin : un volume général et une balance remplacent les deux volumes, et l'égaliseur actif trois bandes est cranté au neutre — chaque bande coupe autant qu'elle pousse. Note la pile quelque part : une basse active ne se rattrape pas au volume quand elle faiblit.":
+    "The Jazz Bass, one set of electronics further on: a master volume and a blend replace the two volumes, and the three-band active EQ is detented at flat — each band cuts as much as it boosts. Write the battery down somewhere: an active bass cannot be made up for on the volume when it starts to fade.",
   "Deux humbuckers, un sélecteur à trois positions, un volume et une tonalité. Passive : rien ne coupe ni ne booste, et la tonalité ne fait que refermer le haut du spectre. Tout le reste se joue au sélecteur et à la main droite.":
     "Two humbuckers, a three-way selector, one volume and one tone. Passive: nothing cuts or boosts, and the tone control only closes down the top end. Everything else is played on the selector and with the right hand.",
   "Basse deux micros, sélecteur 3 positions":
@@ -1982,6 +1984,21 @@ var GEAR = {
       {k:"vol", t:"clock", l:"Volume", d:5},
       {k:"pickups", t:"select", l:"Micros", opts:["Manche", "Les deux", "Chevalet"], d:"Les deux"},
       {k:"tone", t:"clock", l:"Tonalité", d:0}
+    ],
+    extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
+  },
+  "deluxejazz": {
+    kind:"bass", brand:"Fender", model:"Deluxe Active Jazz Bass", face:"bass",
+    note:"La Jazz Bass, une électronique plus loin : un volume général et une balance " +
+         "remplacent les deux volumes, et l'égaliseur actif trois bandes est cranté au neutre — " +
+         "chaque bande coupe autant qu'elle pousse. Note la pile quelque part : une basse active " +
+         "ne se rattrape pas au volume quand elle faiblit.",
+    controls:[
+      {k:"vol", t:"clock", l:"Volume", d:5},
+      {k:"balance", t:"balance", l:"Balance", a:"M", b:"C", min:0, max:100, step:1, d:50},
+      {k:"eq.b", t:"clock", l:"Bass", d:0},
+      {k:"eq.m", t:"clock", l:"Middle", d:0},
+      {k:"eq.t", t:"clock", l:"Treble", d:0}
     ],
     extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
   },

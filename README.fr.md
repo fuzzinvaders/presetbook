@@ -15,7 +15,7 @@ contours Ultra, **Markbass Little Mark** et ses filtres VLE/VPF, **TC Electronic
 Rumble 40** et **Rumble 500**. Amplis guitare : **Fender Blues Junior**, **Vox AC30C2** et ses deux
 canaux indépendants, **Marshall DSL40**, **Boss Katana 50**, **Laney Lionheart L20T-112** jusqu'à ses
 boutons blancs à repère bleu sur panneau inox. Instruments : **Yamaha BB734A**, **Fender Precision**
-et **Jazz Bass**, **Music Man StingRay**, **Ibanez SR**, **Squier Rascal Bass HH**. Les pédales viennent en dix-huit types
+et **Jazz Bass**, **Music Man StingRay**, **Ibanez SR**, **Squier Rascal Bass HH**, **Fender Deluxe Active Jazz Bass**. Les pédales viennent en dix-huit types
 génériques — un pédalier se décrit par ce que fait chaque boîtier — plus quelques modèles nommés là
 où les boutons exacts comptent : **Big Muff Pi**, **Tube Screamer TS9**, **Boss DS-1** et **OC-2**,
 **MXR Dyna Comp**, **SansAmp Bass Driver DI**, **Darkglass Microtubes B7K**.
@@ -163,7 +163,7 @@ serveur du tout — publiée en statique, ou ouverte depuis le disque.
 npm test
 ```
 
-Vingt-deux suites, 846 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
+Vingt-deux suites, 851 vérifications, sans rien à installer : le rendu de la page rejoué dans un DOM
 minimal, le registre des façades, celles créées depuis l'interface, le formulaire qui les crée, les
 pédales et leur dessin, le codec des chaînes d'effets sur une chaîne réelle, les types de bande de
 ReaEQ, l'export d'une fiche et son retour dans une autre bibliothèque, la licence et le widget de
