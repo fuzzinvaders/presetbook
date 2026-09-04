@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.5.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.6.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,17 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.6.0 — 31 August 2026
+
+### Added
+
+- **The Fender Deluxe Active Jazz Bass in the shipped catalogue**, from the maker's own spec sheet:
+  master volume, blend, and a three-band active EQ detented at flat. It is the active counterpart of
+  the Jazz Bass already shipped — two volumes on one side, volume and blend on the other, and that is
+  exactly what separates them.
 
 ---
 

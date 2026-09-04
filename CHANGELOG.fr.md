@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.5.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.6.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,17 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.6.0 — 31 août 2026
+
+### Ajouté
+
+- **La Fender Deluxe Active Jazz Bass au catalogue livré**, d'après la fiche du constructeur : volume
+  général, balance, et un égaliseur actif trois bandes cranté au neutre. C'est la contrepartie active
+  de la Jazz Bass déjà livrée — deux volumes d'un côté, volume et balance de l'autre, et c'est
+  exactement ce qui les distingue.
 
 ---
 

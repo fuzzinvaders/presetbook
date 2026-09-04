@@ -14,7 +14,7 @@ Named bass amps: **Ampeg SVT-CL** with its five-position mid selector and its tw
 **Rumble 500**. Guitar amps: **Fender Blues Junior**, **Vox AC30C2** and its two independent
 channels, **Marshall DSL40**, **Boss Katana 50**, **Laney Lionheart L20T-112** down to its white
 blue-marked knobs on a stainless panel. Instruments: **Yamaha BB734A**, **Fender Precision** and
-**Jazz Bass**, **Music Man StingRay**, **Ibanez SR**, **Squier Rascal Bass HH**. Pedals come as eighteen generic types — a
+**Jazz Bass**, **Music Man StingRay**, **Ibanez SR**, **Squier Rascal Bass HH**, **Fender Deluxe Active Jazz Bass**. Pedals come as eighteen generic types — a
 pedalboard is described by what each box does — plus a few named models where the exact knobs matter:
 **Big Muff Pi**, **Tube Screamer TS9**, **Boss DS-1** and **OC-2**, **MXR Dyna Comp**, **SansAmp Bass
 Driver DI**, **Darkglass Microtubes B7K**.
@@ -152,7 +152,7 @@ as a static page, or opened straight from disk.
 npm test
 ```
 
-Twenty-two suites, 846 checks, nothing to install: the page rendered again in a minimal DOM, the front
+Twenty-two suites, 851 checks, nothing to install: the page rendered again in a minimal DOM, the front
 panel registry, panels created from the interface, the form that creates them, pedals and their
 drawing, the effect-chain codec against a real chain, ReaEQ band types, exporting a preset and
 bringing it back into another library, the licence and the donation widget, account creation, the

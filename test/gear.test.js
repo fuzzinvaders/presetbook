@@ -75,7 +75,7 @@ check("un matériel à modes en déclare exactement deux", sansMode.length === 0
  ["rumble500", "Fender"], ["bluesjr", "Fender"], ["ac30", "Vox"], ["dsl40", "Marshall"],
  ["katana50", "Boss"], ["precision", "Fender"], ["jazzbass", "Fender"],
  ["stingray3", "Music Man"], ["ibanezsr", "Ibanez"],
- ["rascalhh", "Squier"]].forEach(function (p) {
+ ["rascalhh", "Squier"], ["deluxejazz", "Fender"]].forEach(function (p) {
   check("« " + p[0] + " » est au registre, chez " + p[1],
     !!pb.GEAR[p[0]] && pb.GEAR[p[0]].brand === p[1],
     pb.GEAR[p[0]] ? pb.GEAR[p[0]].brand : "absent");
@@ -153,6 +153,26 @@ check("passive : aucun mode, donc rien qui sorte du circuit",
 check("son sélecteur a bien trois positions",
   pb.selOpts(rascal.controls[1]).join("/") === "Manche/Les deux/Chevalet",
   pb.selOpts(rascal.controls[1]).join("/"));
+
+/* La Deluxe Active Jazz Bass, d'après la fiche du constructeur : master volume,
+   pan, et un égaliseur actif trois bandes. Elle est la contrepartie active de la
+   Jazz Bass passive déjà livrée — deux volumes d'un côté, volume et balance de
+   l'autre : c'est exactement ce qui les distingue. */
+const dlx = pb.GEAR.deluxejazz;
+check("la Deluxe Active a cinq réglages", dlx.controls.length === 5,
+  dlx.controls.map(function (c) { return c.l; }).join(" · "));
+check("un volume général et une balance, pas deux volumes",
+  dlx.controls.filter(function (c) { return c.t === "balance"; }).length === 1
+  && !dlx.controls.some(function (c) { return c.k === "volN" || c.k === "volB"; }),
+  dlx.controls.map(function (c) { return c.k; }).join());
+check("trois bandes, toutes crantées au neutre",
+  ["eq.b", "eq.m", "eq.t"].every(function (k) {
+    const c = dlx.controls.filter(function (x) { return x.k === k; })[0];
+    return c && c.t === "clock" && c.d === 0;
+  }), dlx.controls.map(function (c) { return c.k + "=" + c.d; }).join(" "));
+check("la Jazz Bass passive garde ses deux volumes : c'est ce qui les sépare",
+  pb.GEAR.jazzbass.controls.some(function (c) { return c.k === "volN"; })
+  && !pb.GEAR.jazzbass.controls.some(function (c) { return c.t === "balance"; }));
 
 /* --- les deux façades génériques à deux micros --- */
 check("une façade à sélecteur est livrée", !!pb.GEAR.bassHHsel);
