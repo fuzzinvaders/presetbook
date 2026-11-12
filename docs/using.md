@@ -344,9 +344,9 @@ There are three exports, not to be confused: **Export** on a card gives *that pr
 library* as JSON.
 
 Export does **not** require a prior import: a chain assembled by hand here writes out too, for the
-five plugins whose format is established — TSE BOD, ReaEQ, ReaComp, ReaVerbate and the saturation
-JSFX. A plugin outside that list makes the export **refuse, naming it**, rather than writing an
-invented state.
+eight plugins whose format is established — TSE BOD, ReaEQ, ReaComp, ReaVerbate, the saturation
+JSFX, and the three free MeldaProduction plugins MCompressor, MSaturator and MTuner. A plugin
+outside that list makes the export **refuse, naming it**, rather than writing an invented state.
 
 Not everything in a chain file can be read the same way:
 
@@ -355,6 +355,8 @@ Not everything in a chain file can be read the same way:
 | TSE BOD | everything is editable: its state is named XML |
 | ReaEQ | bands fully editable |
 | ReaComp, ReaVerbate | editable: their parameters have been established |
+| MCompressor, MSaturator | threshold, ratio, attack, release, gains, dry/wet: editable |
+| MTuner | no sound setting, but it keeps its place in the chain |
 | JSFX | the first slider is read, the others preserved |
 | Other plugins | **preserved byte for byte**, but not editable here |
 
@@ -362,6 +364,11 @@ Two safeguards. An effect whose values you did not change is rewritten **identic
 rounding creeps into a setting you never touched. And the export **refuses** rather than inventing:
 on ReaEQ, only three band types have an established equivalent in the file, so the others are chosen
 in Reaper — imported here, they are preserved and rewritten unharmed.
+
+The same rule applies to Melda: a plugin only writes what departs from its own defaults, so a
+missing setting is not a setting at zero. The settings whose key was read from a real state are
+editable here; the rest — saturation mode, analog amount, compressor knee — keep the plugin's value,
+or the imported chain's, and are set in Reaper.
 
 ## The catalogue and your data
 

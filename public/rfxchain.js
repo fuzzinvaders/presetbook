@@ -65,7 +65,155 @@
   }
 
   function dv(bytes) { return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength); }
+
+  /**
+   * L'en-tête du conteneur VST annonce la taille de l'état, douze octets avant
+   * sa fin. Quand on réécrit l'état, il faut réécrire cette taille : sinon
+   * Reaper lit à côté et refuse la chaîne. Relevé identique sur six plugins,
+   * dont deux aux en-têtes de longueurs différentes.
+   */
+  function setChunkLen(header64, chunk64) {
+    if (!header64) return header64;
+    var h = b64ToBytes(header64);
+    if (h.length < 16) return header64;
+    var len = chunk64 ? b64ToBytes(chunk64).length : 0;
+    dv(h).setUint32(h.length - 12, len, true);
+    return bytesToB64(h);
+  }
   function round(v, n) { var f = Math.pow(10, n); return Math.round(v * f) / f; }
+
+  /* ----------------------------------------------- zlib, sans dépendance
+     Les états MeldaProduction sont compressés. Décompresser demande un vrai
+     inflate (RFC 1951) ; recompresser non : un flux fait de blocs « stockés »
+     est un zlib valide, que tout décompresseur accepte. Quelques octets de
+     plus, et aucune table de Huffman à écrire.                               */
+
+  var LBASE = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+  var LEXTRA = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+  var DBASE = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,
+               6145,8193,12289,16385,24577];
+  var DEXTRA = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+  var CLORDER = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+  var fixedLit = null, fixedDist = null;
+
+  /** Arbre de Huffman canonique, décrit par la longueur de chaque code. */
+  function huffman(lengths, count) {
+    var max = 0, i;
+    for (i = 0; i < count; i++) if (lengths[i] > max) max = lengths[i];
+    var perLen = new Int32Array(max + 2);
+    for (i = 0; i < count; i++) if (lengths[i]) perLen[lengths[i]]++;
+    var next = new Int32Array(max + 2), code = 0, b;
+    for (b = 1; b <= max; b++) { code = (code + perLen[b - 1]) << 1; next[b] = code; }
+    var map = {};
+    for (i = 0; i < count; i++) if (lengths[i]) map[lengths[i] + ":" + next[lengths[i]]++] = i;
+    return { map: map, max: max };
+  }
+
+  function inflateRaw(src, start) {
+    var pos = start | 0, bit = 0, out = new Uint8Array(4096), len = 0;
+
+    function push(b) {
+      if (len === out.length) { var g = new Uint8Array(out.length * 2); g.set(out); out = g; }
+      out[len++] = b;
+    }
+    function getBit() {
+      if (pos >= src.length) throw new Error("flux compressé tronqué");
+      var v = (src[pos] >> bit) & 1;
+      if (++bit === 8) { bit = 0; pos++; }
+      return v;
+    }
+    function getBits(k) { var v = 0, i; for (i = 0; i < k; i++) v |= getBit() << i; return v; }
+    function sym(tree) {
+      var code = 0, l = 0, v;
+      for (;;) {
+        code = (code << 1) | getBit();
+        if (++l > tree.max) throw new Error("code de Huffman invalide");
+        v = tree.map[l + ":" + code];
+        if (v !== undefined) return v;
+      }
+    }
+    function fixedTrees() {
+      if (fixedLit) return;
+      var l = new Int32Array(288), i;
+      for (i = 0; i < 144; i++) l[i] = 8;
+      for (; i < 256; i++) l[i] = 9;
+      for (; i < 280; i++) l[i] = 7;
+      for (; i < 288; i++) l[i] = 8;
+      fixedLit = huffman(l, 288);
+      var d = new Int32Array(30);
+      for (i = 0; i < 30; i++) d[i] = 5;
+      fixedDist = huffman(d, 30);
+    }
+
+    for (;;) {
+      var last = getBit(), type = getBits(2), lit, dist, i;
+      if (type === 0) {
+        if (bit) { bit = 0; pos++; }
+        var count = src[pos] | (src[pos + 1] << 8);
+        pos += 4;
+        for (i = 0; i < count; i++) push(src[pos++]);
+      } else {
+        if (type === 1) { fixedTrees(); lit = fixedLit; dist = fixedDist; }
+        else if (type === 2) {
+          var hlit = getBits(5) + 257, hdist = getBits(5) + 1, hclen = getBits(4) + 4;
+          var clen = new Int32Array(19);
+          for (i = 0; i < hclen; i++) clen[CLORDER[i]] = getBits(3);
+          var ctree = huffman(clen, 19), all = new Int32Array(hlit + hdist), p = 0, prev = 0, r;
+          while (p < all.length) {
+            var c = sym(ctree);
+            if (c < 16) all[p++] = prev = c;
+            else if (c === 16) { r = getBits(2) + 3; while (r--) all[p++] = prev; }
+            else if (c === 17) { r = getBits(3) + 3; while (r--) all[p++] = 0; }
+            else { r = getBits(7) + 11; while (r--) all[p++] = 0; }
+          }
+          lit = huffman(all, hlit);
+          dist = huffman(all.subarray(hlit), hdist);
+        } else throw new Error("bloc deflate de type réservé");
+
+        for (;;) {
+          var v = sym(lit);
+          if (v === 256) break;
+          if (v < 256) { push(v); continue; }
+          var li = v - 257, run = LBASE[li] + getBits(LEXTRA[li]);
+          var di = sym(dist), back = len - (DBASE[di] + getBits(DEXTRA[di]));
+          if (back < 0) throw new Error("distance hors fenêtre");
+          for (i = 0; i < run; i++) push(out[back + i]);
+        }
+      }
+      if (last) break;
+    }
+    return out.subarray(0, len);
+  }
+
+  function adler32(b) {
+    var a = 1, t = 0, i;
+    for (i = 0; i < b.length; i++) { a = (a + b[i]) % 65521; t = (t + a) % 65521; }
+    return ((t << 16) | a) >>> 0;
+  }
+
+  function zlibInflate(bytes) {
+    if (bytes.length < 6 || (bytes[0] & 0x0f) !== 8) throw new Error("ce n'est pas un flux zlib");
+    return inflateRaw(bytes, 2);
+  }
+
+  /** Octets -> zlib, en blocs « stockés ». */
+  function zlibStore(data) {
+    var MAX = 65535, blocks = Math.max(1, Math.ceil(data.length / MAX));
+    var out = new Uint8Array(2 + blocks * 5 + data.length + 4), o = 0, i, off = 0, n;
+    out[o++] = 0x78; out[o++] = 0x01;
+    for (i = 0; i < blocks; i++) {
+      n = Math.min(MAX, data.length - off);
+      out[o++] = i === blocks - 1 ? 1 : 0;
+      out[o++] = n & 0xff; out[o++] = (n >> 8) & 0xff;
+      out[o++] = ~n & 0xff; out[o++] = (~n >> 8) & 0xff;
+      out.set(data.subarray(off, off + n), o);
+      o += n; off += n;
+    }
+    var a = adler32(data);
+    out[o++] = (a >>> 24) & 0xff; out[o++] = (a >>> 16) & 0xff;
+    out[o++] = (a >>> 8) & 0xff; out[o] = a & 0xff;
+    return out;
+  }
 
   /* ------------------------------------------------------------- lecture */
 
@@ -136,6 +284,7 @@
     if (/ReaEQ/i.test(fx.name) && decodeReaEq(fx, bytes)) return;
     if (/ReaComp/i.test(fx.name) && decodeReaComp(fx, bytes)) return;
     if (/ReaVerbate/i.test(fx.name) && decodeReaVerbate(fx, bytes)) return;
+    if (/\(MeldaProduction\)/.test(fx.label) && decodeMelda(fx, bytes)) return;
     fx.decoded = "opaque";
   }
 
@@ -191,6 +340,184 @@
       bytesOfLatin1(magic), lenBytes, bytesOfLatin1(middle),
       bytesOfLatin1(xml), bytesOfLatin1(fx.bodSuffix || NUL)
     ]);
+  }
+
+  /* ------------------------------------------------- état MeldaProduction
+     Après décompression, « \0MBX » puis un arbre : « X » ouvre un nœud nommé,
+     « / » le ferme, « ~ » ferme la racine, « A » porte un attribut nommé et
+     typé — « d » double, « s » chaîne, « 1 » octet, « 2 » et « 4 » entiers.
+     Relevé sur MTuner, MCompressor et MSaturator : la réécriture de l'arbre
+     relu redonne l'octet près le fichier d'origine.
+
+     Le plugin n'écrit que ce qui s'écarte de ses valeurs par défaut : un
+     réglage absent n'est pas un réglage à zéro.                              */
+
+  var MELDA_MAGIC = "\u0000MBX";
+
+  function parseMelda(bytes) {
+    var i, d = dv(bytes);
+    for (i = 0; i < 4; i++) if (bytes[i] !== MELDA_MAGIC.charCodeAt(i)) return null;
+    i = 4;
+    if (bytes[i] !== 0x58) return null;      /* la racine est un nœud */
+    i++;
+    function str() { var a = i; while (i < bytes.length && bytes[i] !== 0) i++; var t = latin1(bytes.subarray(a, i)); i++; return t; }
+    var root = { name: str(), attrs: [], kids: [] }, pile = [root];
+    while (i < bytes.length) {
+      var tag = bytes[i++], cur = pile[pile.length - 1];
+      if (tag === 0x41) {                    /* A : attribut */
+        var k = str(), type = String.fromCharCode(bytes[i++]), v;
+        if (type === "d") { v = d.getFloat64(i, true); i += 8; }
+        else if (type === "s") { v = str(); }
+        else if (type === "1") { v = bytes[i++]; }
+        else if (type === "2") { v = d.getInt16(i, true); i += 2; }
+        else if (type === "4") { v = d.getInt32(i, true); i += 4; }
+        else return null;
+        cur.attrs.push({ k: k, t: type, v: v });
+      } else if (tag === 0x58) {             /* X : nœud fils */
+        var kid = { name: str(), attrs: [], kids: [] };
+        cur.kids.push(kid); pile.push(kid);
+      } else if (tag === 0x2f) {             /* / : fin de nœud */
+        pile.pop();
+        if (!pile.length) break;
+      } else if (tag === 0x7e) break;        /* ~ : fin de la racine */
+      else return null;
+    }
+    return root;
+  }
+
+  function buildMelda(root) {
+    var parts = [];
+    function put(t) { parts.push(bytesOfLatin1(t)); }
+    function num(type, v) {
+      var b = new Uint8Array(type === "d" ? 8 : type === "4" ? 4 : type === "2" ? 2 : 1), w = dv(b);
+      if (type === "d") w.setFloat64(0, Number(v), true);
+      else if (type === "4") w.setInt32(0, Number(v) | 0, true);
+      else if (type === "2") w.setInt16(0, Number(v) | 0, true);
+      else b[0] = Number(v) & 0xff;
+      parts.push(b);
+    }
+    function node(nd, racine) {
+      put("X" + nd.name + NUL);
+      for (var i = 0; i < nd.attrs.length; i++) {
+        var a = nd.attrs[i];
+        put("A" + a.k + NUL + a.t);
+        if (a.t === "s") put(String(a.v) + NUL); else num(a.t, a.v);
+      }
+      for (i = 0; i < nd.kids.length; i++) node(nd.kids[i], false);
+      put(racine ? "~" : "/");
+    }
+    put(MELDA_MAGIC);
+    node(root, true);
+    return concatBytes(parts);
+  }
+
+  /* Correspondances établies entre les réglages lisibles et les clés du
+     fichier. Seules celles relevées dans un état réel figurent ici : écrire
+     une clé devinée ne produirait rien, en silence.                          */
+  var MELDA_PARAMS = {
+    "MCompressor": [
+      { k: "threshold", a: "#threshold", u: "db" },
+      { k: "ratio",     a: "#ratio" },
+      { k: "attack",    a: "#attack",    u: "ms" },
+      { k: "release",   a: "#release",   u: "ms" },
+      { k: "rms",       a: "#rmslength", u: "ms" }
+    ],
+    "MSaturator": [
+      { k: "input",  a: "#Gain" },
+      { k: "output", a: "#OutputGain" },
+      { k: "drywet", a: "#depth", u: "pct" },
+      { k: "clip",   a: "#Clip",  u: "bool" }
+    ],
+    "MTuner": []
+  };
+
+  function meldaFromFile(def, v) {
+    if (def.u === "db") return v > 0 ? round(20 * Math.log10(v), 3) : -120;
+    if (def.u === "ms") return round(v * 1000, 4);
+    if (def.u === "pct") return round(v * 100, 2);
+    if (def.u === "bool") return !!v;
+    return round(v, 5);
+  }
+  function meldaToFile(def, v) {
+    if (def.u === "db") return Math.pow(10, Number(v) / 20);
+    if (def.u === "ms") return Number(v) / 1000;
+    if (def.u === "pct") return Number(v) / 100;
+    if (def.u === "bool") return v ? 1 : 0;
+    return Number(v);
+  }
+  function meldaType(def) { return def.u === "bool" ? "1" : "d"; }
+
+  function findAttr(node, k) {
+    for (var i = 0; i < node.attrs.length; i++) if (node.attrs[i].k === k) return node.attrs[i];
+    return null;
+  }
+  /** Les réglages se rangent avec les autres « # », au début du nœud. */
+  function setAttr(node, k, type, v) {
+    var a = findAttr(node, k);
+    if (a) { a.t = type; a.v = v; return; }
+    var at = 0, i;
+    for (i = 0; i < node.attrs.length; i++) if (node.attrs[i].k.charAt(0) === "#") at = i + 1;
+    node.attrs.splice(at, 0, { k: k, t: type, v: v });
+  }
+
+  /**
+   * La courbe de MCompressor est rangée à part, en points. Deux d'entre eux se
+   * déduisent du seuil et du taux : le coude est sur la diagonale, et à 0 dB
+   * d'entrée la sortie vaut seuil × (1 − 1/taux) en décibels. Vérifié au bit
+   * près sur une chaîne réelle. Une courbe dessinée à la main dans le plugin
+   * a davantage de points : on n'y touche pas.
+   */
+  function meldaGraph(root, thrLin, ratio) {
+    if (!(thrLin > 0) || !(ratio >= 1)) return;
+    var g = null, i;
+    for (i = 0; i < root.kids.length; i++) if (root.kids[i].name === "graph") g = root.kids[i];
+    if (!g) { g = { name: "graph", attrs: [{ k: "Mode", t: "s", v: "Normal" }], kids: [] }; root.kids.push(g); }
+    var pts = g.kids.filter(function (k) { return k.name === "Point"; });
+    if (pts.length > 3) return;                       /* courbe personnalisée */
+    var y = Math.pow(thrLin, 1 - 1 / ratio);
+    g.kids = [
+      { name: "Point", attrs: [{ k: "FlagsB", t: "1", v: 143 }], kids: [] },
+      { name: "Point", attrs: [{ k: "x", t: "d", v: thrLin }, { k: "y", t: "d", v: thrLin },
+                               { k: "FlagsB", t: "1", v: 140 }], kids: [] },
+      { name: "Point", attrs: [{ k: "x", t: "d", v: 1 }, { k: "y", t: "d", v: y },
+                               { k: "FlagsB", t: "1", v: 141 }], kids: [] }
+    ];
+  }
+
+  function decodeMelda(fx, bytes) {
+    if (bytes.length < 10) return false;
+    var state;
+    try { state = zlibInflate(bytes.subarray(8)); } catch (e) { return false; }
+    var tree = parseMelda(state);
+    if (!tree) return false;
+    fx.decoded = "melda";
+    fx.meldaPrefix = bytesToB64(bytes.subarray(0, 8));
+    fx.meldaTree = tree;
+    var defs = MELDA_PARAMS[fx.name] || [], params = {}, i, a;
+    for (i = 0; i < defs.length; i++) {
+      a = findAttr(tree, defs[i].a);
+      params[defs[i].k] = a ? meldaFromFile(defs[i], a.v) : null;
+    }
+    fx.params = params;
+    return true;
+  }
+
+  function encodeMelda(fx) {
+    var tree = fx.meldaTree, defs = MELDA_PARAMS[fx.name] || [], i, v, a, bouge = false;
+    for (i = 0; i < defs.length; i++) {
+      v = fx.params ? fx.params[defs[i].k] : undefined;
+      if (v === undefined || v === null || v === "") continue;
+      a = findAttr(tree, defs[i].a);
+      /* identique à l'affichage près : on laisse le flottant d'origine */
+      if (a && meldaFromFile(defs[i], a.v) === v) continue;
+      setAttr(tree, defs[i].a, meldaType(defs[i]), meldaToFile(defs[i], v));
+      if (defs[i].k === "threshold" || defs[i].k === "ratio") bouge = true;
+    }
+    if (fx.name === "MCompressor" && bouge) {
+      var thr = findAttr(tree, "#threshold"), rat = findAttr(tree, "#ratio");
+      meldaGraph(tree, thr ? thr.v : 0, rat ? rat.v : 0);
+    }
+    return concatBytes([b64ToBytes(fx.meldaPrefix), zlibStore(buildMelda(tree))]);
   }
 
   /* --------------------------------------------------------------- ReaEQ */
@@ -407,8 +734,9 @@
         else if (fx.decoded === "reaeq" && fx.bands) chunk64 = bytesToB64(encodeReaEq(fx));
         else if (fx.decoded === "reacomp" && fx.params) chunk64 = bytesToB64(encodeReaComp(fx));
         else if (fx.decoded === "reaverbate" && fx.params) chunk64 = bytesToB64(encodeReaVerbate(fx));
+        else if (fx.decoded === "melda" && fx.meldaTree) chunk64 = bytesToB64(encodeMelda(fx));
       }
-      var lines = [fx.header64].concat(wrap64(chunk64)).concat([fx.name64]);
+      var lines = [setChunkLen(fx.header64, chunk64)].concat(wrap64(chunk64)).concat([fx.name64]);
       for (i = 0; i < lines.length; i++) if (lines[i]) out.push("  " + lines[i]);
       out.push(">");
     }
@@ -430,6 +758,25 @@
      Pour écrire une chaîne qui ne vient pas d'un import, il faut la ligne
      d'identité du plugin et son bloc de configuration — ni l'une ni l'autre
      ne portent de réglage. Ceux-ci ont été relevés sur une chaîne réelle.   */
+  /* Queue du bloc ReaEQ : identique sur toutes les chaînes relevées. Elle
+     suit les bandes et ne porte aucun réglage de bande. */
+  var REAEQ_TAIL = "AQAAAAEAAAAAAAAAAADwPwAAAAD9AQAAXAEAAAIAAQA=";
+
+  /* Gabarit d'un plugin Melda : identité, préfixe du bloc, et l'arbre tel
+     qu'il sort du plugin une fois les réglages sonores retirés. Les attributs
+     qui restent décrivent la version et la fenêtre, pas le son. */
+  function meldaTemplate(root, extra) {
+    var attrs = [{ k: "#", t: "1", v: 1 }].concat(extra || []).concat([
+      { k: "Version", t: "4", v: 1116672 },
+      { k: "MIDIProgramChangeEnable", t: "1", v: 0 },
+      { k: "ProgramChangeCategorizer", t: "1", v: 0 },
+      { k: "ControllersEnabled", t: "1", v: 0 },
+      { k: "PianoViewCollapsed", t: "1", v: 255 },
+      { k: "MaxLFOBlockSize", t: "1", v: 32 }
+    ]);
+    return { name: root, attrs: attrs, kids: [] };
+  }
+
   var TEMPLATES = {
     "TSE BOD": {kind:"vst",
       head:"\"VST: BOD (TSE AUDIO)\" BOD_x64.dll 0 \"\" 1414742596<56535454534244626F64000000000000> \"\"",
@@ -438,12 +785,29 @@
     "ReaEQ": {kind:"vst",
       head:"\"VST: ReaEQ (Cockos)\" reaeq.dll 0 \"\" 1919247729<56535472656571726561657100000000> \"\"",
       header64:"cWVlcu5e7f4CAAAAAQAAAAAAAAACAAAAAAAAAAIAAAABAAAAAAAAAAIAAAAAAAAA7gAAAAEAAAAAABAA",
-      name64:"AAAQAAAA"},
+      name64:"AFByb2dyYW0gMQAQAAAA", eqTail:REAEQ_TAIL},
     "ReaComp": {kind:"vst",
       head:"\"VST: ReaComp (Cockos)\" reacomp.dll 0 \"\" 1919247213<5653547265636D726561636F6D700000> \"\"",
       header64:"bWNlcu9e7f4EAAAAAQAAAAAAAAACAAAAAAAAAAQAAAAAAAAACAAAAAAAAAACAAAAAQAAAAAAAAACAAAAAAAAAFwAAAAAAAAAAAAQAA==",
       name64:"AFByb2dyYW0gMQAQAAAA"},
     "JS: Saturation": {kind:"js", head:"loser/Saturation \"\"", sliders:64},
+    "MTuner": {kind:"vst",
+      head:"\"VST3: MTuner (MeldaProduction)\" MTuner.vst3 0 \"\" 1332983745{4D656C646170726F4D54756E4D54756E} \"\"",
+      header64:"wbdzT+5e7f4CAAAAAQAAAAAAAAACAAAAAAAAAAIAAAABAAAAAAAAAAIAAAAAAAAAEAIAAAEAAAAAAAAA",
+      name64:"ADAAAAAAAA==", extra:["PRESETNAME 0"],
+      meldaPrefix:"AAEAAAEAAAA=", melda:function(){ return meldaTemplate("MTunersettings"); }},
+    "MCompressor": {kind:"vst",
+      head:"\"VST3: MCompressor (MeldaProduction)\" MCompressor.vst3 0 \"\" 886559297{4D656C646170726F4D4165314D416531} \"\"",
+      header64:"QdLXNO5e7f4EAAAAAQAAAAAAAAACAAAAAAAAAAQAAAAAAAAACAAAAAAAAAACAAAAAQAAAAAAAAACAAAAAAAAABAEAAABAAAAAAAAAA==",
+      name64:"ADAAAAAAAA==", extra:["PRESETNAME 0"],
+      meldaPrefix:"AAIAAAEAAAA=",
+      /* « kneemode » est relevé tel quel : son autre valeur n'est pas établie. */
+      melda:function(){ return meldaTemplate("MCompressorsettings", [{k:"#kneemode", t:"s", v:"Soft"}]); }},
+    "MSaturator": {kind:"vst",
+      head:"\"VST3: MSaturator (MeldaProduction)\" MSaturator.vst3 0 \"\" 1093031185{4D656C646170726F4D4165344D416534} \"\"",
+      header64:"EVUmQe5e7f4CAAAAAQAAAAAAAAACAAAAAAAAAAIAAAABAAAAAAAAAAIAAAAAAAAAEAQAAAEAAAAAAAAA",
+      name64:"ADAAAAAAAA==", extra:["PRESETNAME 0"],
+      meldaPrefix:"AAIAAAEAAAA=", melda:function(){ return meldaTemplate("MSaturatorsettings"); }},
     "ReaVerbate": {kind:"vst",
       head:"\"VST: ReaVerbate (Cockos)\" reaverbate.dll 0 \"\" 1920361016<56535472766238726561766572626174> \"\"",
       header64:"OGJ2cu9e7f4CAAAAAQAAAAAAAAACAAAAAAAAAAIAAAABAAAAAAAAAAIAAAAAAAAAKAAAAAAAAAAAABAA",
@@ -472,6 +836,7 @@
       header64: fx.header64, chunk64: fx.chunk64, name64: fx.name64,
       label: fx.label, dll: fx.dll, headTail: fx.headTail, decoded: fx.decoded,
       sliders: fx.sliders, version: fx.version,
+      meldaPrefix: fx.meldaPrefix, meldaTree: fx.meldaTree,
       eqTail: fx.eqTail ? bytesToB64(fx.eqTail) : undefined,
       bodPrefix: fx.bodPrefix, bodSuffix: fx.bodSuffix, bodAttrs: fx.bodAttrs, bodTag: fx.bodTag,
       magic: fx.magic, rawParams: fx.raw
@@ -498,7 +863,7 @@
                    g: EQ_NO_GAIN[b.type] ? 0 : round(b.gainDb, 2),
                    bw: round(b.bw, 3), on: b.on };
         });
-      } else if (fx.decoded === "reacomp" || fx.decoded === "reaverbate") {
+      } else if (fx.decoded === "reacomp" || fx.decoded === "reaverbate" || fx.decoded === "melda") {
         s.p = fx.params;
       } else if (fx.decoded === "js") {
         var used = [], k;
@@ -527,11 +892,14 @@
     var decoded = plugin === "TSE BOD" ? "bod"
                 : plugin === "ReaEQ" ? "reaeq"
                 : plugin === "ReaComp" ? "reacomp"
-                : plugin === "ReaVerbate" ? "reaverbate" : "js";
+                : plugin === "ReaVerbate" ? "reaverbate"
+                : t.melda ? "melda" : "js";
     var o = {
       kind: t.kind, head: t.head, bypass: "0 0", decoded: decoded,
-      extra: ["FXID " + newFxId(), "WAK 0 0"]
+      extra: ["FXID " + newFxId()].concat(t.extra || []).concat(["WAK 0 0"])
     };
+    if (t.melda) { o.meldaPrefix = t.meldaPrefix; o.meldaTree = t.melda(); }
+    if (t.eqTail) o.eqTail = t.eqTail;
     if (t.kind === "js") {
       o.sliders = [];
       for (var k = 0; k < t.sliders; k++) o.sliders.push("-");
@@ -574,11 +942,16 @@
           return { type: eqTypeId(b.t), typeName: b.t, on: b.on !== false,
                    freq: b.f, gainDb: b.g, bw: b.bw };
         });
-        fx.eqTail = o.eqTail ? b64ToBytes(o.eqTail) : undefined;
+        fx.eqTail = b64ToBytes(o.eqTail || REAEQ_TAIL);
       } else if (o.decoded === "reacomp" || o.decoded === "reaverbate") {
         fx.params = s.p || {};
         fx.raw = o.rawParams;
         fx.magic = o.magic;
+      } else if (o.decoded === "melda") {
+        fx.name = s.plugin;
+        fx.params = s.p || {};
+        fx.meldaPrefix = o.meldaPrefix;
+        fx.meldaTree = JSON.parse(JSON.stringify(o.meldaTree));   /* l'origine reste intacte */
       } else if (o.kind === "js") {
         fx.sliders = (o.sliders || []).slice();
         if (s.p && s.p.drive !== undefined && s.p.drive !== null) fx.sliders[0] = String(s.p.drive);
@@ -598,7 +971,9 @@
     parse: parse, build: build, toChain: toChain, fromChain: fromChain,
     TEMPLATES: TEMPLATES, canWrite: function (plugin) { return !!TEMPLATES[plugin]; },
     EQ_TYPES: EQ_TYPES, EQ_TYPE_IDS: EQ_TYPE_IDS, EQ_TYPE_NAMES: EQ_TYPE_NAMES,
-    eqTypeId: eqTypeId, BOD_KEYS: BOD_KEYS
+    eqTypeId: eqTypeId, BOD_KEYS: BOD_KEYS,
+    MELDA_PARAMS: MELDA_PARAMS, zlibInflate: zlibInflate, zlibStore: zlibStore,
+    parseMelda: parseMelda, buildMelda: buildMelda
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = api;

@@ -163,6 +163,7 @@ Reaper's "generic parameters" view is the best source: it gives the exact order 
 | **ReaEQ** | 33-byte bands: type (integer), enabled, frequency and bandwidth as `double`, **gain as a linear ratio** (1.2589 = +2.0 dB) |
 | **ReaComp** | an 8-byte signature then **21 floats**, in the generic view's order |
 | **ReaVerbate** | same principle, **8 floats** |
+| **MeldaProduction** | a named tree, zlib-compressed: `#threshold`, `#ratio`, `#attack`… |
 | **JSFX** | sliders in plain text, `-` meaning "at default" |
 | **Others** | binary block **preserved byte for byte**, not interpreted |
 
@@ -170,6 +171,30 @@ Scales established by crossing real chains with their known values: Threshold, W
 amplitudes (`-150 dB` meaning `-inf`); Ratio is `(r-1)/99`; Attack, Release, Pre-comp, RMS and Knee
 are normalised over `500 ms`, `5000 ms`, `500 ms`, `100 ms` and `24 dB`; frequencies over `20 kHz`,
 verified on two independent points.
+
+### The header announces the state's size
+
+The last twelve bytes of the VST container header carry the **length of the state block**. Presetbook
+copied it from the template without recomputing it: a four-band ReaEQ exported with "238" announced
+for 156 real bytes, and Reaper read past the end. It is now rewritten on every write; `test/melda.test.js`
+checks it on a ReaEQ, a TSE BOD and a Melda chain.
+
+### MeldaProduction states
+
+Eight prefix bytes, then **zlib**. Decompressed, the state is a tree: `\0MBX` first, `X` opens a
+named node, `/` closes it, `~` closes the root, `A` carries a named, typed attribute — `d` double,
+`s` string, `1` byte, `2` and `4` integers. Automatable settings have a name prefixed with `#`.
+Read from MTuner, MCompressor and MSaturator: rewriting the parsed tree gives the file back byte for
+byte.
+
+Decompressing needs a real *inflate* (RFC 1951), written in `rfxchain.js`; recompressing does not —
+a stream of "stored" blocks is a valid zlib any decompressor accepts. No dependency, and the test
+confronts both with Node's `zlib` over two hundred draws.
+
+The plugin **only writes what departs from its own defaults**: a missing setting is not a setting at
+zero. Only keys read from a real state are named in `MELDA_PARAMS`; the rest are carried through
+untouched. MCompressor's curve is stored separately, as points: at 0 dB in, the output is
+threshold × (1 − 1/ratio) in decibels, verified to the bit on a real chain.
 
 Two fidelity rules, which the tests enforce:
 

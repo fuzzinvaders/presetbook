@@ -162,6 +162,7 @@ son état `BYPASS`, son identité et son état encodé en base64.
 | **ReaEQ** | bandes de 33 octets : type (entier), actif, fréquence et largeur en `double`, **gain en rapport linéaire** (1,2589 = +2,0 dB) |
 | **ReaComp** | signature de 8 octets puis **21 flottants**, dans l'ordre de la vue générique |
 | **ReaVerbate** | même principe, **8 flottants** |
+| **MeldaProduction** | un arbre nommé compressé en zlib : `#threshold`, `#ratio`, `#attack`… |
 | **JSFX** | curseurs en texte clair, `-` pour « au défaut » |
 | **Autres** | bloc binaire **conservé à l'octet près**, non interprété |
 
@@ -169,6 +170,30 @@ son état `BYPASS`, son identité et son état encodé en base64.
 sont des amplitudes linéaires (`-150 dB` valant `-inf`) ; Ratio vaut `(r-1)/99` ; Attack, Release,
 Pre-comp, RMS et Knee sont normalisés sur `500 ms`, `5000 ms`, `500 ms`, `100 ms` et `24 dB` ; les
 fréquences sur `20 kHz`, vérifié sur deux points indépendants.
+
+### L'en-tête annonce la taille de l'état
+
+Les douze derniers octets de l'en-tête du conteneur VST portent la **longueur du bloc d'état**.
+Presetbook la reprenait du gabarit sans la recalculer : un ReaEQ de quatre bandes s'exportait avec
+« 238 » annoncés pour 156 octets réels, et Reaper lisait à côté. Elle est désormais réécrite à
+chaque écriture ; `test/melda.test.js` la vérifie sur un ReaEQ, un TSE BOD et une chaîne Melda.
+
+### Les états MeldaProduction
+
+Huit octets de préfixe, puis du **zlib**. Décompressé, l'état est un arbre : `\0MBX` en tête,
+`X` ouvre un nœud nommé, `/` le ferme, `~` ferme la racine, `A` porte un attribut nommé et typé
+— `d` double, `s` chaîne, `1` octet, `2` et `4` entiers. Les réglages automatisables ont un nom
+préfixé de `#`. Relevé sur MTuner, MCompressor et MSaturator : réécrire l'arbre relu redonne le
+fichier à l'octet près.
+
+Décompresser demande un vrai *inflate* (RFC 1951), écrit dans `rfxchain.js` ; recompresser non, un
+flux de blocs « stockés » est un zlib valide que tout décompresseur accepte. Aucune dépendance, et
+le test confronte les deux au `zlib` de Node sur deux cents tirages.
+
+Le plugin **n'écrit que ce qui s'écarte de ses valeurs par défaut** : un réglage absent n'est pas un
+réglage à zéro. Seules les clés relevées dans un état réel sont nommées dans `MELDA_PARAMS` ; les
+autres repartent telles quelles. La courbe de MCompressor est rangée à part, en points : à 0 dB
+d'entrée la sortie vaut seuil × (1 − 1/taux) en décibels, vérifié au bit près sur une chaîne réelle.
 
 Deux règles de fidélité, que les tests vérifient :
 

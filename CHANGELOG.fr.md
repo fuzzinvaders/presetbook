@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.6.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.7.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,31 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.7.0 — 12 novembre 2026
+
+### Corrigé
+
+- **Une chaîne réécrite est de nouveau lisible par Reaper.** L'en-tête de chaque effet annonce la
+  taille de son état ; Presetbook la recopiait du gabarit sans la recalculer. Un ReaEQ de quatre
+  bandes partait donc avec « 238 octets » annoncés pour 156 réels, et Reaper lisait à côté. La taille
+  est maintenant réécrite à chaque fois, et un test la vérifie sur un ReaEQ, un TSE BOD et une chaîne
+  Melda. Le défaut touchait toute chaîne composée à la main — pas celles qui ressortaient d'un import
+  sans retouche.
+- **Un ReaEQ composé ici emporte la fin de son bloc**, trente-deux octets qui suivent les bandes.
+  Elle manquait aux chaînes fabriquées de zéro.
+
+### Ajouté
+
+- **Les trois MeldaProduction gratuits : MCompressor, MSaturator et MTuner.** Leur état n'était
+  qu'un bloc binaire conservé tel quel ; c'est en fait un arbre nommé, compressé. Seuil, taux,
+  attaque, rétablissement, longueur RMS pour le compresseur ; gains d'entrée et de sortie, dosage et
+  écrêtage pour la saturation. Une chaîne qui les contient s'exporte maintenant au lieu d'être
+  refusée.
+- Les réglages dont la clé n'a pas été relevée — mode de saturation, taux d'analogique, genou du
+  compresseur — **repartent avec la chaîne** au lieu d'être perdus : ils se règlent dans Reaper.
 
 ---
 

@@ -173,8 +173,13 @@ check("un plugin sans gabarit fait refuser l export", !!refusPlugin, "aucune err
 check("le refus nomme le plugin et les possibles",
   !!refusPlugin && refusPlugin.indexOf("Autre plugin") >= 0 && refusPlugin.indexOf("ReaComp") >= 0,
   refusPlugin || "");
-check("les gabarits couvrent les cinq plugins établis",
-  Object.keys(RFX.TEMPLATES).length === 5, String(Object.keys(RFX.TEMPLATES).length));
+/* Un compte ne dit rien ; la liste, si : un gabarit qui disparaît fait
+   refuser un export qui marchait la veille. */
+var GABARITS = ["TSE BOD", "ReaEQ", "ReaComp", "JS: Saturation", "ReaVerbate",
+                "MTuner", "MCompressor", "MSaturator"];
+check("les gabarits couvrent les plugins établis",
+  Object.keys(RFX.TEMPLATES).sort().join(",") === GABARITS.slice().sort().join(","),
+  Object.keys(RFX.TEMPLATES).join(","));
 
 /* --- l'export se trouve depuis la carte, sans ouvrir l'éditeur --- */
 const { run } = require("./sandbox.js");

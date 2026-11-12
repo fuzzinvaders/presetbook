@@ -1543,6 +1543,37 @@ var PLUGINS = {
       {k:"hipass",   l:"Highpass",      min:0,    max:20000, step:1, d:0, u:"Hz"}
     ]
   },
+  "MCompressor": {
+    vendor:"MeldaProduction, lot MFreeFXBundle (gratuit)",
+    /* Clés relevées dans l'état réel du plugin : #threshold, #ratio, #attack… */
+    note:"Le seuil et le taux vont ensemble : c'est de ce couple que vient la courbe de compression " +
+         "écrite dans le fichier. Les réglages absents de cette liste — genou, gain d'entrée et de " +
+         "sortie, liaison des canaux — gardent la valeur du plugin, ou celle de la chaîne importée.",
+    params:[
+      {k:"threshold", l:"Threshold", min:-60, max:0,    step:0.1,  d:-9, u:"dB"},
+      {k:"ratio",     l:"Ratio",     min:1,   max:20,   step:0.01, d:4,  u:": 1"},
+      {k:"attack",    l:"Attack",    min:0,   max:1000, step:0.1,  d:15, u:"ms"},
+      {k:"release",   l:"Release",   min:0,   max:5000, step:1,    d:90, u:"ms"},
+      {k:"rms",       l:"RMS length",min:0,   max:100,  step:0.1,  d:5,  u:"ms"}
+    ]
+  },
+  "MSaturator": {
+    vendor:"MeldaProduction, lot MFreeFXBundle (gratuit)",
+    note:"Dry/Wet à 25 % laisse les trois quarts du signal direct : c'est la saturation parallèle. " +
+         "Le mode de saturation et le taux d'analogique ne sont pas écrits ici — le plugin garde les siens.",
+    params:[
+      {k:"input",  l:"Input gain",  min:-24, max:24,  step:0.1, d:0,   u:"dB"},
+      {k:"output", l:"Output gain", min:-24, max:24,  step:0.1, d:0,   u:"dB"},
+      {k:"drywet", l:"Dry/Wet",     min:0,   max:100, step:1,   d:100, u:"%"},
+      {k:"clip",   l:"Clip",        t:"bool", d:false}
+    ]
+  },
+  "MTuner": {
+    vendor:"MeldaProduction, lot MFreeFXBundle (gratuit)",
+    note:"Accordeur : aucun réglage sonore. Il tient sa place dans la chaîne, en général " +
+         "désactivé, pour la retrouver telle quelle dans Reaper.",
+    params:[]
+  },
   "JS: Saturation": {
     vendor:"JSFX loser/Saturation, livré avec Reaper",
     note:"Les JSFX gardent leurs curseurs en texte clair dans la chaîne. Seul le premier est renseigné " +

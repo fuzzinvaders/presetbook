@@ -361,9 +361,9 @@ Il y a trois exports, à ne pas confondre : **Exporter** sur une carte donne *ce
 *toute la bibliothèque* en JSON.
 
 L'export ne demande **pas** d'import préalable : une chaîne composée à la main ici s'écrit aussi,
-pour les cinq plugins dont le format est établi — TSE BOD, ReaEQ, ReaComp, ReaVerbate et le JSFX de
-saturation. Un plugin hors de cette liste fait refuser l'export **en le nommant**, plutôt que
-d'écrire un état inventé.
+pour les huit plugins dont le format est établi — TSE BOD, ReaEQ, ReaComp, ReaVerbate, le JSFX de
+saturation, et les trois MeldaProduction gratuits MCompressor, MSaturator et MTuner. Un plugin hors
+de cette liste fait refuser l'export **en le nommant**, plutôt que d'écrire un état inventé.
 
 
 Tout n'est pas lisible de la même façon dans un fichier de chaîne :
@@ -373,6 +373,8 @@ Tout n'est pas lisible de la même façon dans un fichier de chaîne :
 | TSE BOD | tout est modifiable : son état est du XML nommé |
 | ReaEQ | bandes entièrement modifiables |
 | ReaComp, ReaVerbate | modifiables : leurs paramètres ont été établis |
+| MCompressor, MSaturator | seuil, taux, attaque, rétablissement, gains, dosage : modifiables |
+| MTuner | aucun réglage sonore, mais il garde sa place dans la chaîne |
 | JSFX | le premier curseur est repris, les autres conservés |
 | Autres plugins | **conservés à l'octet près**, mais non modifiables ici |
 
@@ -381,6 +383,12 @@ arrondi d'affichage ne se glisse dans un réglage qu'on n'a pas touché. Et l'ex
 que d'inventer : sur ReaEQ, trois types de bande seulement ont leur équivalent établi dans le
 fichier, donc choisir les autres se fait dans Reaper — importés ici, ils sont conservés et réécrits
 sans dommage.
+
+Même règle chez Melda : un plugin n'écrit dans le fichier que ce qui s'écarte de ses valeurs par
+défaut, donc un réglage absent n'est pas un réglage à zéro. Les réglages dont la clé a été relevée
+dans un état réel sont modifiables ici ; les autres — mode de saturation, taux d'analogique, genou
+du compresseur — gardent la valeur du plugin, ou celle de la chaîne importée, et se règlent dans
+Reaper.
 
 ## Le catalogue et vos données
 

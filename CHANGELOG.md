@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.6.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.7.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,29 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.7.0 — 12 November 2026
+
+### Fixed
+
+- **A rewritten chain is readable by Reaper again.** Each effect's header announces the size of its
+  state; Presetbook copied it from the template without recomputing it. A four-band ReaEQ therefore
+  left with "238 bytes" announced for 156 real ones, and Reaper read past the end. The size is now
+  rewritten every time, and a test checks it on a ReaEQ, a TSE BOD and a Melda chain. The flaw hit
+  any chain assembled by hand — not those coming back from an import untouched.
+- **A ReaEQ assembled here carries the end of its block**, the thirty-two bytes that follow the
+  bands. Chains built from scratch were missing it.
+
+### Added
+
+- **The three free MeldaProduction plugins: MCompressor, MSaturator and MTuner.** Their state was
+  only a binary block kept as is; it is in fact a named, compressed tree. Threshold, ratio, attack,
+  release and RMS length for the compressor; input and output gain, dry/wet and clipping for the
+  saturator. A chain containing them now exports instead of being refused.
+- Settings whose key has not been read — saturation mode, analog amount, compressor knee — **travel
+  back with the chain** instead of being lost: they are set in Reaper.
 
 ---
 
