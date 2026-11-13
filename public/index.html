@@ -342,11 +342,13 @@ table.bands th{text-align:left; font-size:9px; letter-spacing:.08em; text-transf
 table.bands td{padding:2px 8px 2px 0; white-space:nowrap}
 table.bands tr.bx td{opacity:.5; text-decoration:line-through}
 .slot .sn{font-size:12px; color:var(--ink-2); font-style:italic; margin-top:5px}
+.card .maj{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.04em; color:var(--ink-3)}
 .card-f{display:flex; flex-wrap:wrap; gap:6px; margin-top:auto; padding-top:10px; border-top:1px solid var(--line)}
 .card-f .btn{padding:4px 10px; font-size:12px}
 .card-f .spacer{margin-left:auto}
 .empty{border:1px dashed var(--line-2); border-radius:5px; padding:34px 20px; text-align:center; color:var(--ink-2); font-size:14px}
-.listbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px}
+.listbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; flex-wrap:wrap}
+.listbar .lb-r{display:flex; align-items:center; gap:10px; margin-left:auto}
 .listbar .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
 
 .grp{margin-top:26px}
@@ -616,6 +618,7 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
           <button class="btn" id="btn-io"></button>
           <button class="btn" id="btn-print"></button>
           <button class="btn" id="btn-install" hidden></button>
+          <button class="btn" id="btn-awake" aria-pressed="false" hidden></button>
           <div class="menu-sep"></div>
           <span class="tabs" id="lang" role="group" aria-label="Langue / Language"></span>
         </div>
@@ -864,6 +867,17 @@ var EN = {
   "apparitions": "appearances",
   "Treble (étage haut)": "Treble (top)",
   "Bass (étage bas)": "Bass (lower)",
+  "Garder l'écran allumé": "Keep the screen awake",
+  "Laisser l'écran s'éteindre": "Let the screen sleep",
+  "L'écran restera allumé tant que cet onglet est devant.":
+    "The screen will stay awake as long as this tab is in front.",
+  "L'écran pourra s'éteindre.": "The screen may sleep again.",
+  "L'écran n'a pas pu être gardé allumé ({0}).": "The screen could not be kept awake ({0}).",
+  "Trier": "Sort",
+  "Ordre d'origine": "Original order",
+  "Par nom": "By name",
+  "Modifiée en dernier": "Last edited",
+  "Modifiée le {0}": "Last edited on {0}",
   "pédale": "pedal",
   "pédales": "pedals",
   "bande": "band",
@@ -1551,6 +1565,7 @@ function renderChrome(){
   setHtml(el("btn-shared"), "Partagés");
   setHtml(el("grp-l"), "Grouper par");
   renderMenuButton();
+  renderVeille();
   var q = document.getElementById("q");
   q.setAttribute("placeholder", t("Chercher un style, un morceau, un plugin…"));
   q.setAttribute("aria-label", t("Chercher"));
@@ -1573,6 +1588,55 @@ function renderChrome(){
     '<option value="artist">Par artiste</option>' +
     '<option value="tag">Par style</option>');
   grp.value = ui.group;
+}
+
+/* ----------------------------- écran gardé allumé ------------------------
+   Le choix vit dans le navigateur : c'est un confort propre à l'appareil
+   qu'on a en main, pas une donnée à faire voyager d'un poste à l'autre. */
+var AWAKE_KEY = "presetbook.veille";
+var veille = null;                       /* le verrou tenu, ou rien */
+
+function veilleDispo(){ return !!(window.navigator && window.navigator.wakeLock); }
+function veilleVoulue(){
+  try { return window.localStorage.getItem(AWAKE_KEY) === "1"; } catch (e) { return false; }
+}
+function renderVeille(){
+  var b = document.getElementById("btn-awake");
+  if (!b) return;
+  b.hidden = !veilleDispo();
+  b.setAttribute("aria-pressed", String(!!veille));
+  setHtml(b, veille ? "Laisser l'écran s'éteindre" : "Garder l'écran allumé");
+}
+/**
+ * @param {boolean} on      garder l'écran allumé, ou le laisser s'éteindre
+ * @param {boolean} discret au chargement et au retour d'arrière-plan : on ne
+ *                          commente pas un geste que l'utilisateur n'a pas fait
+ */
+function setVeille(on, discret){
+  try { window.localStorage.setItem(AWAKE_KEY, on ? "1" : "0"); } catch (e) { /* sans objet */ }
+  if (!on){
+    if (veille && veille.release) { try { veille.release(); } catch (e) { /* déjà tombé */ } }
+    veille = null;
+    renderVeille();
+    if (!discret) toast("L'écran pourra s'éteindre.");
+    return Promise.resolve(false);
+  }
+  if (!veilleDispo()) return Promise.resolve(false);
+  return window.navigator.wakeLock.request("screen").then(function(v){
+    veille = v;
+    if (v && v.addEventListener){
+      v.addEventListener("release", function(){ veille = null; renderVeille(); });
+    }
+    renderVeille();
+    if (!discret) toast("L'écran restera allumé tant que cet onglet est devant.");
+    return true;
+  }).catch(function(err){
+    veille = null;
+    renderVeille();
+    var cause = (err && err.name) || "refus";
+    if (!discret) toast(tf("L'écran n'a pas pu être gardé allumé ({0}).", cause));
+    return false;
+  });
 }
 
 /** Le bouton du menu porte le nom du compte — ou « Menu » quand il n'y en a pas. */
@@ -2694,7 +2758,8 @@ var LS_KEY_OLD = "rack-presets-v1";
 var S = {v:1, custom:[], overrides:{}, gear:{}, hidden:[]};
 var store = {mode:"memory", api:false, writer:null, downloads:null};
 var GROUPES = ["kind", "brand", "song", "artist", "tag"];
-var ui = {kind:"all", q:"", group:"kind", gear:[], brands:[], tags:[], open:false};
+var TRIS = ["", "nom", "maj"];
+var ui = {kind:"all", q:"", group:"kind", sort:"", gear:[], brands:[], tags:[], open:false};
 
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function library(){
@@ -2818,6 +2883,8 @@ function readUrlFilter(){
     if (q) ui.q = q;
     if (kind === "all" || KINDS[kind]) ui.kind = kind;   /* toute famille connue */
     if (GROUPES.indexOf(group) >= 0) ui.group = group;
+    var tri = qp.get("sort");
+    if (tri && TRIS.indexOf(tri) >= 0) ui.sort = tri;
     document.getElementById("q").value = ui.q;
     document.getElementById("grp").value = ui.group;
   } catch (e) { /* pas d'URL exploitable : on garde les valeurs par défaut */ }
@@ -3998,6 +4065,7 @@ function card(p){
     h += '<p class="song">♪ <b>' + esc(p.song.title || "—") + '</b>' + (p.song.artist ? " — " + esc(p.song.artist) : "") + '</p>';
   }
   if (p.notes) h += '<p class="note">' + esc(p.notes) + '</p>';
+  if (p.maj) h += '<p class="maj">' + esc(tf("Modifiée le {0}", majLabel(p.maj))) + '</p>';
   var ex = (gearOf(p).extras || []), xi;
   for (xi=0; xi<ex.length; xi++){
     if (p[ex[xi].k]) h += '<p class="song"><b>' + esc(ex[xi].l) + '</b> · ' + esc(p[ex[xi].k]) + '</p>';
@@ -4236,8 +4304,36 @@ function filterLabel(){
   return bouts.join(" · ");
 }
 
+/**
+ * L'ordre à l'intérieur d'une section. Sans date, une fiche passe en dernier :
+ * « jamais enregistrée depuis que la date existe » n'est pas « ancienne ».
+ */
+function trier(fiches){
+  if (ui.sort === "nom"){
+    return fiches.slice().sort(function(a, b){ return a.name.localeCompare(b.name, "fr"); });
+  }
+  if (ui.sort === "maj"){
+    return fiches.slice().sort(function(a, b){
+      var x = a.maj || "", y = b.maj || "";
+      if (x && y) return x > y ? -1 : x < y ? 1 : 0;
+      if (x) return -1;
+      if (y) return 1;
+      return 0;
+    });
+  }
+  return fiches;
+}
+
+/** Une date lisible, dans la langue affichée. */
+function majLabel(iso){
+  try {
+    return new Date(iso).toLocaleDateString(LANG === "en" ? "en-GB" : "fr-FR",
+      {year:"numeric", month:"long", day:"numeric"});
+  } catch (e) { return String(iso).slice(0, 10); }
+}
+
 function render(){
-  var L = library(), shown = L.filter(matches);
+  var L = library(), shown = trier(L.filter(matches));
 
   var counts = {all:L.length, bass:0, amp:0, reaper:0};
   L.forEach(function(p){ counts[p.kind] = (counts[p.kind] || 0) + 1; });
@@ -4369,7 +4465,10 @@ function rassembleIsoles(groups){
   if (seuls.length < 2) return groups;
   var reste = [];
   seuls.forEach(function(g){ reste = reste.concat(g[1]); });
-  return gros.concat([["Autres", reste]]);
+  /* Rassemblées, ces fiches viennent de sections différentes : l'ordre
+     demandé doit valoir ici aussi, sinon « Autres » serait le seul endroit
+     où le rangement ne s'applique pas. */
+  return gros.concat([["Autres", trier(reste)]]);
 }
 
 /**
@@ -4413,10 +4512,18 @@ function renderListBar(groupes, replies){
   host.innerHTML = tHtml(
     '<span class="n">' + fiches + ' ' + t(fiches > 1 ? "fiches" : "fiche") +
     (barre.cartes > fiches ? ' · ' + barre.cartes + ' ' + t("apparitions") : "") + '</span>' +
+    '<span class="lb-r">' +
+    (fiches > 1
+      ? '<label class="pick"><span>Trier</span><select id="tri" aria-label="Trier">' +
+        '<option value=""' + (ui.sort === "" ? " selected" : "") + '>Ordre d\'origine</option>' +
+        '<option value="nom"' + (ui.sort === "nom" ? " selected" : "") + '>Par nom</option>' +
+        '<option value="maj"' + (ui.sort === "maj" ? " selected" : "") + '>Modifiée en dernier</option>' +
+        '</select></label>'
+      : "") +
     (groupes > 1
       ? '<button class="btn small ghost" data-foldall="' + (tout ? "open" : "close") + '">' +
         (tout ? "Tout déplier" : "Tout replier") + '</button>'
-      : ""));
+      : "") + '</span>');
 }
 
 /* ============================ éditeur ============================ */
@@ -5161,6 +5268,7 @@ function setPath(o, path, val){
 
 function commit(){
   if (!draft.name){ toast("Donne un nom au preset."); return; }
+  draft.maj = new Date().toISOString();
   var target = draft.id;
   if (isSeed(target)) S.overrides[target] = clone(draft);
   else {
@@ -5230,6 +5338,7 @@ function duplicate(id){
   var c = clone(p);
   c.id = "u-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36);
   c.name = tf("{0} (copie)", p.name);
+  c.maj = new Date().toISOString();      /* la copie naît aujourd'hui */
   S.custom.push(c); render();
   save().then(function(ok){ if (ok) toast("Copie créée."); });
 }
@@ -5714,9 +5823,26 @@ document.getElementById("q").addEventListener("input", function(){
   if (qTimer) window.clearTimeout(qTimer);
   qTimer = window.setTimeout(function(){ qTimer = null; ui.q = v; render(); }, 150);
 });
+document.getElementById("btn-awake").addEventListener("click", function(){
+  setVeille(!veille);
+});
+/* L'onglet qui passe en arrière-plan perd son verrou : on le reprend au
+   retour, sans rien dire, puisque personne n'a rien demandé à ce moment-là. */
+document.addEventListener("visibilitychange", function(){
+  if (document.visibilityState === "visible" && !veille && veilleDispo() && veilleVoulue()){
+    setVeille(true, true);
+  }
+});
+if (veilleDispo() && veilleVoulue()) setVeille(true, true);
+
 document.getElementById("btn-filters").addEventListener("click", function(){
   ui.open = !ui.open;
   renderFilters();
+});
+document.getElementById("listbar").addEventListener("change", function(e){
+  if (!e.target || e.target.id !== "tri") return;
+  ui.sort = e.target.value;
+  render();
 });
 document.getElementById("listbar").addEventListener("click", function(e){
   var b = e.target.closest("[data-foldall]"); if (!b) return;
@@ -6245,7 +6371,9 @@ window.__pb = {
   pruneTrash: pruneTrash, trashBody: trashBody,
   plat: plat,
   matches: matches, facetGear: facetGear, facetTags: facetTags,
-  chainView: chainView, parClef: parClef,
+  chainView: chainView, parClef: parClef, trier: trier, render: render, commit: commit,
+  setVeille: setVeille, renderVeille: renderVeille, veilleDispo: veilleDispo,
+  getVeille: function(){ return veille; },
   renderFilters: renderFilters, filterLabel: filterLabel, activeFilters: activeFilters,
   ui: function(){ return ui; }, printDate: printDate,
   openAccount: openAccount, submitAccount: submitAccount, renderWho: renderWho,

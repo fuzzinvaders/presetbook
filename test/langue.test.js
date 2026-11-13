@@ -60,12 +60,38 @@ check("le français garde son motif",
 const source = require("node:fs").readFileSync(page, "utf8");
 const messages = new Set();
 let m;
-const appel = /\b(toast|gateError|setStore)\(([^)]*)\)/g;
+/* Un motif comme « ({0}) » contient des parenthèses : les compter en sautant
+   les chaînes est la seule façon de retrouver la fin de l'appel. S'arrêter au
+   premier « ) » laissait passer tous les messages à parenthèses. */
+function corpsAppel(src, i) {
+  let profondeur = 0, guillemet = null;
+  for (let j = i; j < src.length; j++) {
+    const c = src[j];
+    if (guillemet) {
+      if (c === "\\") j++;
+      else if (c === guillemet) guillemet = null;
+      continue;
+    }
+    if (c === '"' || c === "'") { guillemet = c; continue; }
+    if (c === "(") profondeur++;
+    else if (c === ")") { profondeur--; if (!profondeur) return src.slice(i + 1, j); }
+  }
+  return "";
+}
+const appel = /\b(toast|gateError|setStore)\(/g;
 while ((m = appel.exec(source))) {
-  const lit = m[2].match(/"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g);
+  const lit = corpsAppel(source, m.index + m[0].length - 1)
+    .match(/"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g);
   if (!lit) continue;
-  const txt = lit[lit.length - 1].slice(1, -1).replace(/\\(['"])/g, "$1");
-  if (txt.length > 3 && /[a-zA-Zé]/.test(txt)) messages.add(txt);
+  /* Tous les littéraux de l'appel, pas seulement le dernier : un toast porte
+     parfois le libellé d'une action à côté de son message, et « tf(motif,
+     repli) » peut finir sur une valeur écrite en clair. Seul le premier
+     argument de setStore est hors jeu : c'est un mot-clé interne, pas une
+     phrase à lire. */
+  (m[1] === "setStore" ? lit.slice(1) : lit).forEach((brut) => {
+    const txt = brut.slice(1, -1).replace(/\\(['"])/g, "$1");
+    if (txt.length > 3 && /[a-zA-Zé]/.test(txt)) messages.add(txt);
+  });
 }
 const sansTrad = [...messages].filter((x) => pb.EN[x] === undefined);
 check("tous les messages éphémères sont traduits (" + messages.size + ")",

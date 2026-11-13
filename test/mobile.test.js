@@ -133,5 +133,63 @@ man.shortcuts.forEach((r) => {
   check("le raccourci « " + r.name + " » vise une URL relative", r.url.indexOf("?") === 0, r.url);
 });
 
-console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
-process.exit(failed ? 1 : 0);
+/* ----------------------------- écran gardé allumé ------------------------
+ * En répétition, le téléphone s'éteint pendant qu'on lit ses réglages. Là où
+ * l'API n'existe pas, le bouton n'apparaît pas : mieux vaut ne rien promettre
+ * que promettre ce qu'on ne peut pas tenir.
+ */
+const sansApi = run(pageF, { search: "" });
+check("sans l'API, le bouton reste caché",
+  sansApi.__nodes.get("btn-awake").hidden === true,
+  String(sansApi.__nodes.get("btn-awake").hidden));
+check("et il est dans le menu, pas dans l'en-tête",
+  src.slice(src.indexOf('id="menu-p"'), src.indexOf("</header>")).indexOf('id="btn-awake"') > 0);
+
+const avecApi = run(pageF, { search: "" });
+let typeDemande = null, relache = 0;
+avecApi.navigator.wakeLock = {
+  request(type) {
+    typeDemande = type;
+    return Promise.resolve({ release() { relache++; }, addEventListener() {} });
+  },
+};
+avecApi.__pb.renderVeille();
+check("avec l'API, le bouton se montre", avecApi.__nodes.get("btn-awake").hidden === false);
+check("il propose de garder l'écran allumé",
+  avecApi.__nodes.get("btn-awake").innerHTML.indexOf("Garder l'écran allumé") >= 0,
+  avecApi.__nodes.get("btn-awake").innerHTML);
+
+avecApi.__pb.setVeille(true).then(() => {
+  check("le verrou demandé est bien celui de l'écran", typeDemande === "screen", String(typeDemande));
+  check("le bouton propose alors l'inverse",
+    avecApi.__nodes.get("btn-awake").innerHTML.indexOf("Laisser l'écran s'éteindre") >= 0,
+    avecApi.__nodes.get("btn-awake").innerHTML);
+  check("et il dit son état aux lecteurs d'écran",
+    avecApi.__nodes.get("btn-awake").getAttribute("aria-pressed") === "true");
+  return avecApi.__pb.setVeille(false);
+}).then(() => {
+  check("relâcher rend le verrou", relache === 1, String(relache));
+  check("et le bouton revient à sa proposition",
+    avecApi.__nodes.get("btn-awake").getAttribute("aria-pressed") === "false");
+
+  /* Un refus du navigateur ne doit pas laisser croire que l'écran est tenu. */
+  avecApi.navigator.wakeLock = { request() { return Promise.reject(new Error("refus")); } };
+  return avecApi.__pb.setVeille(true, true);
+}).then((ok) => {
+  check("un refus laisse le bouton au repos",
+    ok === false && !avecApi.__pb.getVeille()
+    && avecApi.__nodes.get("btn-awake").getAttribute("aria-pressed") === "false");
+
+  /* L'onglet qui passe en arrière-plan perd son verrou : sans reprise au
+     retour, le bouton dirait « allumé » pendant que l'écran s'éteint. */
+  check("le retour au premier plan reprend le verrou",
+    src.indexOf('document.addEventListener("visibilitychange"') > 0
+    && /visibilitychange[\s\S]{0,260}setVeille\(true, true\)/.test(src));
+  check("le choix est gardé sur ce poste, pas dans les données",
+    src.indexOf('var AWAKE_KEY = "presetbook.veille"') > 0
+    && src.indexOf("AWAKE_KEY") > 0 && !/sanitizeState[\s\S]{0,400}veille/.test(
+      fs.readFileSync(path.join(racine, "server.js"), "utf8")));
+
+  console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
+  process.exit(failed ? 1 : 0);
+});
