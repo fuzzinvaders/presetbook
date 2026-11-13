@@ -91,6 +91,11 @@ p{margin:0}
   background:var(--panel); border:1px solid var(--ink-3); border-radius:4px;
   box-shadow:0 10px 26px rgba(0,0,0,.35);
 }
+/* « hidden » n'agit que par la feuille par défaut du navigateur, que la
+   moindre classe donnant un display emporte. Une règle générale et prioritaire
+   évite d'y repenser à chaque nouvel élément caché — on l'a appris en
+   affichant un voile de dépôt en permanence. */
+[hidden]{display:none !important}
 .menu-p[hidden]{display:none}
 .menu-p .btn{width:100%; text-align:left; border-color:transparent; background:transparent}
 .menu-p .btn:hover{background:var(--panel-2)}
@@ -6087,16 +6092,28 @@ document.getElementById("q").addEventListener("input", function(){
   qTimer = window.setTimeout(function(){ qTimer = null; ui.q = v; render(); }, 150);
 });
 /* Un fichier lâché à côté de la cible ouvrirait le fichier à la place de la
-   page : le document prend donc l'événement, partout. Le compteur d'entrées
-   évite que le voile clignote en passant d'un élément à l'autre. */
-var surVol = 0;
-document.addEventListener("dragenter", function(e){
-  e.preventDefault(); surVol++; montreDepot(true);
-});
-document.addEventListener("dragover", function(e){ e.preventDefault(); });
-document.addEventListener("dragleave", function(){ if (--surVol <= 0){ surVol = 0; montreDepot(false); } });
+   page : le document prend donc l'événement, partout.
+
+   Le voile s'efface tout seul faute de signal. Compter les entrées et les
+   sorties semble plus simple, mais un fichier lâché hors de la fenêtre
+   n'émet aucune sortie : le compteur reste positif et le voile ne part
+   jamais. Le survol, lui, émet « dragover » en continu tant qu'il dure. */
+var depotFin = null;
+function depotActif(){
+  montreDepot(true);
+  if (depotFin) window.clearTimeout(depotFin);
+  depotFin = window.setTimeout(function(){ depotFin = null; montreDepot(false); }, 700);
+}
+function depotFini(){
+  if (depotFin){ window.clearTimeout(depotFin); depotFin = null; }
+  montreDepot(false);
+}
+document.addEventListener("dragenter", function(e){ e.preventDefault(); depotActif(); });
+document.addEventListener("dragover", function(e){ e.preventDefault(); depotActif(); });
+document.addEventListener("dragend", depotFini);
 document.addEventListener("drop", function(e){
-  e.preventDefault(); surVol = 0; montreDepot(false);
+  e.preventDefault();
+  depotFini();
   var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
   if (f) deposerFichier(f);
 });
@@ -6683,6 +6700,7 @@ window.__pb = {
   matches: matches, facetGear: facetGear, facetTags: facetTags,
   chainView: chainView, parClef: parClef, trier: trier, render: render, commit: commit,
   deposerFichier: deposerFichier, montreDepot: montreDepot, titreDeFichier: titreDeFichier,
+  depotActif: depotActif, depotFini: depotFini,
   openSets: openSets, openSetEditor: openSetEditor, setlists: setlists, setlistDe: setlistDe,
   setlistNouvelle: setlistNouvelle, setlistOuvre: setlistOuvre, setlistFerme: setlistFerme,
   setlistBouge: setlistBouge, setlistSupprime: setlistSupprime,

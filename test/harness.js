@@ -82,6 +82,38 @@ setTimeout(() => {
     doubles.length === 0,
     doubles.map(([n2, l]) => n2 + " lignes " + l.join(" et ")).join(" | "));
 
+  /* --- « hidden » et les classes qui donnent un display ---
+     L'attribut « hidden » n'agit que par la feuille par défaut du navigateur,
+     et la moindre classe qui donne un display l'emporte. Un voile de dépôt
+     déclaré « display:flex » est donc resté affiché en permanence, par-dessus
+     toute la page, alors que la propriété « hidden » du nœud valait bien
+     true : le bac à sable ne calcule pas les styles, il ne pouvait pas le
+     voir. On vérifie donc la règle, et on la vérifie là où elle est écrite. */
+  const feuille = source.slice(source.indexOf("<style>"), source.indexOf("</style>"));
+  const general = /\[hidden\]\{display:none ?!important\}/.test(feuille);
+  check("une règle générale neutralise les éléments cachés", general,
+    "sans elle, « hidden » ne tient pas devant une classe qui donne un display");
+
+  /* Sans la règle générale, chaque élément caché devrait avoir la sienne. */
+  const caches = [...source.matchAll(/<[a-z]+[^>]*\sid="([a-z-]+)"[^>]*\shidden[^>]*>/g)].map((m) => m[1]);
+  check("les éléments cachés du gabarit sont repérés (" + caches.length + ")", caches.length >= 3,
+    caches.join(" "));
+  const sansFilet = caches.filter((id) => {
+    const bloc = new RegExp("\\." + id + "\\{[^}]*display:", "i");
+    return !general && bloc.test(feuille);
+  });
+  check("aucun élément caché ne compte sur la feuille par défaut seule",
+    sansFilet.length === 0, sansFilet.join(" "));
+
+  /* --- le voile de dépôt sait finir ---
+     Un fichier lâché hors de la fenêtre n'émet aucun « dragleave » : un
+     compteur d'entrées et de sorties reste positif, et le voile ne part
+     jamais. Le survol émet « dragover » tant qu'il dure. */
+  check("le voile de dépôt s'efface faute de signal, sans compteur",
+    source.indexOf("var depotFin = null;") > 0 && source.indexOf("var surVol") < 0
+    && /addEventListener\("dragover"[^)]*\)\s*\{[\s\S]{0,80}depotActif\(\)/.test(source),
+    "compteur encore présent ou dragover sans relance");
+
   const n = (list.match(/class="card k-/g) || []).length;
   console.log("\n" + n + " cartes rendues, " + (failed ? failed + " échec(s)" : "aucun échec"));
   process.exit(failed ? 1 : 0);

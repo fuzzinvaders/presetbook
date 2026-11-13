@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.11.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.11.1   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,22 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.11.1 — 13 November 2026
+
+### Fixed
+
+- **The chain-drop overlay stayed up permanently**, on top of the whole page: a dashed border across
+  the screen and washed-out content behind it. `hidden` is an attribute whose effect comes from the
+  browser's default stylesheet, and any class setting a `display` beats it — `.dropzone{display:flex}`
+  cancelled it. A general rule now neutralises every hidden element, and a check lists the template's
+  hidden elements that relied on the default stylesheet alone. The existing test read the node's
+  `hidden` property, which was indeed `true`: only the computed style could tell.
+- **That was not the only way it got stuck**: it counted drag enters and leaves, and a file dropped
+  outside the window emits no leave. It now fades for want of a signal — hovering emits `dragover`
+  for as long as it lasts.
 
 ---
 

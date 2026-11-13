@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.11.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.11.1   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,23 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.11.1 — 13 novembre 2026
+
+### Corrigé
+
+- **Le voile du dépôt de chaîne restait affiché en permanence**, par-dessus toute la page : bordure
+  en pointillés sur tout l'écran et contenu délavé derrière. `hidden` est un attribut dont l'effet
+  vient de la feuille par défaut du navigateur, et la moindre classe qui donne un `display`
+  l'emporte — `.dropzone{display:flex}` l'annulait. Une règle générale neutralise désormais tout
+  élément caché, et une vérification relève les éléments du gabarit qui comptaient sur la feuille
+  par défaut seule. Le test existant regardait la propriété `hidden` du nœud, qui valait bien
+  `true` : seul le style calculé pouvait le dire.
+- **Le voile ne restait pas coincé que pour cette raison** : il comptait les entrées et les sorties
+  du glisser, or un fichier lâché hors de la fenêtre n'émet aucune sortie. Il s'efface maintenant
+  faute de signal — le survol émet `dragover` tant qu'il dure.
 
 ---
 
