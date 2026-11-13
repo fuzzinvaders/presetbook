@@ -227,6 +227,13 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
   background:var(--face); box-shadow:0 0 0 1px var(--edge);
 }
 .knob i{position:absolute; inset:0; transform:rotate(var(--a))}
+/* Le repère du cran, sur le pourtour et non sur le bouton : il appartient à
+   la plaque, pas à la pièce qui tourne. */
+.knob b{position:absolute; inset:-5px; transform:rotate(var(--c,0deg))}
+.knob b::before{
+  content:""; position:absolute; left:50%; top:0; width:2px; height:4px;
+  margin-left:-1px; background:var(--ink-3); border-radius:1px;
+}
 .knob i::before{
   content:""; position:absolute; left:50%; top:4px; width:3px; height:13px;
   margin-left:-1.5px; background:var(--ptr); border-radius:2px;
@@ -697,8 +704,8 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
-  "La Jazz Bass, une électronique plus loin : un volume général et une balance remplacent les deux volumes, et l'égaliseur actif trois bandes est cranté au neutre — chaque bande coupe autant qu'elle pousse. Treble et Bass partagent un bouton double, le Treble à l'étage haut. La balance tourne dans l'horaire vers le micro manche, l'inverse de ce qu'on suppose. Note la pile quelque part : une basse active ne se rattrape pas au volume quand elle faiblit.":
-    "The Jazz Bass, one set of electronics further on: a master volume and a blend replace the two volumes, and the three-band active EQ is detented at flat — each band cuts as much as it boosts. Treble and Bass share one stacked knob, Treble on top. The blend turns clockwise towards the neck pickup, the opposite of what you would assume. Write the battery down somewhere: an active bass cannot be made up for on the volume when it starts to fade.",
+  "La Jazz Bass, une électronique plus loin : un volume général et une balance remplacent les deux volumes, et l'égaliseur actif trois bandes est cranté au neutre — chaque bande coupe autant qu'elle pousse. Les cadrans se lisent en pourcentage de course : 50 % au cran — qui tombe en bas à gauche, pas à midi —, 0 % à la butée qui coupe, 100 % à celle qui pousse ; le repère gris marque le cran. Treble et Bass partagent un bouton double, le Treble à l'étage haut. La balance tourne dans l'horaire vers le micro manche, l'inverse de ce qu'on suppose. Note la pile quelque part : une basse active ne se rattrape pas au volume quand elle faiblit.":
+    "The Jazz Bass, one set of electronics further on: a master volume and a blend replace the two volumes, and the three-band active EQ is detented at flat — each band cuts as much as it boosts. The dials read as a percentage of travel: 50 % at the detent — which falls at the bottom left, not at twelve o'clock —, 0 % at the cut stop, 100 % at the boost stop; the grey mark shows the detent. Treble and Bass share one stacked knob, Treble on top. The blend turns clockwise towards the neck pickup, the opposite of what you would assume. Write the battery down somewhere: an active bass cannot be made up for on the volume when it starts to fade.",
   "Deux humbuckers, un sélecteur à trois positions, un volume et une tonalité. Passive : rien ne coupe ni ne booste, et la tonalité ne fait que refermer le haut du spectre. Tout le reste se joue au sélecteur et à la main droite.":
     "Two humbuckers, a three-way selector, one volume and one tone. Passive: nothing cuts or boosts, and the tone control only closes down the top end. Everything else is played on the selector and with the right hand.",
   "Basse deux micros, sélecteur 3 positions":
@@ -1902,8 +1909,19 @@ function hourLabel(v){
   if (LANG === "en") return h + ":" + (m < 10 ? "0" + m : m);
   return h + " h" + (m ? " " + (m < 10 ? "0" + m : m) : "");
 }
-function hourAngle(v){ return (v * 30) + "deg"; }
+/**
+ * L'aiguille. Le cran est en haut sur la plupart des cadrans ; une plaque peut
+ * le porter ailleurs — « neutre » donne alors sa position en degrés.
+ */
+function hourAngle(v, c){ return (((c && c.neutre) || 0) + v * 30) + "deg"; }
+/** Une course en pourcentage : 0 % à la butée qui coupe, 50 % au cran. */
+function pctLabel(v){
+  return dec(String(Math.round((50 + Number(v) * 10) * 10) / 10)) + " %";
+}
 function pctToCrans(p){ return Math.round(((p - 50) / 10) * 4) / 4; }  /* 55 % -> +0,5 ; 52 % -> +0,25 */
+/* Sans arrondi au quart de cran : une commande lue en pourcentage n'a pas de
+   cran intermédiaire à viser, donc 52 % doit rester 52 %. */
+function pctCrans(p){ return (p - 50) / 10; }
 function ampAngle(v){ return (-150 + (v - 1) * (300 / 9)) + "deg"; }
 function ampLabel(v){ return dec(v); }
 /* Position exacte plutôt qu'un palier : c'est en pourcentage de course qu'on lit un balancer. */
@@ -2041,7 +2059,9 @@ var SEED = [
     "Bass 55 %, Treble 52 %."),
     "All Star","Smash Mouth"),
   forSong(mat("b-crossfire", "deluxejazz", "bass", "Crossfire", ["blues","cover"],
-    {vol:pctToCrans(100), balance:55, "eq.b":pctToCrans(52), "eq.m":pctToCrans(55), "eq.t":pctToCrans(50)},
+    /* Au pourcent près : cette plaque se lit en pourcentage, donc arrondir au
+       quart de cran ferait afficher 52,5 % là où la fiche dit 52 %. */
+    {vol:pctCrans(100), balance:55, "eq.b":pctCrans(52), "eq.m":pctCrans(55), "eq.t":pctCrans(50)},
     "Accordée un demi-ton plus bas : Eb Ab Db Gb. Volume à 100 %, le reste en pourcentage de " +
     "course : balance 45 % manche / 55 % chevalet, Bass 52 %, Middle 55 %, Treble 50 % — " +
     "un préampli presque à plat, c'est la chaîne qui fait le son."),
@@ -2353,21 +2373,29 @@ var GEAR = {
     kind:"bass", brand:"Fender", model:"Deluxe Active Jazz Bass", face:"bass",
     note:"La Jazz Bass, une électronique plus loin : un volume général et une balance " +
          "remplacent les deux volumes, et l'égaliseur actif trois bandes est cranté au neutre — " +
-         "chaque bande coupe autant qu'elle pousse. Treble et Bass partagent un bouton double, " +
+         "chaque bande coupe autant qu'elle pousse. Les cadrans se lisent en pourcentage de " +
+         "course : 50 % au cran — qui tombe en bas à gauche, pas à midi —, 0 % à la butée qui " +
+         "coupe, 100 % à celle qui pousse ; le repère gris marque le cran. " +
+         "Treble et Bass partagent un bouton double, " +
          "le Treble à l'étage haut. La balance tourne dans l'horaire vers le micro manche, " +
          "l'inverse de ce qu'on suppose. Note la pile quelque part : une basse active " +
          "ne se rattrape pas au volume quand elle faiblit.",
     controls:[
-      {k:"vol", t:"clock", l:"Volume", d:5},
+      /* Cette plaque se lit en pourcentage de course, et son cran ne tombe pas
+         à midi : il est en bas à gauche, à 225°. « u » dit la lecture,
+         « neutre » dit où pointe l'aiguille au cran. La valeur stockée ne
+         change pas — c'est toujours le nombre de crans depuis le neutre, soit
+         (pourcentage − 50) / 10. */
+      {k:"vol", t:"clock", l:"Volume", d:5, u:"pct", neutre:225},
       {k:"balance", t:"balance", l:"Balance", a:"M", b:"C", min:0, max:100, step:1, d:50},
       /* L'ordre de la plaque, relevé sur le schéma d'usine Fender 013-6700 :
          volume, pan, puis un bouton double — Treble à l'étage haut, Bass à
          l'étage bas — et le Middle en dernier, sur son petit bouton. Les clés
          ne bougent pas : une fiche déjà écrite garde ses valeurs, c'est
          l'affichage qui se remet à l'endroit. */
-      {k:"eq.t", t:"clock", l:"Treble (étage haut)", d:0},
-      {k:"eq.b", t:"clock", l:"Bass (étage bas)", d:0},
-      {k:"eq.m", t:"clock", l:"Middle", d:0}
+      {k:"eq.t", t:"clock", l:"Treble (étage haut)", d:0, u:"pct", neutre:225},
+      {k:"eq.b", t:"clock", l:"Bass (étage bas)", d:0, u:"pct", neutre:225},
+      {k:"eq.m", t:"clock", l:"Middle", d:0, u:"pct", neutre:225}
     ],
     extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
   },
@@ -3733,11 +3761,21 @@ function esc(s){
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
   });
 }
-function knob(angle, cls){ return '<span class="knob ' + (cls||"") + '" style="--a:' + angle + '"><i></i></span>'; }
-function dial(label, value, angle, cls){
-  return '<div class="dial">' + knob(angle, cls) +
+/**
+ * Le repère gris sur le pourtour marque le cran quand il n'est pas en haut :
+ * sans lui, une aiguille en bas à gauche n'a plus de point de comparaison et
+ * « 50 % » ne se voit pas sur le dessin.
+ */
+function knob(angle, cls, cran){
+  return '<span class="knob ' + (cls||"") + '" style="--a:' + angle + '">' +
+         (cran ? '<b style="--c:' + cran + '"></b>' : "") + '<i></i></span>';
+}
+function dial(label, value, angle, cls, cran){
+  return '<div class="dial">' + knob(angle, cls, cran) +
          '<span class="dl">' + esc(label) + '</span><span class="dv">' + esc(value) + '</span></div>';
 }
+/** La position du cran, quand la commande en annonce une. */
+function cranAngle(c){ return c && c.neutre ? c.neutre + "deg" : ""; }
 
 /* ---- lecture d'un réglage selon le type de commande ---- */
 function ctrlValue(p, c){
@@ -3759,7 +3797,7 @@ function ctrlOff(g, p, c){
 }
 function ctrlText(c, v){
   if (v === null) return "—";
-  if (c.t === "clock") return hourLabel(v);
+  if (c.t === "clock") return c.u === "pct" ? pctLabel(v) : hourLabel(v);
   if (c.t === "balance") return balLabel(v, c);
   if (c.t === "select") return t(selValue(c, v));
   if (c.t === "switch") return v ? "ON" : "OFF";
@@ -3781,7 +3819,7 @@ function findCtrl(p, key){
 }
 function ctrlAngle(c, v){
   if (v === null) return "0deg";
-  if (c.t === "clock") return hourAngle(v);
+  if (c.t === "clock") return hourAngle(v, c);
   var min = c.min === undefined ? 1 : c.min, max = c.max === undefined ? 10 : c.max;
   var t = (Number(v) - min) / (max - min);
   return (-150 + Math.max(0, Math.min(1, t)) * 300) + "deg";
@@ -3802,7 +3840,8 @@ function gearStrip(p){
     }
     cls = g.face + (g.dim && p.mode === g.dim ? " cool" : "") +
           (g.hot && getPath(p, g.hot) ? " dr" : "") + (off ? " off" : "");
-    h += dial(ctrlLabel(g, p, c), off ? "—" : ctrlText(c, v), off ? "0deg" : ctrlAngle(c, v), cls);
+    h += dial(ctrlLabel(g, p, c), off ? "—" : ctrlText(c, v),
+              off ? "0deg" : ctrlAngle(c, v), cls, cranAngle(c));
   }
   return h + "</div>";
 }
@@ -5301,7 +5340,10 @@ function gearEditor(p){
       continue;
     }
     if (c.t === "clock"){
-      h += sl(c.k, ctrlLabel(g, p, c), v, -5, 5, 0.25, off ? "hors circuit" : hourLabel(v), off);
+      /* Au pourcent quand la commande se lit ainsi : un quart de cran vaut
+         2,5 %, et personne ne règle une basse par 2,5 %. */
+      h += sl(c.k, ctrlLabel(g, p, c), v, -5, 5, c.u === "pct" ? 0.1 : 0.25,
+              off ? "hors circuit" : ctrlText(c, v), off);
     } else if (c.t === "balance"){
       h += sl(c.k, c.l + " " + (c.a || "1") + " ⇄ " + (c.b || "2"), v,
               c.min || 0, c.max || 100, c.step || 2, balLabel(v, c), off);
@@ -6689,7 +6731,8 @@ window.__pb = {
   gearFormBody: gearFormBody, getGDraft: function(){ return gdraft; },
   getDraft: function(){ return draft; }, isNewDraft: function(){ return isNew; },
   ctrlText: ctrlText, ctrlAngle: ctrlAngle, ctrlOff: ctrlOff,
-  hourLabel: hourLabel, balLabel: balLabel, pctToCrans: pctToCrans,
+  hourLabel: hourLabel, balLabel: balLabel, pctToCrans: pctToCrans, pctCrans: pctCrans,
+  pctLabel: pctLabel, cranAngle: cranAngle,
   openEditor: openEditor, openIO: openIO, showGate: showGate, library: library,
   tf: tf, renderChrome: renderChrome,
   presetFile: presetFile, addPreset: addPreset, findPreset: findPreset, fileName: fileName,

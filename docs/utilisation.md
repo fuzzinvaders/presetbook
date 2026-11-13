@@ -214,11 +214,15 @@ is remembered with your data, and `?lang=en` forces it from a link.
 Une carte montre le matériel concerné, les états qui ne sont pas des cadrans (mode, balance,
 interrupteurs) sous forme d'étiquettes, puis les cadrans dans **l'ordre de la façade**.
 
-Deux façons de lire un cadran, selon le matériel :
+Trois façons de lire un cadran, selon le matériel :
 
 - **en heures d'horloge**, pour un bouton cranté au milieu comme sur la Yamaha BB734A : midi est le
   cran neutre, où le bouton ne fait rien. Une heure vaut un cran de correction, et l'affichage
   descend au quart de cran — `12 h 15` est une position réelle, pas un arrondi ;
+- **en pourcentage de course**, pour une plaque dont le cran ne tombe pas à midi — la Fender Deluxe
+  Active Jazz Bass le porte **en bas à gauche**. On compte alors sur la course entière : `50 %` au
+  cran, `0 %` à la butée qui coupe, `100 %` à celle qui pousse. Un **repère gris sur le pourtour**
+  marque le cran, sans quoi une aiguille en bas à gauche n'aurait plus de point de comparaison ;
 - **sur son échelle**, pour un bouton gradué comme le 1 à 10 du Fender Rumble 40. Les décimales
   suivent le pas du bouton.
 

@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.11.1   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.11.2   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,23 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.11.2 — 13 November 2026
+
+### Fixed
+
+- **The Fender Deluxe Active Jazz Bass's dials read like a BB's**, in hours from twelve, with the
+  detent pointing up. On this plate the detent does not fall at twelve but **at the bottom left**,
+  and travel reads **as a percentage**: 50 % at the detent, 0 % at the cut stop, 100 % at the boost
+  stop. A grey mark on the rim shows the detent — without it, a needle at the bottom left has
+  nothing to be compared against. Nothing changes in the data: the stored value is still the number
+  of notches from the detent, exactly (percentage − 50) / 10.
+- The shipped "Crossfire" values were rounded to the quarter notch, which displayed 52.5 % where the
+  preset says 52 %. A control read as a percentage has no intermediate step to aim for.
+- The editor steps by one percent on this plate rather than by quarter notches — nobody sets a bass
+  by 2.5 %.
 
 ---
 

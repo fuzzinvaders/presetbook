@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.11.1   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.11.2   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,23 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.11.2 — 13 novembre 2026
+
+### Corrigé
+
+- **Les cadrans de la Fender Deluxe Active Jazz Bass se lisaient comme ceux d'une BB**, en heures
+  depuis midi, aiguille du cran en haut. Sur cette plaque le cran ne tombe pas à midi mais **en bas
+  à gauche**, et la course se lit **en pourcentage** : 50 % au cran, 0 % à la butée qui coupe,
+  100 % à celle qui pousse. Un repère gris sur le pourtour marque le cran — sans lui, une aiguille
+  en bas à gauche n'a plus de point de comparaison. Rien ne change dans les données : la valeur
+  stockée reste le nombre de crans depuis le neutre, soit exactement (pourcentage − 50) / 10.
+- Les valeurs livrées de « Crossfire » étaient arrondies au quart de cran, ce qui affichait 52,5 %
+  là où la fiche dit 52 %. Une commande lue en pourcentage n'a pas de palier intermédiaire à viser.
+- L'éditeur avance au pourcent sur cette plaque, et non par quarts de cran — personne ne règle une
+  basse par 2,5 %.
 
 ---
 

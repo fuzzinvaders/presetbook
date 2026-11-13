@@ -200,8 +200,13 @@ which lets you share a link already in the right language.
 A card shows the gear concerned, the states that are not dials (mode, blend, switches) as labels,
 then the dials **in the order of the front panel**.
 
-Two ways to read a dial, depending on the gear:
+Three ways to read a dial, depending on the gear:
 
+- **as a percentage of travel**, for a plate whose detent does not fall at twelve — the Fender
+  Deluxe Active Jazz Bass carries it at the **bottom left**. The whole travel is then counted:
+  `50 %` at the detent, `0 %` at the cut stop, `100 %` at the boost stop. A **grey mark on the
+  rim** shows the detent, without which a needle at the bottom left would have nothing to be
+  compared against;
 - **in clock hours**, for a knob with a centre detent like the Yamaha BB734A's: noon is the neutral
   notch, where the knob does nothing. One hour is one notch of correction, and the display goes down
   to a quarter notch — `12 h 15` is a real position, not a rounding;

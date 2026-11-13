@@ -302,5 +302,51 @@ check("le bouton double est nommé étage par étage",
 check("la note dit dans quel sens tourne la balance",
   /horaire vers le micro manche/.test(jazz.note), jazz.note.slice(0, 120));
 
+/* --- une plaque qui ne se lit pas en heures ---
+ * Sur la Deluxe Active Jazz Bass le cran ne tombe pas à midi mais en bas à
+ * gauche, et une course se lit en pourcentage : 50 % au cran, 0 % à la butée
+ * qui coupe, 100 % à celle qui pousse. Rien ne change dans les données — la
+ * valeur stockée reste le nombre de crans depuis le neutre.
+ */
+check("le cran se lit 50 %", pb.pctLabel(0) === "50 %", pb.pctLabel(0));
+check("la butée qui pousse, 100 %", pb.pctLabel(5) === "100 %", pb.pctLabel(5));
+check("celle qui coupe, 0 %", pb.pctLabel(-5) === "0 %", pb.pctLabel(-5));
+check("et le quart de cran ne s'invente pas un palier",
+  pb.pctLabel(0.2) === "52 %", pb.pctLabel(0.2));
+
+const jazzT = jazz.controls.filter((c) => c.k.indexOf("eq.") === 0 || c.k === "vol");
+check("les cadrans de la plaque se lisent en pourcentage",
+  jazzT.length === 4 && jazzT.every((c) => c.u === "pct"),
+  jazzT.map((c) => c.k + ":" + c.u).join(" "));
+check("et portent leur cran en bas à gauche",
+  jazzT.every((c) => c.neutre === 225), jazzT.map((c) => c.k + ":" + c.neutre).join(" "));
+
+check("l'aiguille part du cran, pas de midi",
+  pb.ctrlAngle({ t: "clock", neutre: 225 }, 0) === "225deg",
+  pb.ctrlAngle({ t: "clock", neutre: 225 }, 0));
+check("elle pousse vers la droite",
+  pb.ctrlAngle({ t: "clock", neutre: 225 }, 5) === "375deg",
+  pb.ctrlAngle({ t: "clock", neutre: 225 }, 5));
+check("elle coupe vers la gauche",
+  pb.ctrlAngle({ t: "clock", neutre: 225 }, -5) === "75deg",
+  pb.ctrlAngle({ t: "clock", neutre: 225 }, -5));
+check("un cadran ordinaire garde son cran à midi",
+  pb.ctrlAngle({ t: "clock" }, 0) === "0deg" && pb.ctrlText({ t: "clock" }, 0) === "12 h",
+  pb.ctrlText({ t: "clock" }, 0));
+
+/* Le repère gris n'apparaît que là où il apprend quelque chose : une aiguille
+   en bas à gauche n'a plus de point de comparaison sans lui. */
+check("le cran est marqué sur le pourtour",
+  pb.cranAngle({ neutre: 225 }) === "225deg" && pb.cranAngle({}) === "",
+  pb.cranAngle({ neutre: 225 }) + " / " + pb.cranAngle({}));
+
+/* La fiche livrée doit afficher ce que dit sa note, au pourcent près. */
+const cross = pb.findPreset("b-crossfire");
+const lu = (cle) => pb.ctrlText(pb.findCtrl(cross, cle), pb.getPath(cross, cle));
+check("Crossfire : volume à 100 %", lu("vol") === "100 %", lu("vol"));
+check("Crossfire : Bass à 52 %", lu("eq.b") === "52 %", lu("eq.b"));
+check("Crossfire : Middle à 55 %", lu("eq.m") === "55 %", lu("eq.m"));
+check("Crossfire : Treble à 50 %", lu("eq.t") === "50 %", lu("eq.t"));
+
 console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
 process.exit(failed ? 1 : 0);
