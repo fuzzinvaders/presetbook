@@ -47,7 +47,7 @@ Just below, the sorting bar:
   `pedalier` finds "Pédalier", which matters when you are typing on a phone. The list is rebuilt a
   fraction of a second after you stop typing rather than on every keystroke, which keeps the field
   responsive even with a large library;
-- the **grouping**, by gear or by song;
+- the **grouping**, by gear, brand, song, artist or style;
 - the **filters**, by gear model and by style — see below;
 - **Print**, which puts what is displayed onto paper.
 
@@ -133,12 +133,15 @@ nothing.
 Filtering on a **pedal** also brings back the **pedalboards** that use it: that is the right way to
 find where a given effect earns its place.
 
-The sorting bar at the top follows the same idea: **By gear**, **By brand** or **By song**. A
-pedalboard mixes the brands of its pedals and a Reaper chain has none — those are plugins: both are
-filed under their family rather than split apart.
+The sorting bar at the top follows the same idea: **By gear**, **By brand**, **By song**, **By
+artist** or **By style**. A pedalboard mixes the brands of its pedals and a Reaper chain has none —
+those are plugins: both are filed under their family rather than split apart.
+
+By style, a preset carrying two styles appears under both: that is what a style is for. The list
+bar says so — "2 presets · 6 appearances" — rather than letting the count look wrong.
 
 Six URL parameters are read at load time, so a view can be bookmarked or sent to someone:
-`?q=motown`, `?kind=bass`, `?group=song|brand|kind`, `?gear=lionheart20,rumble40`,
+`?q=motown`, `?kind=bass`, `?group=kind|brand|song|artist|tag`, `?gear=lionheart20,rumble40`,
 `?brand=Ampeg,Vox` and `?tag=blues,rock` — the last three as comma-separated lists. A seventh,
 `?edit=<id>`, opens one preset directly.
 

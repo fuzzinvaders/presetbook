@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.9.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.10.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,33 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.10.0 — 13 November 2026
+
+### Added
+
+- **Chain links collapse.** One click on a link's heading, and "Collapse all" for the whole chain.
+  Measured on the "All Star" chain: **1,230 px expanded, 214 px collapsed**, and the Reaper tab
+  drops from 2,892 to 1,110 px. The heading keeps the number, the plugin, its role and the "out of
+  circuit" mark: what you need to find the right link before opening it. As with sections, printing
+  reopens everything.
+- **Two more groupings: by artist and by style.** Both existed as filters without ever being able
+  to lay out the page. What has neither goes to the end under "No artist" or "No style", never
+  under "Others": unlike a gear name, an artist's name is written nowhere else on the card.
+- `?group=` accepts `artist` and `tag` alongside `kind`, `brand` and `song`.
+
+### Changed
+
+- **The list bar counts presets and their appearances.** By style, a preset carrying two styles
+  appears under both — which is what a style is for. Announcing "2 presets" above six cards would
+  have looked like a bug: it writes "2 presets · 6 appearances" as soon as the two numbers differ.
+
+### Fixed
+
+- Collapsing a section recounted the document's cards to rebuild the list bar. That was right as
+  long as a preset appeared once; the last render now keeps its own figures.
 
 ---
 

@@ -47,7 +47,7 @@ Juste en dessous, la barre de tri :
   accents** : `pedalier` trouve « Pédalier », ce qui compte quand on tape sur un téléphone. La
   liste se recompose une fraction de seconde après la frappe plutôt qu'à chaque touche, ce qui garde
   le champ fluide même avec une grande bibliothèque ;
-- le **regroupement**, par matériel ou par morceau ;
+- le **regroupement**, par matériel, par marque, par morceau, par artiste ou par style ;
 - les **filtres**, par modèle de matériel et par style — voir plus bas ;
 - **Imprimer**, qui met sur papier ce qui est affiché.
 
@@ -135,12 +135,17 @@ pastille tiennent compte des autres filtres déjà posés, sans se compter eux-m
 Filtrer sur une **pédale** ramène aussi les **pédaliers** qui l'emploient : c'est le bon moyen de
 retrouver où sert un effet donné.
 
-Le tri du haut de page suit la même idée : **Par matériel**, **Par marque** ou **Par morceau**. Un
-pédalier mêle les marques de ses pédales et une chaîne Reaper n'en a aucune — ce sont des plugins :
-les uns et les autres sont rangés sous leur famille plutôt qu'éclatés.
+Le tri du haut de page suit la même idée : **Par matériel**, **Par marque**, **Par morceau**,
+**Par artiste** ou **Par style**. Un pédalier mêle les marques de ses pédales et une chaîne Reaper
+n'en a aucune — ce sont des plugins : les uns et les autres sont rangés sous leur famille plutôt
+qu'éclatés.
+
+Par style, une fiche portant deux styles paraît sous les deux : c'est ce qu'on attend d'un style.
+La barre de liste l'annonce — « 2 fiches · 6 apparitions » — plutôt que de laisser croire à une
+erreur de compte.
 
 Six paramètres d'URL sont lus au chargement, ce qui permet de mettre une vue en favori ou de
-l'envoyer à quelqu'un : `?q=motown`, `?kind=bass`, `?group=song|brand|kind`,
+l'envoyer à quelqu'un : `?q=motown`, `?kind=bass`, `?group=kind|brand|song|artist|tag`,
 `?gear=lionheart20,rumble40`, `?brand=Ampeg,Vox` et `?tag=blues,rock` — les trois derniers en
 listes séparées par des virgules. Un septième, `?edit=<identifiant>`, ouvre directement une fiche.
 

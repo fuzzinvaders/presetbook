@@ -366,5 +366,77 @@ const acts = src.slice(src.indexOf('<div class="acts">'), src.indexOf('id="menu-
 check("seul « Nouveau preset » reste en évidence",
   (acts.match(/<button/g) || []).length === 2, acts);
 
+/* --- les maillons d'une chaîne se replient aussi --- */
+/*
+ * Une chaîne à cinq maillons tient sur deux écrans : les tableaux de bandes et
+ * les grilles de paramètres sont justement ce qu'on vient lire, mais pas tous
+ * à la fois. Le titre du maillon — numéro, plugin, rôle — suffit à retrouver
+ * celui qu'on cherche, et le reste se replie derrière.
+ */
+const chaines = run(page, { search: "?kind=reaper" });
+const listeFx = chaines.__nodes.get("list").innerHTML;
+check("chaque maillon a un titre cliquable",
+  /<button class="slot-h" data-fold="fx:[^"]+" aria-expanded="(true|false)">/.test(listeFx),
+  listeFx.slice(0, 220));
+check("le corps du maillon est séparé de son titre",
+  listeFx.indexOf('<div class="slot-b">') > 0, listeFx.slice(0, 220));
+check("la clé d'un maillon nomme la fiche et le rang",
+  (listeFx.match(/data-fold="fx:[^":]+:\d+"/g) || []).length >= 3,
+  (listeFx.match(/data-fold="fx:[^"]+"/g) || []).slice(0, 4).join(" | "));
+check("une chaîne de plusieurs maillons propose de tout replier",
+  listeFx.indexOf('data-foldfx="close"') > 0, listeFx.slice(0, 220));
+check("et elle annonce combien ils sont",
+  /class="c">\d+ maillons</.test(listeFx), listeFx.slice(0, 220));
+
+/* Un maillon seul se replie d'un clic sur son titre : un raccourci au-dessus
+   ne ferait que répéter le bouton d'en dessous. */
+const seul = chaines.__pb.chainView({ id: "x", chain: [{ plugin: "ReaEQ" }] });
+check("une chaîne d'un seul maillon n'a pas de raccourci",
+  seul.indexOf("data-foldfx") < 0 && seul.indexOf('data-fold="fx:x:0"') > 0, seul.slice(0, 200));
+
+check("le papier rouvre les maillons repliés",
+  bloc.indexOf('.slot[data-folded="1"] .slot-b{display:block}') > 0, bloc.slice(0, 400));
+check("et il retire les chevrons et le raccourci",
+  bloc.indexOf(".slot-h .chev") > 0 && bloc.indexOf(".chain-h .fxall") > 0);
+check("« Tout replier » de la barre ne vise que les sections",
+  src.indexOf('document.querySelectorAll("#list .grp-b")') > 0);
+
+/* --- ranger par artiste et par style --- */
+/*
+ * Les deux existaient comme filtres sans jamais ranger la page. Un style
+ * appartient à plusieurs fiches et une fiche à plusieurs styles : elle paraît
+ * donc sous chacun des siens, et la barre de liste continue de compter les
+ * fiches — pas les cartes — en disant combien de fois elles paraissent.
+ */
+const parArtiste = titresDe(run(page, { search: "?group=artist" }));
+check("« Par artiste » range sous le nom de l'artiste",
+  parArtiste.indexOf("Smash Mouth") >= 0, parArtiste.join(" | "));
+check("le nom d'un artiste n'est jamais remplacé par « Autres »",
+  parArtiste.indexOf("Autres") < 0, parArtiste.join(" | "));
+check("ce qui n'a pas d'artiste vient en dernier",
+  parArtiste[parArtiste.length - 1] === "Sans artiste", parArtiste.join(" | "));
+
+const parStyle = run(page, { search: "?group=tag" });
+const titresStyle = titresDe(parStyle);
+check("« Par style » range sous chaque style",
+  titresStyle.indexOf("rock") >= 0 && titresStyle.indexOf("blues") >= 0, titresStyle.join(" | "));
+check("les styles sont dans l'ordre alphabétique",
+  titresStyle.filter((x) => x !== "Sans style").join("|")
+  === titresStyle.filter((x) => x !== "Sans style").slice().sort((a, b) => a.localeCompare(b, "fr")).join("|"),
+  titresStyle.join(" | "));
+const listeStyle = parStyle.__nodes.get("list").innerHTML;
+check("une fiche à deux styles paraît sous les deux",
+  (listeStyle.match(/data-id="b-gospel"/g) || []).length === 2,
+  String((listeStyle.match(/data-id="b-gospel"/g) || []).length));
+check("la barre de liste compte alors les fiches et leurs apparitions",
+  /class="n">\d+ fiches · \d+ apparitions</.test(parStyle.__nodes.get("listbar").innerHTML),
+  parStyle.__nodes.get("listbar").innerHTML);
+check("sans doublon, elle ne parle que des fiches",
+  vue.__nodes.get("listbar").innerHTML.indexOf("apparitions") < 0,
+  vue.__nodes.get("listbar").innerHTML);
+
+check("un regroupement inconnu laisse celui par défaut",
+  run(page, { search: "?group=nawak" }).__pb.ui().group === "kind");
+
 console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
 process.exit(failed ? 1 : 0);

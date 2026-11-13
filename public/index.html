@@ -299,7 +299,19 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
 .chain{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px}
 .slot{background:var(--panel-2); border:1px solid var(--line); border-left:2px solid var(--reaper); border-radius:4px; padding:8px 10px 9px}
 .slot.bx{border-left-style:dashed; opacity:.72}
-.slot-h{display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; margin-bottom:6px}
+.chain-h{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:6px}
+.chain-h .c,.chain-h .fxall{font-family:"IBM Plex Mono",monospace; font-size:10px;
+  letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3)}
+.chain-h .fxall{border:0; background:transparent; padding:0; cursor:pointer}
+.chain-h .fxall:hover{color:var(--ink)}
+/* Tout le titre du maillon est cliquable : viser un chevron au doigt n'est
+   pas une cible. */
+.slot-h{display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; margin-bottom:6px;
+  width:100%; padding:0; border:0; background:transparent; color:inherit; text-align:left; cursor:pointer}
+.slot-h .chev{font-size:9px; color:var(--ink-3); flex:none; align-self:center; transition:transform .15s ease}
+.slot-h[aria-expanded="false"]{margin-bottom:0}
+.slot-h[aria-expanded="false"] .chev{transform:rotate(-90deg)}
+.slot[data-folded="1"] .slot-b{display:none}
 .slot-h .n{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--ink-3)}
 .slot-h .p{font-weight:600; font-size:13.5px}
 .slot-h .r{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ink-3); letter-spacing:.04em}
@@ -520,7 +532,8 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
   body{background:#fff}
   .wrap{max-width:none; padding:0}
   .grp[data-folded="1"] .grid{display:grid}
-  .grp-b .chev{display:none}
+  .slot[data-folded="1"] .slot-b{display:block}
+  .grp-b .chev, .slot-h .chev, .chain-h .fxall{display:none}
   header.top, .bar, .filters, .listbar, .foot, .veil, .gate, .toast,
   .card-f, [id^="kofi-"], iframe[class*="floatingchat"]{ display:none !important; }
 
@@ -819,6 +832,13 @@ var EN = {
     "The bridge pickup on its own, nasal and dry. Opening the neck up even slightly thickens it at once, so it stays at zero.",
   "Marque": "Brand",
   "Par marque": "By brand",
+  "Par artiste": "By artist",
+  "Par style": "By style",
+  "Sans morceau": "No song",
+  "Sans artiste": "No artist",
+  "Sans style": "No style",
+  "maillons": "links",
+  "apparitions": "appearances",
   "Chercher un nom, un auteur…": "Search a name, an author…",
   "Chercher dans les fiches partagées": "Search the shared presets",
   "Aucune fiche partagée ne correspond.": "No shared preset matches.",
@@ -1518,7 +1538,9 @@ function renderChrome(){
   grp.innerHTML = tHtml(
     '<option value="kind">Par matériel</option>' +
     '<option value="brand">Par marque</option>' +
-    '<option value="song">Par morceau</option>');
+    '<option value="song">Par morceau</option>' +
+    '<option value="artist">Par artiste</option>' +
+    '<option value="tag">Par style</option>');
   grp.value = ui.group;
 }
 
@@ -2633,6 +2655,7 @@ var LS_KEY = "presetbook-v1";
 var LS_KEY_OLD = "rack-presets-v1";
 var S = {v:1, custom:[], overrides:{}, gear:{}, hidden:[]};
 var store = {mode:"memory", api:false, writer:null, downloads:null};
+var GROUPES = ["kind", "brand", "song", "artist", "tag"];
 var ui = {kind:"all", q:"", group:"kind", gear:[], brands:[], tags:[], open:false};
 
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
@@ -2756,7 +2779,7 @@ function readUrlFilter(){
     if (ui.gear.length || ui.brands.length || ui.tags.length) ui.open = true;
     if (q) ui.q = q;
     if (kind === "all" || KINDS[kind]) ui.kind = kind;   /* toute famille connue */
-    if (group === "song" || group === "kind" || group === "brand") ui.group = group;
+    if (GROUPES.indexOf(group) >= 0) ui.group = group;
     document.getElementById("q").value = ui.q;
     document.getElementById("grp").value = ui.group;
   } catch (e) { /* pas d'URL exploitable : on garde les valeurs par défaut */ }
@@ -3852,18 +3875,29 @@ function bandTable(s){
 function chainView(p){
   var rows = p.chain || [];
   if (!rows.length) return '<p class="hint">Chaîne vide — ajoute des plugins avec « Modifier ».</p>';
-  var h = '<ol class="chain">';
+  var corps = "", plies = 0;
   for (var i=0;i<rows.length;i++){
     var s = rows[i], off = s.on === false;
-    h += '<li class="slot' + (off ? " bx" : "") + '">' +
-      '<div class="slot-h"><span class="n">' + (i+1) + '</span><span class="p">' + esc(s.plugin) + '</span>' +
+    var cle = foldFx(p.id, i), plie = isFolded(cle);
+    if (plie) plies++;
+    corps += '<li class="slot' + (off ? " bx" : "") + '" data-folded="' + (plie ? 1 : 0) + '">' +
+      '<button class="slot-h" data-fold="' + esc(cle) + '" aria-expanded="' + (!plie) + '">' +
+      '<span class="chev" aria-hidden="true">▾</span>' +
+      '<span class="n">' + (i+1) + '</span><span class="p">' + esc(s.plugin) + '</span>' +
       (s.role ? '<span class="r">' + esc(s.role) + '</span>' : "") +
-      (off ? '<span class="bp">hors circuit</span>' : "") + '</div>' +
-      bandTable(s) + paramGrid(s) +
-      (s.settings ? '<p class="sn">' + esc(s.settings) + '</p>' : "") +
+      (off ? '<span class="bp">hors circuit</span>' : "") + '</button>' +
+      '<div class="slot-b">' + bandTable(s) + paramGrid(s) +
+      (s.settings ? '<p class="sn">' + esc(s.settings) + '</p>' : "") + '</div>' +
       '</li>';
   }
-  return h + '</ol>';
+  /* Un maillon seul se replie d'un clic sur son titre ; à partir de deux, le
+     geste mérite un raccourci. */
+  var tete = rows.length > 1
+    ? '<div class="chain-h"><span class="c">' + rows.length + ' ' + t("maillons") + '</span>' +
+      '<button class="fxall" data-foldfx="' + (plies >= rows.length ? "open" : "close") + '">' +
+      (plies >= rows.length ? "Tout déplier" : "Tout replier") + '</button></div>'
+    : "";
+  return tete + '<ol class="chain">' + corps + '</ol>';
 }
 
 function card(p){
@@ -4078,6 +4112,9 @@ function saveFolded(){
   try { window.localStorage.setItem(FOLD_KEY, JSON.stringify(folded)); } catch (e) { /* sans objet */ }
 }
 function isFolded(key){ return folded[key] === 1; }
+/* Les sections se repèrent par leur titre, les maillons par la fiche et leur
+   rang : « fx: » tient les deux familles à l'écart l'une de l'autre. */
+function foldFx(id, i){ return "fx:" + id + ":" + i; }
 function setFolded(key, on){
   if (on) folded[key] = 1; else delete folded[key];
   saveFolded();
@@ -4172,6 +4209,12 @@ function render(){
       if (b === "Sans morceau") return -1;
       return a.localeCompare(b, "fr");
     }).forEach(function(k){ groups.push([k, by[k]]); });
+  } else if (ui.group === "artist"){
+    groups = parClef(shown, function(p){
+      return (p.song && p.song.artist) ? [p.song.artist] : [];
+    }, "Sans artiste");
+  } else if (ui.group === "tag"){
+    groups = parClef(shown, function(p){ return p.tags || []; }, "Sans style");
   } else if (ui.group === "brand"){
     var byBrand = {}, ordre = [];
     shown.forEach(function(p){
@@ -4204,7 +4247,10 @@ function render(){
   /* Un titre par fiche isolée n'apprend rien : la carte porte déjà le nom du
      matériel ou de la marque. En « Par morceau », au contraire, le titre est
      l'information — on n'y touche pas. */
-  if (ui.group !== "song") groups = rassembleIsoles(groups);
+  if (ui.group === "kind" || ui.group === "brand") groups = rassembleIsoles(groups);
+
+  barre.fiches = shown.length;
+  barre.cartes = groups.reduce(function(n2, g){ return n2 + g[1].length; }, 0);
 
   var replies = 0;
   host.innerHTML = tHtml(groups.map(function(g){
@@ -4219,7 +4265,31 @@ function render(){
            '<div class="grid">' + g[1].map(card).join("") + '</div></section>';
   }).join(""));
 
-  renderListBar(shown.length, groups.length, replies);
+  renderListBar(groups.length, replies);
+}
+
+/**
+ * Regroupe sur une ou plusieurs clés par fiche, par ordre alphabétique, ce qui
+ * n'a pas de clé à la fin. Une fiche à deux styles paraît sous les deux : c'est
+ * ce qu'on attend d'un style, et la barre de liste compte les fiches, pas les
+ * apparitions.
+ */
+function parClef(fiches, clefs, vide){
+  var par = {}, ordre = [];
+  fiches.forEach(function(p){
+    var ks = clefs(p);
+    if (!ks.length) ks = [vide];
+    ks.forEach(function(k){
+      if (!par[k]){ par[k] = []; ordre.push(k); }
+      par[k].push(p);
+    });
+  });
+  ordre.sort(function(a, b){
+    if (a === vide) return 1;
+    if (b === vide) return -1;
+    return a.localeCompare(b, "fr");
+  });
+  return ordre.map(function(k){ return [k, par[k]]; });
 }
 
 /** Les groupes d'une seule fiche se rangent ensemble, à la fin. */
@@ -4234,13 +4304,47 @@ function rassembleIsoles(groups){
   return gros.concat([["Autres", reste]]);
 }
 
+/**
+ * Les boutons de cette clé et les blocs qu'ils commandent, remis d'accord.
+ * Toutes les copies, pas seulement celle qu'on a cliquée : la clé est
+ * comparée plutôt que passée à un sélecteur, parce qu'un titre de section
+ * peut contenir n'importe quel caractère, guillemets compris.
+ */
+function majPli(cle, ferme){
+  Array.prototype.forEach.call(document.querySelectorAll("[data-fold]"), function(b){
+    if (b.getAttribute("data-fold") !== cle) return;
+    b.setAttribute("aria-expanded", String(!ferme));
+    var boite = b.closest(".slot") || b.closest(".grp");
+    if (boite) boite.setAttribute("data-folded", ferme ? "1" : "0");
+    majFxAll(b.closest(".card"));
+  });
+}
+
+/** Le raccourci d'une chaîne suit l'état réel de ses maillons. */
+function majFxAll(carte){
+  if (!carte) return;
+  var b = carte.querySelector("[data-foldfx]");
+  if (!b) return;
+  var total = carte.querySelectorAll(".slot").length;
+  var plies = carte.querySelectorAll('.slot[data-folded="1"]').length;
+  var tout = total > 0 && plies >= total;
+  b.setAttribute("data-foldfx", tout ? "open" : "close");
+  setHtml(b, tout ? "Tout déplier" : "Tout replier");
+}
+
+/* Ce que le dernier rendu a produit : la barre s'y réfère quand un repli la
+   reconstruit, plutôt que de recompter les cartes du document — par style,
+   une même fiche en occupe plusieurs. */
+var barre = {fiches:0, cartes:0};
+
 /** Le compte de ce qui est affiché, et de quoi tout replier d'un geste. */
-function renderListBar(fiches, groupes, replies){
+function renderListBar(groupes, replies){
   var host = document.getElementById("listbar");
   if (!host) return;
-  var tout = groupes > 0 && replies >= groupes;
+  var fiches = barre.fiches, tout = groupes > 0 && replies >= groupes;
   host.innerHTML = tHtml(
-    '<span class="n">' + fiches + ' ' + t(fiches > 1 ? "fiches" : "fiche") + '</span>' +
+    '<span class="n">' + fiches + ' ' + t(fiches > 1 ? "fiches" : "fiche") +
+    (barre.cartes > fiches ? ' · ' + barre.cartes + ' ' + t("apparitions") : "") + '</span>' +
     (groupes > 1
       ? '<button class="btn small ghost" data-foldall="' + (tout ? "open" : "close") + '">' +
         (tout ? "Tout déplier" : "Tout replier") + '</button>'
@@ -5549,7 +5653,9 @@ document.getElementById("btn-filters").addEventListener("click", function(){
 document.getElementById("listbar").addEventListener("click", function(e){
   var b = e.target.closest("[data-foldall]"); if (!b) return;
   var fermer = b.getAttribute("data-foldall") === "close";
-  Array.prototype.forEach.call(document.querySelectorAll("#list [data-fold]"), function(x){
+  /* Les sections, pas les maillons : « tout replier » au-dessus de la liste
+     parle de la liste. Chaque chaîne a son propre raccourci. */
+  Array.prototype.forEach.call(document.querySelectorAll("#list .grp-b"), function(x){
     setFolded(x.getAttribute("data-fold"), fermer);
   });
   render();
@@ -5593,17 +5699,27 @@ document.getElementById("filters").addEventListener("click", function(e){
 });
 
 document.getElementById("list").addEventListener("click", function(e){
+  var tous = e.target.closest("[data-foldfx]");
+  if (tous){
+    var fermer = tous.getAttribute("data-foldfx") === "close", carte = tous.closest(".card");
+    Array.prototype.forEach.call(carte.querySelectorAll("[data-fold]"), function(b){
+      var k = b.getAttribute("data-fold");
+      setFolded(k, fermer);
+      majPli(k, fermer);
+    });
+    return;
+  }
   var pli = e.target.closest("[data-fold]");
   if (pli){
     var cle = pli.getAttribute("data-fold"), ferme = !isFolded(cle);
     setFolded(cle, ferme);
-    pli.setAttribute("aria-expanded", String(!ferme));
-    pli.closest(".grp").setAttribute("data-folded", ferme ? "1" : "0");
-    renderListBar(
-      document.querySelectorAll("#list .card").length,
-      document.querySelectorAll("#list .grp").length,
-      document.querySelectorAll('#list .grp[data-folded="1"]').length
-    );
+    majPli(cle, ferme);
+    if (pli.className.indexOf("grp-b") >= 0){
+      renderListBar(
+        document.querySelectorAll("#list .grp").length,
+        document.querySelectorAll('#list .grp[data-folded="1"]').length
+      );
+    }
     return;
   }
   var btn = e.target.closest("[data-act]"); if (!btn) return;
@@ -6061,6 +6177,7 @@ window.__pb = {
   pruneTrash: pruneTrash, trashBody: trashBody,
   plat: plat,
   matches: matches, facetGear: facetGear, facetTags: facetTags,
+  chainView: chainView, parClef: parClef,
   renderFilters: renderFilters, filterLabel: filterLabel, activeFilters: activeFilters,
   ui: function(){ return ui; }, printDate: printDate,
   openAccount: openAccount, submitAccount: submitAccount, renderWho: renderWho,

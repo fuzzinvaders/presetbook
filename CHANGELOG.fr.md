@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.9.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.10.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,36 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.10.0 — 13 novembre 2026
+
+### Ajouté
+
+- **Les maillons d'une chaîne se replient.** Un clic sur le titre du maillon, et « Tout replier »
+  pour la chaîne entière. Mesuré sur la chaîne d'« All Star » : **1 230 px dépliée, 214 px
+  repliée**, et l'onglet Reaper passe de 2 892 à 1 110 px. Le titre garde le numéro, le plugin, son
+  rôle et la mention « hors circuit » : ce qu'il faut pour retrouver le bon maillon avant de
+  l'ouvrir. Comme pour les sections, l'impression rouvre tout.
+- **Deux rangements de plus : par artiste et par style.** Les deux existaient comme filtres sans
+  jamais pouvoir ranger la page. Ce qui n'a ni l'un ni l'autre se range en fin de liste sous
+  « Sans artiste » ou « Sans style », jamais sous « Autres » : contrairement à un nom de matériel,
+  un nom d'artiste n'est écrit nulle part ailleurs sur la carte.
+- `?group=` accepte `artist` et `tag` en plus de `kind`, `brand` et `song`.
+
+### Changé
+
+- **La barre de liste compte les fiches et leurs apparitions.** Par style, une fiche portant deux
+  styles paraît sous les deux — c'est ce qu'on attend d'un style. Annoncer « 2 fiches » au-dessus de
+  six cartes aurait ressemblé à une erreur : elle écrit « 2 fiches · 6 apparitions » dès que les
+  deux nombres diffèrent.
+
+### Corrigé
+
+- Replier une section recomptait les cartes du document pour reconstruire la barre de liste. C'était
+  juste tant qu'une fiche ne paraissait qu'une fois ; le dernier rendu garde maintenant ses propres
+  chiffres.
 
 ---
 
