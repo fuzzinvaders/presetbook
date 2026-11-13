@@ -284,5 +284,23 @@ check("maximum d'une échelle à droite",
   pb.ctrlAngle({ t: "scale", min: 1, max: 10 }, 10));
 check("cran central d'un cadran cranté", pb.ctrlAngle({ t: "clock" }, 0) === "0deg");
 
+/*
+ * Relevé sur les schémas d'usine Fender 013-6700 et 013-6760 : volume, pan,
+ * puis le bouton double Treble (haut) / Bass (bas), et le Middle en dernier.
+ * La fiche les montrait dans l'ordre inverse, si bien qu'on tournait le
+ * mauvais bouton en relisant sa propre fiche.
+ */
+const jazz = pb.GEAR.deluxejazz;
+check("la Deluxe Active Jazz Bass suit l'ordre de sa plaque",
+  jazz.controls.map((c) => c.k).join(",") === "vol,balance,eq.t,eq.b,eq.m",
+  jazz.controls.map((c) => c.k).join(","));
+check("ses clés n'ont pas changé : une fiche déjà écrite garde ses valeurs",
+  jazz.controls.map((c) => c.k).slice().sort().join(",") === "balance,eq.b,eq.m,eq.t,vol");
+check("le bouton double est nommé étage par étage",
+  /étage haut/.test(jazz.controls[2].l) && /étage bas/.test(jazz.controls[3].l),
+  jazz.controls[2].l + " / " + jazz.controls[3].l);
+check("la note dit dans quel sens tourne la balance",
+  /horaire vers le micro manche/.test(jazz.note), jazz.note.slice(0, 120));
+
 console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
 process.exit(failed ? 1 : 0);

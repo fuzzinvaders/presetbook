@@ -427,6 +427,35 @@ check("et il retire les chevrons et le raccourci",
 check("« Tout replier » de la barre ne vise que les sections",
   src.indexOf('document.querySelectorAll("#list .grp-b")') > 0);
 
+/* --- replier une fiche entière --- */
+/*
+ * Une basse ou un ampli occupe toute la hauteur de sa façade dessinée. Repliée,
+ * la fiche tient en une ligne : son nom, sa famille, et ce qu'elle cache —
+ * le matériel, le nombre de pédales ou de maillons. Mesuré sur la fiche
+ * « Crossfire » : 557 px dépliée, 65 px repliée.
+ */
+check("chaque fiche a un titre cliquable",
+  /<button class="card-t" data-fold="carte:[^"]+" aria-expanded="(true|false)">/.test(liste),
+  liste.slice(0, 260));
+check("le corps de la fiche est séparé de son titre",
+  liste.indexOf('<div class="card-b">') > 0 && /<\/div><\/article>/.test(liste));
+check("une fiche repliée annonce son matériel",
+  liste.indexOf('<span class="hid">Yamaha BB734A</span>') > 0,
+  (liste.match(/class="hid">[^<]*</g) || []).slice(0, 3).join(" | "));
+const fxCache = chaines.__nodes.get("list").innerHTML;
+check("une chaîne annonce ses maillons",
+  /class="hid">\d+ maillons</.test(fxCache),
+  (fxCache.match(/class="hid">[^<]*</g) || []).slice(0, 3).join(" | "));
+check("la famille reste hors du bouton : elle ne se clique pas",
+  liste.indexOf('</button><span class="kind ') > 0, liste.slice(0, 260));
+check("le papier rouvre les fiches repliées",
+  bloc.indexOf('.card[data-folded="1"] .card-b{display:block}') > 0, bloc.slice(0, 500));
+check("le corps garde l'espacement qu'avait la fiche",
+  src.indexOf(".card-b{display:flex; flex-direction:column; gap:10px") > 0);
+/* Le raccourci d'une chaîne ne doit pas emporter la fiche elle-même. */
+check("« tout replier » d'une chaîne ne vise que ses maillons",
+  src.indexOf('carte.querySelectorAll(".chain [data-fold]")') > 0);
+
 /* --- ranger par artiste et par style --- */
 /*
  * Les deux existaient comme filtres sans jamais ranger la page. Un style

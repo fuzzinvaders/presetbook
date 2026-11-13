@@ -277,7 +277,20 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
 .card.k-bass{border-left-color:var(--bass)} .card.k-amp{border-left-color:var(--amp)} .card.k-reaper{border-left-color:var(--reaper)}
 .card.k-pedal{border-left-color:var(--pedal)} .card.k-board{border-left-color:var(--board)}
 .card.k-board{grid-column:span 2}
+.card-b{display:flex; flex-direction:column; gap:10px; flex:1; min-width:0}
+.card[data-folded="1"] .card-b{display:none}
 .card-h{display:flex; align-items:flex-start; justify-content:space-between; gap:8px}
+/* Le titre entier commande le repli ; la famille reste à côté, hors du bouton,
+   parce qu'elle ne se clique pas. */
+.card-t{
+  display:flex; align-items:baseline; gap:7px; flex:1; min-width:0;
+  padding:0; border:0; background:transparent; color:inherit; text-align:left; cursor:pointer;
+}
+.card-t h3{flex:0 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.card-t .hid{flex:1 1 0; min-width:0; font-family:"IBM Plex Mono",monospace; font-size:10px;
+  color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.card[data-folded="0"] .card-t .hid{display:none}
+.card-t:hover .chev{background:var(--panel-2); border-color:var(--ink-2); color:var(--ink)}
 .card-h h3{text-transform:uppercase; letter-spacing:.01em; font-size:16px}
 .kind{
   font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
@@ -541,6 +554,8 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
   .wrap{max-width:none; padding:0}
   .grp[data-folded="1"] .grid{display:grid}
   .slot[data-folded="1"] .slot-b{display:block}
+  .card[data-folded="1"] .card-b{display:block}
+  .card-t .chev, .card-t .hid{display:none}
   .grp-b .chev, .slot-h .chev, .slot-h .hid, .chain-h .fxall{display:none}
   header.top, .bar, .filters, .listbar, .foot, .veil, .gate, .toast,
   .card-f, [id^="kofi-"], iframe[class*="floatingchat"]{ display:none !important; }
@@ -656,8 +671,8 @@ var LANG = "fr";
 
 var EN = {
   /* complétés par l'audit de traduction */
-  "La Jazz Bass, une électronique plus loin : un volume général et une balance remplacent les deux volumes, et l'égaliseur actif trois bandes est cranté au neutre — chaque bande coupe autant qu'elle pousse. Note la pile quelque part : une basse active ne se rattrape pas au volume quand elle faiblit.":
-    "The Jazz Bass, one set of electronics further on: a master volume and a blend replace the two volumes, and the three-band active EQ is detented at flat — each band cuts as much as it boosts. Write the battery down somewhere: an active bass cannot be made up for on the volume when it starts to fade.",
+  "La Jazz Bass, une électronique plus loin : un volume général et une balance remplacent les deux volumes, et l'égaliseur actif trois bandes est cranté au neutre — chaque bande coupe autant qu'elle pousse. Treble et Bass partagent un bouton double, le Treble à l'étage haut. La balance tourne dans l'horaire vers le micro manche, l'inverse de ce qu'on suppose. Note la pile quelque part : une basse active ne se rattrape pas au volume quand elle faiblit.":
+    "The Jazz Bass, one set of electronics further on: a master volume and a blend replace the two volumes, and the three-band active EQ is detented at flat — each band cuts as much as it boosts. Treble and Bass share one stacked knob, Treble on top. The blend turns clockwise towards the neck pickup, the opposite of what you would assume. Write the battery down somewhere: an active bass cannot be made up for on the volume when it starts to fade.",
   "Deux humbuckers, un sélecteur à trois positions, un volume et une tonalité. Passive : rien ne coupe ni ne booste, et la tonalité ne fait que refermer le haut du spectre. Tout le reste se joue au sélecteur et à la main droite.":
     "Two humbuckers, a three-way selector, one volume and one tone. Passive: nothing cuts or boosts, and the tone control only closes down the top end. Everything else is played on the selector and with the right hand.",
   "Basse deux micros, sélecteur 3 positions":
@@ -847,6 +862,10 @@ var EN = {
   "Sans style": "No style",
   "maillons": "links",
   "apparitions": "appearances",
+  "Treble (étage haut)": "Treble (top)",
+  "Bass (étage bas)": "Bass (lower)",
+  "pédale": "pedal",
+  "pédales": "pedals",
   "bande": "band",
   "bandes": "bands",
   "réglage": "setting",
@@ -2217,14 +2236,21 @@ var GEAR = {
     kind:"bass", brand:"Fender", model:"Deluxe Active Jazz Bass", face:"bass",
     note:"La Jazz Bass, une électronique plus loin : un volume général et une balance " +
          "remplacent les deux volumes, et l'égaliseur actif trois bandes est cranté au neutre — " +
-         "chaque bande coupe autant qu'elle pousse. Note la pile quelque part : une basse active " +
+         "chaque bande coupe autant qu'elle pousse. Treble et Bass partagent un bouton double, " +
+         "le Treble à l'étage haut. La balance tourne dans l'horaire vers le micro manche, " +
+         "l'inverse de ce qu'on suppose. Note la pile quelque part : une basse active " +
          "ne se rattrape pas au volume quand elle faiblit.",
     controls:[
       {k:"vol", t:"clock", l:"Volume", d:5},
       {k:"balance", t:"balance", l:"Balance", a:"M", b:"C", min:0, max:100, step:1, d:50},
-      {k:"eq.b", t:"clock", l:"Bass", d:0},
-      {k:"eq.m", t:"clock", l:"Middle", d:0},
-      {k:"eq.t", t:"clock", l:"Treble", d:0}
+      /* L'ordre de la plaque, relevé sur le schéma d'usine Fender 013-6700 :
+         volume, pan, puis un bouton double — Treble à l'étage haut, Bass à
+         l'étage bas — et le Middle en dernier, sur son petit bouton. Les clés
+         ne bougent pas : une fiche déjà écrite garde ses valeurs, c'est
+         l'affichage qui se remet à l'endroit. */
+      {k:"eq.t", t:"clock", l:"Treble (étage haut)", d:0},
+      {k:"eq.b", t:"clock", l:"Bass (étage bas)", d:0},
+      {k:"eq.m", t:"clock", l:"Middle", d:0}
     ],
     extras:[{k:"tech", l:"Main droite"}, {k:"strings", l:"Cordes"}]
   },
@@ -3921,10 +3947,31 @@ function chainView(p){
   return tete + '<ol class="chain">' + corps + '</ol>';
 }
 
+/** Ce qu'une fiche repliée garde derrière elle, en une mention. */
+function apercuFiche(p){
+  if (p.kind === "reaper"){
+    var nb = (p.chain || []).length;
+    return nb ? nb + " " + t(nb > 1 ? "maillons" : "maillon") : "";
+  }
+  if (p.kind === "board"){
+    var np = (p.slots || []).length;
+    return np ? np + " " + t(np > 1 ? "pédales" : "pédale") : "";
+  }
+  return gearName(gearOf(p));
+}
+
 function card(p){
   var k = KINDS[p.kind] || KINDS.bass;
-  var h = '<article class="card k-' + p.kind + '" data-id="' + esc(p.id) + '">';
-  h += '<div class="card-h"><h3>' + esc(p.name) + '</h3><span class="kind ' + p.kind + '">' + esc(k.label) + '</span></div>';
+  var cle = "carte:" + p.id, plie = isFolded(cle);
+  var h = '<article class="card k-' + p.kind + '" data-id="' + esc(p.id) + '"' +
+          ' data-folded="' + (plie ? 1 : 0) + '">';
+  h += '<div class="card-h"><button class="card-t" data-fold="' + esc(cle) + '"' +
+       ' aria-expanded="' + (!plie) + '">' +
+       '<span class="chev" aria-hidden="true"></span>' +
+       '<h3>' + esc(p.name) + '</h3>' +
+       '<span class="hid">' + esc(apercuFiche(p)) + '</span></button>' +
+       '<span class="kind ' + p.kind + '">' + esc(k.label) + '</span></div>';
+  h += '<div class="card-b">';
 
   if (p.kind === "bass" || p.kind === "amp"){
     h += '<p class="gearname">' + esc(gearName(gearOf(p))) + '</p>';
@@ -3970,7 +4017,7 @@ function card(p){
            ' title="Écrit un fichier de chaîne pour Reaper">.RfxChain</button>' : "") +
        '<span class="spacer"></span>' +
        '<button class="btn small ghost" data-act="del">Supprimer</button></div>';
-  return h + "</article>";
+  return h + "</div></article>";
 }
 
 /* Le matériel d'une fiche, plus celui de chaque pédale d'un pédalier : filtrer
@@ -4335,7 +4382,7 @@ function majPli(cle, ferme){
   Array.prototype.forEach.call(document.querySelectorAll("[data-fold]"), function(b){
     if (b.getAttribute("data-fold") !== cle) return;
     b.setAttribute("aria-expanded", String(!ferme));
-    var boite = b.closest(".slot") || b.closest(".grp");
+    var boite = b.closest(".slot") || b.closest(".card") || b.closest(".grp");
     if (boite) boite.setAttribute("data-folded", ferme ? "1" : "0");
     majFxAll(b.closest(".card"));
   });
@@ -5723,7 +5770,7 @@ document.getElementById("list").addEventListener("click", function(e){
   var tous = e.target.closest("[data-foldfx]");
   if (tous){
     var fermer = tous.getAttribute("data-foldfx") === "close", carte = tous.closest(".card");
-    Array.prototype.forEach.call(carte.querySelectorAll("[data-fold]"), function(b){
+    Array.prototype.forEach.call(carte.querySelectorAll(".chain [data-fold]"), function(b){
       var k = b.getAttribute("data-fold");
       setFolded(k, fermer);
       majPli(k, fermer);
