@@ -177,6 +177,26 @@ async function appel(chemin, opts = {}) {
       JSON.stringify(gardees.corps.custom));
     check("la session de la démo reste valable après redémarrage",
       apres.code === 200, String(apres.code));
+
+    /*
+     * Le port ne doit s'ouvrir qu'une fois les comptes en place.
+     *
+     * Ça s'est vu en vrai : l'intégration continue a échoué trois fois de
+     * suite alors que la suite passait partout ailleurs. En bridant la machine
+     * à un demi-cœur, le défaut est sorti — « /healthz » répondait « ok »
+     * pendant que « /api/demo » renvoyait 503, parce que scrypt fabriquait
+     * encore les comptes. Un test de chronologie ne tiendrait pas : il
+     * passerait sur une machine rapide quoi qu'on écrive. On vérifie donc
+     * l'ordre dans la source, qui lui ne dépend pas de la vitesse du moment.
+     */
+    const source = await fsp.readFile(path.join(RACINE, "server.js"), "utf8");
+    const posAdmin = source.lastIndexOf("ensureAdmin()");
+    const posDemo = source.lastIndexOf("ensureDemoUser()");
+    const posEcoute = source.lastIndexOf("server.listen(");
+    check("le serveur crée l'administrateur avant d'ouvrir le port",
+      posAdmin > 0 && posEcoute > posAdmin, posAdmin + " / " + posEcoute);
+    check("et le compte de démonstration aussi",
+      posDemo > 0 && posEcoute > posDemo, posDemo + " / " + posEcoute);
   } catch (err) {
     failed++;
     console.log("  ÉCHEC exécution — " + err.message);

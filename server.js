@@ -1552,16 +1552,26 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+/**
+ * Le port ne s'ouvre qu'une fois l'instance vraiment prête.
+ *
+ * L'administrateur et le compte de démonstration se fabriquent avec scrypt,
+ * qui est lent exprès. Tant qu'ils n'existent pas, « /healthz » répondait déjà
+ * « ok » alors que « /api/demo » renvoyait 503 et que la création de compte
+ * voyait un serveur vide. Sur une machine rapide la fenêtre est invisible ;
+ * sur une machine chargée elle dure assez pour qu'on y passe. Un serveur qui
+ * se dit en bonne santé avant d'être prêt ment à son orchestrateur.
+ */
 loadSessions()
   .catch((err) => console.error("[presetbook] sessions illisibles", err.message))
-  .then(() =>
+  .then(async () => {
+    await ensureAdmin().catch((err) =>
+      console.error("[presetbook] administrateur indéterminé :", err.message)
+    );
+    await ensureDemoUser().catch((err) =>
+      console.error("[presetbook] compte de démonstration indisponible :", err.message)
+    );
     server.listen(PORT, HOST, async () => {
-      await ensureAdmin().catch((err) =>
-        console.error("[presetbook] administrateur indéterminé :", err.message)
-      );
-      await ensureDemoUser().catch((err) =>
-        console.error("[presetbook] compte de démonstration indisponible :", err.message)
-      );
       const db = await readUsers().catch(() => ({ users: [] }));
       /* « 0.0.0.0 » ne se colle pas dans un navigateur : on affiche l'adresse
          qui marche, et on dit à part ce que le serveur écoute vraiment. */
@@ -1591,8 +1601,8 @@ loadSessions()
         console.error(`[presetbook] réglage ignoré, valeur non reconnue : ${d} — attendu 1 ou vide`);
       }
       if (BASIC_AUTH) console.log("[presetbook] authentification basique activée en amont");
-    })
-  );
+    });
+  });
 
 let arretDemande = false;
 function partir() {
