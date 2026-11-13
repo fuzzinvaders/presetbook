@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.10.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.10.1   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,22 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.10.1 — 13 November 2026
+
+### Fixed
+
+- **Nothing showed that a section or a link opened.** The chevron was nine pixels, in the colour of
+  secondary mentions and without an outline — and on a phone nothing hovers, so no clue was left.
+  In its place, a square box carrying **+** or **−**, the sign everyone reads without instructions.
+  The sign comes from the stylesheet and follows `aria-expanded`, so a click still has a single
+  attribute to flip.
+- **A collapsed link says what it keeps behind it** — "6 bands", "15 settings", aligned right. A box
+  that opens onto the unknown is no invitation to open it. The mention goes away as soon as the link
+  is open, and on paper, where everything is reopened already.
+- Hovering a section or link heading now says so.
 
 ---
 

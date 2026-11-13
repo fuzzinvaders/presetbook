@@ -308,9 +308,11 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
    pas une cible. */
 .slot-h{display:flex; align-items:baseline; gap:7px; flex-wrap:wrap; margin-bottom:6px;
   width:100%; padding:0; border:0; background:transparent; color:inherit; text-align:left; cursor:pointer}
-.slot-h .chev{font-size:9px; color:var(--ink-3); flex:none; align-self:center; transition:transform .15s ease}
 .slot-h[aria-expanded="false"]{margin-bottom:0}
-.slot-h[aria-expanded="false"] .chev{transform:rotate(-90deg)}
+/* Ce qui attend derrière un maillon replié : sans ce compte, la case seule
+   n'annonce pas ce qu'elle ouvre. */
+.slot-h .hid{margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--ink-3)}
+.slot[data-folded="0"] .slot-h .hid{display:none}
 .slot[data-folded="1"] .slot-b{display:none}
 .slot-h .n{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--ink-3)}
 .slot-h .p{font-weight:600; font-size:13.5px}
@@ -342,14 +344,20 @@ table.bands tr.bx td{opacity:.5; text-decoration:line-through}
   display:flex; align-items:baseline; gap:10px; width:100%; padding:0 0 6px;
   border:0; background:transparent; color:inherit; text-align:left;
 }
-.grp-b:hover .grp-t{color:var(--ink-2)}
+/* Le signe que tout le monde lit comme « ça s'ouvre ». Il vient du style et
+   non du balisage : le clic ne retourne que « aria-expanded », et la case
+   suit toute seule. */
+.chev{
+  flex:none; align-self:center; display:inline-block; width:14px; height:14px;
+  line-height:12px; text-align:center; border:1px solid var(--line-2); border-radius:2px;
+  background:var(--panel); font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-2);
+}
+[aria-expanded="true"] > .chev::before{content:"−"}
+[aria-expanded="false"] > .chev::before{content:"+"}
+.grp-b:hover .chev,.slot-h:hover .chev{background:var(--panel-2); border-color:var(--ink-2); color:var(--ink)}
+.grp-b:hover,.slot-h:hover{background:var(--panel)}
 .grp-t{font-family:"Antonio",sans-serif; font-size:17px; letter-spacing:.02em; text-transform:uppercase}
 .grp-b .c{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
-.grp-b .chev{
-  font-size:10px; color:var(--ink-3); flex:none; align-self:center;
-  transition:transform .15s ease;
-}
-.grp-b[aria-expanded="false"] .chev{transform:rotate(-90deg)}
 .grp[data-folded="1"] .grid{display:none}
 
 /* ---- editor ---- */
@@ -533,7 +541,7 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
   .wrap{max-width:none; padding:0}
   .grp[data-folded="1"] .grid{display:grid}
   .slot[data-folded="1"] .slot-b{display:block}
-  .grp-b .chev, .slot-h .chev, .chain-h .fxall{display:none}
+  .grp-b .chev, .slot-h .chev, .slot-h .hid, .chain-h .fxall{display:none}
   header.top, .bar, .filters, .listbar, .foot, .veil, .gate, .toast,
   .card-f, [id^="kofi-"], iframe[class*="floatingchat"]{ display:none !important; }
 
@@ -839,6 +847,10 @@ var EN = {
   "Sans style": "No style",
   "maillons": "links",
   "apparitions": "appearances",
+  "bande": "band",
+  "bandes": "bands",
+  "réglage": "setting",
+  "réglages": "settings",
   "Chercher un nom, un auteur…": "Search a name, an author…",
   "Chercher dans les fiches partagées": "Search the shared presets",
   "Aucune fiche partagée ne correspond.": "No shared preset matches.",
@@ -3872,6 +3884,14 @@ function bandTable(s){
   });
   return h + '</tbody></table></div>';
 }
+/** Ce qu'un maillon replié garde derrière lui, en une mention. */
+function apercuMaillon(s){
+  var nb = (s.bands || []).length;
+  if (nb) return nb + " " + t(nb > 1 ? "bandes" : "bande");
+  nb = pluginDef(s.plugin).params.length;
+  return nb ? nb + " " + t(nb > 1 ? "réglages" : "réglage") : "";
+}
+
 function chainView(p){
   var rows = p.chain || [];
   if (!rows.length) return '<p class="hint">Chaîne vide — ajoute des plugins avec « Modifier ».</p>';
@@ -3882,9 +3902,10 @@ function chainView(p){
     if (plie) plies++;
     corps += '<li class="slot' + (off ? " bx" : "") + '" data-folded="' + (plie ? 1 : 0) + '">' +
       '<button class="slot-h" data-fold="' + esc(cle) + '" aria-expanded="' + (!plie) + '">' +
-      '<span class="chev" aria-hidden="true">▾</span>' +
+      '<span class="chev" aria-hidden="true"></span>' +
       '<span class="n">' + (i+1) + '</span><span class="p">' + esc(s.plugin) + '</span>' +
       (s.role ? '<span class="r">' + esc(s.role) + '</span>' : "") +
+      '<span class="hid">' + esc(apercuMaillon(s)) + '</span>' +
       (off ? '<span class="bp">hors circuit</span>' : "") + '</button>' +
       '<div class="slot-b">' + bandTable(s) + paramGrid(s) +
       (s.settings ? '<p class="sn">' + esc(s.settings) + '</p>' : "") + '</div>' +
@@ -4259,7 +4280,7 @@ function render(){
     return '<section class="grp" data-folded="' + (plie ? 1 : 0) + '">' +
            '<h2 class="grp-h"><button class="grp-b" data-fold="' + esc(g[0]) + '"' +
            ' aria-expanded="' + (!plie) + '">' +
-           '<span class="chev" aria-hidden="true">▾</span>' +
+           '<span class="chev" aria-hidden="true"></span>' +
            '<span class="grp-t">' + esc(g[0]) + '</span>' +
            '<span class="c">' + g[1].length + '</span></button></h2>' +
            '<div class="grid">' + g[1].map(card).join("") + '</div></section>';

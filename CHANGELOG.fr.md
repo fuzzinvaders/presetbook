@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.10.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.10.1   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,22 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.10.1 — 13 novembre 2026
+
+### Corrigé
+
+- **On ne voyait pas qu'une section ou un maillon s'ouvrait.** Le chevron faisait neuf pixels, dans
+  la couleur des mentions secondaires et sans contour — et au téléphone, rien ne survole : il ne
+  restait aucun indice. À la place, une case carrée portant **+** ou **−**, le signe que tout le
+  monde lit sans mode d'emploi. Le signe vient de la feuille de style et suit `aria-expanded`,
+  si bien que le clic n'a toujours qu'un attribut à retourner.
+- **Un maillon replié dit ce qu'il garde derrière lui** — « 6 bandes », « 15 réglages », alignés à
+  droite. Une case qui s'ouvre sur l'inconnu n'invite pas à l'ouvrir. La mention disparaît dès que
+  le maillon est ouvert, et à l'impression, où tout est déjà rouvert.
+- Survoler un titre de section ou de maillon le signale maintenant.
 
 ---
 

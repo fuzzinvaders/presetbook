@@ -394,6 +394,32 @@ const seul = chaines.__pb.chainView({ id: "x", chain: [{ plugin: "ReaEQ" }] });
 check("une chaîne d'un seul maillon n'a pas de raccourci",
   seul.indexOf("data-foldfx") < 0 && seul.indexOf('data-fold="fx:x:0"') > 0, seul.slice(0, 200));
 
+/*
+ * Un chevron gris de neuf pixels ne disait pas qu'un élément s'ouvre, et au
+ * téléphone rien ne survole : il ne restait aucun indice. Le signe « + » dans
+ * une case, lui, se lit sans mode d'emploi — et il vient du style, pas du
+ * balisage, parce que le clic ne retourne que « aria-expanded ».
+ */
+check("la case de repli n'écrit rien dans le balisage",
+  listeFx.indexOf('<span class="chev" aria-hidden="true"></span>') > 0, listeFx.slice(0, 220));
+check("le signe vient du style et suit l'état",
+  src.indexOf('[aria-expanded="false"] > .chev::before{content:"+"}') > 0
+  && src.indexOf('[aria-expanded="true"] > .chev::before{content:"−"}') > 0);
+check("la case a un contour : sans lui, ce n'est qu'un caractère de plus",
+  /\.chev\{[^}]*border:1px solid/.test(src), (src.match(/\.chev\{[^}]*/) || [""])[0].slice(0, 160));
+check("survoler un titre le signale",
+  src.indexOf(".grp-b:hover,.slot-h:hover{background:var(--panel)}") > 0);
+
+/* Une case seule n'annonce pas ce qu'elle ouvre : le maillon replié dit ce
+   qu'il garde derrière lui. */
+check("un maillon replié annonce ce qu'il cache",
+  /class="hid">\d+ (bandes?|réglages?)</.test(listeFx),
+  (listeFx.match(/class="hid">[^<]*</g) || []).slice(0, 3).join(" | "));
+check("ce compte disparaît dès que le maillon est ouvert",
+  src.indexOf('.slot[data-folded="0"] .slot-h .hid{display:none}') > 0);
+check("et il ne part pas sur le papier, où tout est rouvert",
+  bloc.indexOf(".slot-h .hid") > 0, bloc.slice(0, 400));
+
 check("le papier rouvre les maillons repliés",
   bloc.indexOf('.slot[data-folded="1"] .slot-b{display:block}') > 0, bloc.slice(0, 400));
 check("et il retire les chevrons et le raccourci",
