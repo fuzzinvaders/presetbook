@@ -49,6 +49,7 @@ Juste en dessous, la barre de tri :
   le champ fluide même avec une grande bibliothèque ;
 - le **regroupement**, par matériel, par marque, par morceau, par artiste ou par style ;
 - les **filtres**, par modèle de matériel et par style — voir plus bas ;
+- le **rangement** dans la barre de liste : ordre d'origine, par nom, ou modifiée en dernier ;
 - **Imprimer**, qui met sur papier ce qui est affiché.
 
 ## Sur un téléphone, et hors ligne
@@ -148,6 +149,24 @@ Six paramètres d'URL sont lus au chargement, ce qui permet de mettre une vue en
 l'envoyer à quelqu'un : `?q=motown`, `?kind=bass`, `?group=kind|brand|song|artist|tag`,
 `?gear=lionheart20,rumble40`, `?brand=Ampeg,Vox` et `?tag=blues,rock` — les trois derniers en
 listes séparées par des virgules. Un septième, `?edit=<identifiant>`, ouvre directement une fiche.
+
+## Les setlists
+
+Un morceau demande plusieurs fiches : la basse, la chaîne Reaper, le pédalier. C'est pourquoi une
+setlist est une liste **ordonnée de morceaux**, et non de fiches — c'est le morceau qu'on annonce,
+les fiches suivent.
+
+**Menu → Setlists** liste celles qui existent et permet d'en créer une. Dans une setlist, chaque
+morceau se monte, se descend ou se retire, et la liste déroulante du bas propose les morceaux de la
+bibliothèque qui n'y sont pas encore. Le nom s'écrit en haut ; tout est enregistré à mesure.
+
+**Ouvrir** une setlist ne montre que ses morceaux, dans son ordre, et les compteurs des onglets la
+suivent — annoncer soixante-huit fiches au-dessus d'une liste de quatre serait faux. La barre de
+liste la nomme et propose d'en sortir d'un clic. **Imprimer** à ce moment-là donne le carnet du
+concert, dans l'ordre joué.
+
+Un morceau de la setlist dont plus aucune fiche ne porte le titre ne casse rien : il ne produit
+simplement aucune section.
 
 ## Imprimer
 
@@ -351,6 +370,12 @@ ses bandes en tableau : type, fréquence, gain, largeur. Un plugin non catalogu�
 libre.
 
 ### Importer et exporter une chaîne de Reaper
+
+**Le plus court : déposer le fichier sur la page.** Un `.RfxChain` lâché n'importe où dans la
+fenêtre devient une fiche, nommée d'après le fichier — celui que Reaper a écrit, donc celui que vous
+reconnaîtrez. L'onglet bascule sur Reaper pour que la fiche créée soit à l'écran. Le dépôt est
+refusé tant que l'écran de connexion est là : créer une fiche qu'on ne pourrait pas enregistrer ne
+servirait qu'à la perdre.
 
 Le bouton **Exporter en .RfxChain** est directement sur la carte d'une chaîne, à côté de
 **Dupliquer** : pas besoin d'ouvrir l'éditeur. L'éditeur, lui, propose en plus **Importer un

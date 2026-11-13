@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.10.1   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.11.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,42 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.11.0 — 13 November 2026
+
+### Added
+
+- **Setlists.** A song needs several presets — the bass, the Reaper chain, the pedalboard — and it
+  is the song you announce on stage. So a setlist is an **ordered list of songs**, not of presets.
+  Opening one shows only its songs, in its order; printing it gives the gig's booklet, in playing
+  order. The tab counts follow: announcing "68" above a list of four would be wrong.
+- **Dropping a `.RfxChain` on the page makes it a preset.** Importing used to mean opening a Reaper
+  preset, entering its editor, then finding the button. The preset takes the file's name, the tab
+  switches to Reaper, and it is dated.
+- **An order inside sections**: "By name" or "Last edited", in the list bar. It applies inside
+  "Others" too — otherwise that would be the one place where it did not.
+- **A last-edited date per preset**, written on save and on copy, never on read. It reads at the
+  bottom of the card and it prints. Without a date, a preset sorts last: "never saved since the date
+  existed" is not "old".
+- **Keep the screen awake**, in the menu. In rehearsal, the phone goes dark while you read your
+  settings. Where the API does not exist, the button does not appear: better to promise nothing than
+  to promise what cannot be held.
+- Presets collapse like sections and chain links. Collapsed, a preset is one line carrying its name,
+  its family and what it hides. Measured on "Crossfire": 557 px expanded, 65 px collapsed.
+- `?group=` accepts `artist` and `tag`; `?sort=` accepts `nom` and `maj`.
+
+### Fixed
+
+- **The Fender Deluxe Active Jazz Bass had its EQ the wrong way round.** Fender's factory diagrams
+  013-6700 and 013-6760 give the plate's real order: volume, pan, then a stacked knob — **Treble on
+  top, Bass lower** — and Mid last on its small knob. You were turning the wrong knob while reading
+  your own preset. Only the display changes: the keys stay put, no preset already written is
+  touched. The note now also carries what the diagrams say and nobody guesses: **the blend turns
+  clockwise towards the neck pickup**.
+- The translation audit could not read a parenthesis: it cut the call at the first ")", so messages
+  containing "({0})" escaped it. 59 messages audited before, 75 now.
 
 ---
 

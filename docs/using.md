@@ -49,6 +49,7 @@ Just below, the sorting bar:
   responsive even with a large library;
 - the **grouping**, by gear, brand, song, artist or style;
 - the **filters**, by gear model and by style — see below;
+- the **order** in the list bar: original, by name, or last edited;
 - **Print**, which puts what is displayed onto paper.
 
 ## On a phone, and offline
@@ -144,6 +145,21 @@ Six URL parameters are read at load time, so a view can be bookmarked or sent to
 `?q=motown`, `?kind=bass`, `?group=kind|brand|song|artist|tag`, `?gear=lionheart20,rumble40`,
 `?brand=Ampeg,Vox` and `?tag=blues,rock` — the last three as comma-separated lists. A seventh,
 `?edit=<id>`, opens one preset directly.
+
+## Setlists
+
+A song needs several presets: the bass, the Reaper chain, the pedalboard. That is why a setlist is
+an **ordered list of songs**, not of presets — the song is what you announce, the presets follow.
+
+**Menu → Setlists** lists the ones you have and lets you create one. Inside a setlist, each song
+moves up, moves down or comes out, and the dropdown at the bottom offers the library's songs that
+are not in it yet. The name is edited at the top; everything is saved as you go.
+
+**Opening** a setlist shows only its songs, in its order, and the tab counts follow it — announcing
+sixty-eight presets above a list of four would be wrong. The list bar names it and offers to leave
+it in one click. **Printing** at that point gives the gig's booklet, in playing order.
+
+A song whose title no preset carries any more breaks nothing: it simply produces no section.
 
 ## Printing
 
@@ -332,6 +348,11 @@ Known plugins show their real parameters, with their units and bounds. ReaEQ sho
 table: type, frequency, gain, bandwidth. An uncatalogued plugin is described in free text.
 
 ### Importing and exporting a Reaper chain
+
+**The shortest way: drop the file on the page.** A `.RfxChain` dropped anywhere in the window
+becomes a preset, named after the file — the name Reaper wrote, so the one you will recognise. The
+tab switches to Reaper so the new preset is on screen. The drop is refused while the sign-in screen
+is up: creating a preset that could not be saved would only lose it.
 
 The **Export as .RfxChain** button is right on a chain's card, next to **Duplicate**: no need to open
 the editor. The editor additionally offers **Import a .RfxChain**, at the bottom of the "Reaper

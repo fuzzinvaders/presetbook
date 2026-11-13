@@ -99,6 +99,7 @@ check("les identifiants restent distincts", deux[0].id !== deux[1].id,
     const cookie = (r.headers.get("set-cookie") || "").split(";")[0];
 
     const etat = { v: 1, custom: [], overrides: {}, gear: {}, hidden: [],
+                   sets: [{ id: "s-1", name: "Concert du 12", songs: ["All Star — Smash Mouth"] }],
                    trash: [{ at: new Date().toISOString(),
                              preset: { id: "u-x", kind: "bass", name: "Effacée" }, gear: {} }] };
     await fetch(BASE + "/api/presets", {
@@ -110,6 +111,11 @@ check("les identifiants restent distincts", deux[0].id !== deux[1].id,
     check("avec la fiche dedans",
       relu.trash[0].preset && relu.trash[0].preset.name === "Effacée",
       JSON.stringify(relu.trash[0]));
+    /* Les setlists voyagent par le même chemin : sans leur ligne dans
+       l'assainissement, elles seraient jetées en silence. */
+    check("le serveur garde les setlists",
+      Array.isArray(relu.sets) && relu.sets.length === 1
+      && relu.sets[0].songs[0] === "All Star — Smash Mouth", JSON.stringify(relu.sets));
 
     /* --- les instantanés : un état par jour, récupérable --- */
     async function ecrire(fiches) {

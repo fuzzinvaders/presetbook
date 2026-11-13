@@ -131,7 +131,7 @@ try {
   /* la page manque : /healthz le dira */
 }
 
-const EMPTY_STATE = { v: 1, custom: [], overrides: {}, gear: {}, hidden: [], trash: [], updated: null };
+const EMPTY_STATE = { v: 1, custom: [], overrides: {}, gear: {}, hidden: [], trash: [], sets: [], updated: null };
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -947,6 +947,9 @@ function sanitizeState(input) {
        téléphone doit pouvoir être ramenée depuis l'ordinateur. Sans cette
        ligne elle serait jetée en silence au premier enregistrement. */
     trash: Array.isArray(input.trash) ? input.trash.slice(-TRASH_MAX) : [],
+    /* Les setlists sont des données comme les autres : sans cette ligne elles
+       seraient jetées en silence au premier enregistrement. */
+    sets: Array.isArray(input.sets) ? input.sets.slice(0, MAX_PRESETS) : [],
     /* la langue choisie voyage avec les données, donc elle suit de poste en poste */
     lang: input.lang === "en" || input.lang === "fr" ? input.lang : undefined,
     updated: new Date().toISOString(),

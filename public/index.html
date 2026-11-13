@@ -359,6 +359,12 @@ table.bands tr.bx td{opacity:.5; text-decoration:line-through}
 .listbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; flex-wrap:wrap}
 .listbar .lb-r{display:flex; align-items:center; gap:10px; margin-left:auto}
 .listbar .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
+.listbar .setname{
+  display:inline-flex; align-items:center; gap:6px; font-family:"IBM Plex Mono",monospace;
+  font-size:11px; letter-spacing:.04em; color:var(--reaper);
+  border:1px solid var(--reaper); border-radius:2px; padding:2px 6px;
+}
+.listbar .setname .x{border:0; background:transparent; color:inherit; cursor:pointer; padding:0; font-size:11px}
 
 .grp{margin-top:26px}
 .grp-h{margin:0; border-bottom:1px solid var(--line-2)}
@@ -624,6 +630,7 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
           <div id="who"></div>
           <button class="btn" id="btn-gear"></button>
           <button class="btn" id="btn-shared" hidden></button>
+          <button class="btn" id="btn-sets"></button>
           <button class="btn" id="btn-io"></button>
           <button class="btn" id="btn-print"></button>
           <button class="btn" id="btn-install" hidden></button>
@@ -892,6 +899,27 @@ var EN = {
     "The screen will stay awake as long as this tab is in front.",
   "L'écran pourra s'éteindre.": "The screen may sleep again.",
   "L'écran n'a pas pu être gardé allumé ({0}).": "The screen could not be kept awake ({0}).",
+  "Setlists": "Setlists",
+  "Setlist": "Setlist",
+  "Setlist : {0}": "Setlist: {0}",
+  "Nouvelle setlist": "New setlist",
+  "+ Nouvelle setlist": "+ New setlist",
+  "Aucune setlist pour l'instant.": "No setlist yet.",
+  "Aucun morceau dans cette setlist.": "No song in this setlist.",
+  "Tous les morceaux de la bibliothèque sont déjà dans cette setlist.":
+    "Every song in the library is already in this setlist.",
+  "Une setlist est une liste de morceaux dans l'ordre où tu les joues. L'ouvrir ne montre que ses morceaux, dans cet ordre — et c'est ce que l'impression met sur papier.":
+    "A setlist is a list of songs in the order you play them. Opening one shows only its songs, in that order — and that is what printing puts on paper.",
+  "Toutes les setlists": "All setlists",
+  "Ouvrir cette setlist": "Open this setlist",
+  "Quitter la setlist": "Leave the setlist",
+  "Ajouter un morceau": "Add a song",
+  "morceau": "song",
+  "morceaux": "songs",
+  "aucun morceau": "no song",
+  "Monter": "Move up",
+  "Descendre": "Move down",
+  "Retirer": "Remove",
   "Trier": "Sort",
   "Ordre d'origine": "Original order",
   "Par nom": "By name",
@@ -1582,6 +1610,7 @@ function renderChrome(){
   setHtml(el("btn-print"), "Imprimer");
   setHtml(el("btn-install"), "Installer");
   setHtml(el("btn-shared"), "Partagés");
+  setHtml(el("btn-sets"), "Setlists");
   setHtml(el("grp-l"), "Grouper par");
   renderMenuButton();
   renderVeille();
@@ -2774,11 +2803,11 @@ var API = "api/presets";                 /* déploiement autonome : serveur Pres
 var DATA_PATH = "data/presets.json";     /* page publiée : fichier de données de l'artifact */
 var LS_KEY = "presetbook-v1";
 var LS_KEY_OLD = "rack-presets-v1";
-var S = {v:1, custom:[], overrides:{}, gear:{}, hidden:[]};
+var S = {v:1, custom:[], overrides:{}, gear:{}, hidden:[], sets:[]};
 var store = {mode:"memory", api:false, writer:null, downloads:null};
 var GROUPES = ["kind", "brand", "song", "artist", "tag"];
 var TRIS = ["", "nom", "maj"];
-var ui = {kind:"all", q:"", group:"kind", sort:"", gear:[], brands:[], tags:[], open:false};
+var ui = {kind:"all", q:"", group:"kind", sort:"", set:null, gear:[], brands:[], tags:[], open:false};
 
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function library(){
@@ -3671,6 +3700,9 @@ function normalize(j){
     /* Les fiches supprimées y attendent quelques jours. Une fiche du catalogue
        n'y passe pas : la supprimer ne fait que la masquer, c'est déjà annulable. */
     trash: Array.isArray(j.trash) ? j.trash : [],
+    /* Les setlists arrivent après coup : un état écrit avant elles n'en a
+       pas, et doit s'ouvrir quand même. */
+    sets: Array.isArray(j.sets) ? j.sets : [],
     lang: (j.lang === "en" || j.lang === "fr") ? j.lang : undefined,
     updated: j.updated || null
   };
@@ -4140,6 +4172,13 @@ function passeGear(p){
   var g = gearsOf(p);
   return ui.gear.some(function(id){ return g.indexOf(id) >= 0; });
 }
+/* Une setlist ouverte ne montre que ses morceaux : c'est un filtre comme un
+   autre, donc il vaut aussi pour les facettes et pour l'en-tête imprimé. */
+function passeSet(p){
+  var set = setlistCourante();
+  if (!set) return true;
+  return set.songs.indexOf(cleMorceau(p)) >= 0;
+}
 function passeTags(p){
   if (!ui.tags.length) return true;
   var t = p.tags || [];
@@ -4150,7 +4189,7 @@ function passeTags(p){
    tous doivent passer. C'est la convention attendue, et elle évite les
    sélections qui ne ramènent jamais rien. */
 function matches(p){
-  return passeKind(p) && passeBrand(p) && passeGear(p) && passeTags(p) && passeQ(p);
+  return passeSet(p) && passeKind(p) && passeBrand(p) && passeGear(p) && passeTags(p) && passeQ(p);
 }
 
 /** Minuscules et sans accents : « pedalier » doit trouver « pédalier ».
@@ -4188,7 +4227,7 @@ function passeQ(p){
 function facetBrand(){
   var out = {};
   library().forEach(function(p){
-    if (!passeKind(p) || !passeGear(p) || !passeTags(p) || !passeQ(p)) return;
+    if (!passeSet(p) || !passeKind(p) || !passeGear(p) || !passeTags(p) || !passeQ(p)) return;
     brandsOf(p).forEach(function(b){ out[b] = (out[b] || 0) + 1; });
   });
   return Object.keys(out).map(function(b){ return {id:b, n:out[b], l:b}; })
@@ -4202,7 +4241,7 @@ function facetBrand(){
 function facetGear(){
   var out = {}, reg = allGear();
   library().forEach(function(p){
-    if (!passeKind(p) || !passeBrand(p) || !passeTags(p) || !passeQ(p)) return;
+    if (!passeSet(p) || !passeKind(p) || !passeBrand(p) || !passeTags(p) || !passeQ(p)) return;
     gearsOf(p).forEach(function(id){ if (reg[id]) out[id] = (out[id] || 0) + 1; });
   });
   return Object.keys(out).map(function(id){ return {id:id, n:out[id], l:gearName(reg[id])}; })
@@ -4212,7 +4251,7 @@ function facetGear(){
 function facetTags(){
   var out = {};
   library().forEach(function(p){
-    if (!passeKind(p) || !passeBrand(p) || !passeGear(p) || !passeQ(p)) return;
+    if (!passeSet(p) || !passeKind(p) || !passeBrand(p) || !passeGear(p) || !passeQ(p)) return;
     (p.tags || []).forEach(function(t){ out[t] = (out[t] || 0) + 1; });
   });
   return Object.keys(out).map(function(t){ return {id:t, n:out[t], l:t}; })
@@ -4318,6 +4357,8 @@ function filterLabel(){
   if (ui.kind !== "all") bouts.push(t(KINDS[ui.kind].full));
   if (ui.brands.length) bouts.push(ui.brands.map(function(b){ return t(b); }).join(", "));
   if (ui.gear.length) bouts.push(ui.gear.map(function(id){ return reg[id] ? gearName(reg[id]) : id; }).join(", "));
+  var jeu = setlistCourante();
+  if (jeu) bouts.push(tf("Setlist : {0}", jeu.name));
   if (ui.tags.length) bouts.push(ui.tags.map(function(x){ return t(x); }).join(", "));
   if (ui.q) bouts.push("« " + ui.q + " »");
   return bouts.join(" · ");
@@ -4354,8 +4395,12 @@ function majLabel(iso){
 function render(){
   var L = library(), shown = trier(L.filter(matches));
 
-  var counts = {all:L.length, bass:0, amp:0, reaper:0};
-  L.forEach(function(p){ counts[p.kind] = (counts[p.kind] || 0) + 1; });
+  /* Une setlist ouverte est une portée, pas un filtre d'un onglet : les
+     compteurs des onglets la suivent, sinon ils annonceraient des fiches que
+     la liste ne montrera pas. */
+  var dansPortee = L.filter(passeSet);
+  var counts = {all:dansPortee.length, bass:0, amp:0, reaper:0};
+  dansPortee.forEach(function(p){ counts[p.kind] = (counts[p.kind] || 0) + 1; });
   var tabs = [["all","Tout"],["bass","Basse"],["amp","Ampli"],["pedal","Pédale"],
               ["board","Pédalier"],["reaper","Reaper"]];
   document.getElementById("tabs").innerHTML = tHtml(tabs.map(function(t){
@@ -4384,7 +4429,7 @@ function render(){
   if (ui.group === "song"){
     var by = {};
     shown.forEach(function(p){
-      var key = (p.song && p.song.title) ? p.song.title + (p.song.artist ? " — " + p.song.artist : "") : "Sans morceau";
+      var key = cleMorceau(p) || "Sans morceau";
       (by[key] = by[key] || []).push(p);
     });
     Object.keys(by).sort(function(a,b){
@@ -4431,6 +4476,7 @@ function render(){
      matériel ou de la marque. En « Par morceau », au contraire, le titre est
      l'information — on n'y touche pas. */
   if (ui.group === "kind" || ui.group === "brand") groups = rassembleIsoles(groups);
+  if (ui.group === "song") groups = ordreSetlist(groups);
 
   barre.fiches = shown.length;
   barre.cartes = groups.reduce(function(n2, g){ return n2 + g[1].length; }, 0);
@@ -4473,6 +4519,73 @@ function parClef(fiches, clefs, vide){
     return a.localeCompare(b, "fr");
   });
   return ordre.map(function(k){ return [k, par[k]]; });
+}
+
+/* ================================ setlists ================================
+   Une setlist est une liste ordonnée de MORCEAUX, pas de fiches : un morceau
+   en demande plusieurs — la basse, la chaîne, le pédalier — et c'est le
+   morceau qu'on annonce sur scène. Les fiches suivent. */
+
+/** La clé d'un morceau : « titre — artiste », ou rien. */
+function cleMorceau(p){
+  if (!p.song || !p.song.title) return "";
+  return p.song.title + (p.song.artist ? " — " + p.song.artist : "");
+}
+function setlists(){ return Array.isArray(S.sets) ? S.sets : (S.sets = []); }
+function setlistDe(id){
+  var L = setlists();
+  for (var i=0;i<L.length;i++) if (L[i].id === id) return L[i];
+  return null;
+}
+function setlistCourante(){ return ui.set ? setlistDe(ui.set) : null; }
+/** Les morceaux de la bibliothèque, chacun une fois, dans l'ordre alphabétique. */
+function morceauxConnus(){
+  var vus = {}, out = [];
+  library().forEach(function(p){
+    var k = cleMorceau(p);
+    if (k && !vus[k]){ vus[k] = 1; out.push(k); }
+  });
+  return out.sort(function(a, b){ return a.localeCompare(b, "fr"); });
+}
+/** Combien de fiches porte ce morceau. */
+function fichesDuMorceau(cle){
+  return library().filter(function(p){ return cleMorceau(p) === cle; }).length;
+}
+
+function setlistNouvelle(){
+  var L = setlists();
+  L.push({id:"s-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36),
+          name: t("Nouvelle setlist"), songs: []});
+  save();
+  openSetEditor(L[L.length - 1].id);
+}
+function setlistSupprime(id){
+  S.sets = setlists().filter(function(x){ return x.id !== id; });
+  if (ui.set === id) ui.set = null;
+  save(); render(); openSets();
+}
+function setlistOuvre(id){
+  ui.set = id;
+  ui.group = "song";                 /* une setlist se lit morceau par morceau */
+  var g = document.getElementById("grp");
+  if (g) g.value = ui.group;
+  closeEditor(); render();
+}
+function setlistFerme(){ ui.set = null; render(); }
+
+/** Range les groupes dans l'ordre de la setlist ; le reste suit derrière. */
+function ordreSetlist(groups){
+  var set = setlistCourante();
+  if (!set) return groups;
+  var rang = {};
+  set.songs.forEach(function(cle, i){ rang[cle] = i; });
+  return groups.slice().sort(function(a, b){
+    var x = rang[a[0]], y = rang[b[0]];
+    if (x === undefined && y === undefined) return 0;
+    if (x === undefined) return 1;
+    if (y === undefined) return -1;
+    return x - y;
+  });
 }
 
 /** Les groupes d'une seule fiche se rangent ensemble, à la fin. */
@@ -4528,7 +4641,10 @@ function renderListBar(groupes, replies){
   var host = document.getElementById("listbar");
   if (!host) return;
   var fiches = barre.fiches, tout = groupes > 0 && replies >= groupes;
+  var set = setlistCourante();
   host.innerHTML = tHtml(
+    (set ? '<span class="setname">' + esc(tf("Setlist : {0}", set.name)) +
+           '<button class="x" data-setoff aria-label="Quitter la setlist">✕</button></span>' : "") +
     '<span class="n">' + fiches + ' ' + t(fiches > 1 ? "fiches" : "fiche") +
     (barre.cartes > fiches ? ' · ' + barre.cartes + ' ' + t("apparitions") : "") + '</span>' +
     '<span class="lb-r">' +
@@ -4808,6 +4924,85 @@ function openGearList(){
         section("bass", "Instruments") + section("amp", "Amplis") + section("pedal", "Pédales") +
       '</div></div>');
   veil.classList.add("open");
+}
+
+function openSets(){
+  var veil = document.getElementById("veil");
+  var L = setlists();
+  var lignes = L.map(function(x){
+    var n2 = x.songs.length;
+    return '<div class="glrow">' +
+      '<span class="gln">' + esc(x.name) + '</span>' +
+      '<span class="glc">' + (n2 ? n2 + ' ' + t(n2 > 1 ? "morceaux" : "morceau")
+                                 : t("aucun morceau")) + '</span>' +
+      '<span class="tools">' +
+        '<button class="btn small" data-setopen="' + esc(x.id) + '">Ouvrir</button>' +
+        '<button class="btn small ghost" data-setedit="' + esc(x.id) + '">Modifier</button>' +
+        '<button class="btn small ghost" data-setdel="' + esc(x.id) + '">Supprimer</button>' +
+      '</span></div>';
+  }).join("");
+  veil.innerHTML = tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Setlists">' +
+    '<div class="sheet-h"><h2>Setlists</h2>' +
+    '<button class="btn small ghost" data-close>Fermer</button></div>' +
+    '<div class="sheet-b">' +
+      '<p class="hint">Une setlist est une liste de morceaux dans l\'ordre où tu les joues. ' +
+      'L\'ouvrir ne montre que ses morceaux, dans cet ordre — et c\'est ce que l\'impression met sur papier.</p>' +
+      (lignes || '<p class="hint">Aucune setlist pour l\'instant.</p>') +
+      '<div class="acts" style="margin-top:9px">' +
+      '<button class="btn small" data-setnew>+ Nouvelle setlist</button></div>' +
+    '</div></div>');
+  veil.classList.add("open");
+}
+
+/** L'ordre se règle ici : monter, descendre, retirer. */
+var setCourantEdite = null;
+function openSetEditor(id){
+  setCourantEdite = id;
+  var set = setlistDe(id);
+  if (!set){ openSets(); return; }
+  var veil = document.getElementById("veil");
+  var dispo = morceauxConnus().filter(function(c){ return set.songs.indexOf(c) < 0; });
+  var rangs = set.songs.map(function(cle, i){
+    var nb = fichesDuMorceau(cle);
+    return '<div class="glrow">' +
+      '<span class="gln">' + (i + 1) + '. ' + esc(cle) + '</span>' +
+      '<span class="glc">' + (nb ? nb + ' ' + t(nb > 1 ? "fiches" : "fiche")
+                                 : t("aucune fiche")) + '</span>' +
+      '<span class="tools">' +
+        '<button class="btn small ghost" data-setup="' + i + '" aria-label="Monter"' +
+        (i === 0 ? " disabled" : "") + '>↑</button>' +
+        '<button class="btn small ghost" data-setdown="' + i + '" aria-label="Descendre"' +
+        (i === set.songs.length - 1 ? " disabled" : "") + '>↓</button>' +
+        '<button class="btn small ghost" data-setout="' + i + '">Retirer</button>' +
+      '</span></div>';
+  }).join("");
+  veil.innerHTML = tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Setlist">' +
+    '<div class="sheet-h"><h2>Setlist</h2>' +
+    '<button class="btn small ghost" data-setback>Toutes les setlists</button>' +
+    '<button class="btn small ghost" data-close>Fermer</button></div>' +
+    '<div class="sheet-b">' +
+      '<label class="fld">Nom<input type="text" data-setname="' + esc(set.id) + '" value="' +
+        esc(set.name) + '"></label>' +
+      (rangs || '<p class="hint">Aucun morceau dans cette setlist.</p>') +
+      (dispo.length
+        ? '<label class="fld">Ajouter un morceau<select data-setadd="' + esc(set.id) + '">' +
+          '<option value="">—</option>' +
+          dispo.map(function(c){ return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join("") +
+          '</select></label>'
+        : '<p class="hint">Tous les morceaux de la bibliothèque sont déjà dans cette setlist.</p>') +
+      '<div class="acts" style="margin-top:9px">' +
+      '<button class="btn small" data-setopen="' + esc(set.id) + '">Ouvrir cette setlist</button></div>' +
+    '</div></div>');
+  veil.classList.add("open");
+}
+
+/** Déplace un morceau d'un rang, puis redessine l'écran. */
+function setlistBouge(id, i, pas){
+  var set = setlistDe(id); if (!set) return;
+  var j = i + pas;
+  if (j < 0 || j >= set.songs.length) return;
+  var tmp = set.songs[i]; set.songs[i] = set.songs[j]; set.songs[j] = tmp;
+  save(); render(); openSetEditor(id);
 }
 
 /* Quand on part de l'éditeur d'une fiche, on doit y revenir : sinon on décrit
@@ -5906,6 +6101,8 @@ document.addEventListener("drop", function(e){
   if (f) deposerFichier(f);
 });
 
+document.getElementById("btn-sets").addEventListener("click", openSets);
+
 document.getElementById("btn-awake").addEventListener("click", function(){
   setVeille(!veille);
 });
@@ -5928,6 +6125,7 @@ document.getElementById("listbar").addEventListener("change", function(e){
   render();
 });
 document.getElementById("listbar").addEventListener("click", function(e){
+  if (e.target.closest("[data-setoff]")){ setlistFerme(); return; }
   var b = e.target.closest("[data-foldall]"); if (!b) return;
   var fermer = b.getAttribute("data-foldall") === "close";
   /* Les sections, pas les maillons : « tout replier » au-dessus de la liste
@@ -6047,6 +6245,25 @@ document.getElementById("lang").addEventListener("click", function(e){
 document.getElementById("veil").addEventListener("click", function(e){
   if (e.target === this){ closeEditor(); return; }
   var t = e.target;
+
+  var sOpen = t.closest && t.closest("[data-setopen]");
+  if (sOpen){ setlistOuvre(sOpen.getAttribute("data-setopen")); return; }
+  var sEdit = t.closest && t.closest("[data-setedit]");
+  if (sEdit){ openSetEditor(sEdit.getAttribute("data-setedit")); return; }
+  var sDel = t.closest && t.closest("[data-setdel]");
+  if (sDel){ setlistSupprime(sDel.getAttribute("data-setdel")); return; }
+  if (t.closest && t.closest("[data-setnew]")){ setlistNouvelle(); return; }
+  if (t.closest && t.closest("[data-setback]")){ openSets(); return; }
+  var sUp = t.closest && t.closest("[data-setup]");
+  if (sUp){ setlistBouge(setCourantEdite, Number(sUp.getAttribute("data-setup")), -1); return; }
+  var sDown = t.closest && t.closest("[data-setdown]");
+  if (sDown){ setlistBouge(setCourantEdite, Number(sDown.getAttribute("data-setdown")), 1); return; }
+  var sOut = t.closest && t.closest("[data-setout]");
+  if (sOut){
+    var jeu2 = setlistDe(setCourantEdite);
+    if (jeu2){ jeu2.songs.splice(Number(sOut.getAttribute("data-setout")), 1); save(); render(); openSetEditor(setCourantEdite); }
+    return;
+  }
 
   var udel = t.closest && t.closest("[data-udel]");
   if (udel){ adminDelete(udel); return; }
@@ -6242,6 +6459,11 @@ document.getElementById("veil").addEventListener("submit", function(e){
 });
 document.getElementById("veil").addEventListener("change", function(e){
   var f = e.target;
+  if (f && f.hasAttribute && f.hasAttribute("data-setadd")){
+    var id2 = f.getAttribute("data-setadd"), jeu3 = setlistDe(id2);
+    if (jeu3 && f.value){ jeu3.songs.push(f.value); save(); render(); openSetEditor(id2); }
+    return;
+  }
   if (f && f.hasAttribute && f.hasAttribute("data-compare-b")){
     openCompare(compareA, f.value);
     return;
@@ -6260,6 +6482,11 @@ document.getElementById("veil").addEventListener("change", function(e){
 
 document.getElementById("veil").addEventListener("input", function(e){
   var t = e.target;
+  if (t && t.hasAttribute && t.hasAttribute("data-setname")){
+    var jeu4 = setlistDe(t.getAttribute("data-setname"));
+    if (jeu4){ jeu4.name = t.value; save(); render(); }
+    return;
+  }
 
   if (gdraft){
     var gf = t.getAttribute("data-gf");
@@ -6456,6 +6683,10 @@ window.__pb = {
   matches: matches, facetGear: facetGear, facetTags: facetTags,
   chainView: chainView, parClef: parClef, trier: trier, render: render, commit: commit,
   deposerFichier: deposerFichier, montreDepot: montreDepot, titreDeFichier: titreDeFichier,
+  openSets: openSets, openSetEditor: openSetEditor, setlists: setlists, setlistDe: setlistDe,
+  setlistNouvelle: setlistNouvelle, setlistOuvre: setlistOuvre, setlistFerme: setlistFerme,
+  setlistBouge: setlistBouge, setlistSupprime: setlistSupprime,
+  cleMorceau: cleMorceau, morceauxConnus: morceauxConnus,
   setVeille: setVeille, renderVeille: renderVeille, veilleDispo: veilleDispo,
   getVeille: function(){ return veille; },
   renderFilters: renderFilters, filterLabel: filterLabel, activeFilters: activeFilters,

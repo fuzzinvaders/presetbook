@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.10.1   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.11.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,47 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.11.0 — 13 novembre 2026
+
+### Ajouté
+
+- **Les setlists.** Un morceau demande plusieurs fiches — la basse, la chaîne Reaper, le pédalier —
+  et c'est le morceau qu'on annonce sur scène. Une setlist est donc une liste **ordonnée de
+  morceaux**, pas de fiches. L'ouvrir ne montre que ses morceaux, dans son ordre ; l'imprimer donne
+  le carnet du concert, dans l'ordre joué. Les compteurs des onglets suivent : annoncer « 68 »
+  au-dessus d'une liste de quatre serait faux.
+- **Déposer un `.RfxChain` sur la page en fait une fiche.** Importer demandait d'ouvrir une fiche
+  Reaper, d'entrer dans son éditeur, puis d'y trouver le bouton. La fiche prend le nom du fichier,
+  l'onglet bascule sur Reaper, et elle est datée.
+- **Un ordre dans les sections** : « Par nom » ou « Modifiée en dernier », dans la barre de liste.
+  Le rangement vaut aussi dans « Autres » — sinon ce serait le seul endroit où il ne s'appliquerait
+  pas.
+- **Une date de dernière modification par fiche**, écrite à l'enregistrement et à la copie, jamais à
+  la lecture. Elle se lit en bas de la carte et elle s'imprime. Sans date, une fiche passe en
+  dernier au rangement : « jamais enregistrée depuis que la date existe » n'est pas « ancienne ».
+- **Garder l'écran allumé**, dans le menu. En répétition, le téléphone s'éteint pendant qu'on lit
+  ses réglages. Là où l'API n'existe pas, le bouton n'apparaît pas : mieux vaut ne rien promettre
+  que promettre ce qu'on ne peut pas tenir.
+- Les fiches se replient comme les sections et les maillons. Repliée, une fiche tient en une ligne
+  qui dit son nom, sa famille et ce qu'elle cache. Mesuré sur « Crossfire » : 557 px dépliée,
+  65 px repliée.
+- `?group=` accepte `artist` et `tag` ; `?sort=` accepte `nom` et `maj`.
+
+### Corrigé
+
+- **L'égaliseur de la Fender Deluxe Active Jazz Bass était dans le mauvais sens.** Les schémas
+  d'usine Fender 013-6700 et 013-6760 donnent l'ordre réel de la plaque : volume, pan, puis un
+  bouton double — **Treble à l'étage haut, Bass à l'étage bas** — et le Middle en dernier sur son
+  petit bouton. On tournait donc le mauvais bouton en relisant sa propre fiche. Seul l'affichage
+  change : les clés ne bougent pas, aucune fiche déjà écrite n'est touchée. La note porte en plus ce
+  que les schémas disent et qu'on ne devine pas : **la balance tourne dans l'horaire vers le micro
+  manche**.
+- L'audit des traductions ne savait pas lire une parenthèse : il coupait l'appel au premier « ) »,
+  si bien que les messages contenant « ({0}) » lui échappaient. 59 messages audités avant,
+  75 maintenant.
 
 ---
 
