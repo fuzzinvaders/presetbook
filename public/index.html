@@ -75,7 +75,36 @@ p{margin:0}
 /* ---- chrome ---- */
 .top{display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px 18px; padding-bottom:16px; border-bottom:3px solid var(--ink)}
 .top .ttl{display:flex; flex-direction:column; gap:5px; margin-right:auto}
-.acts{display:flex; flex-wrap:wrap; gap:8px}
+.acts{display:flex; flex-wrap:wrap; align-items:center; gap:8px}
+
+/* ---- menu du compte ----
+   Un seul bouton porte tout ce qui touche à la session et aux réglages. Le
+   panneau se pose sous lui, aligné à droite pour ne jamais sortir de l'écran. */
+.menu{position:relative}
+#btn-menu{display:inline-flex; align-items:center; gap:7px}
+#btn-menu .caret{font-size:9px; color:var(--ink-3); line-height:1}
+#btn-menu[aria-expanded="true"]{background:var(--panel-2); border-color:var(--ink-3)}
+.menu-p{
+  position:absolute; right:0; top:calc(100% + 6px); z-index:30;
+  min-width:210px; max-width:min(280px, calc(100vw - 32px));
+  display:flex; flex-direction:column; gap:3px; padding:7px;
+  background:var(--panel); border:1px solid var(--ink-3); border-radius:4px;
+  box-shadow:0 10px 26px rgba(0,0,0,.35);
+}
+.menu-p[hidden]{display:none}
+.menu-p .btn{width:100%; text-align:left; border-color:transparent; background:transparent}
+.menu-p .btn:hover{background:var(--panel-2)}
+.menu-sep{height:1px; background:var(--line); margin:4px 1px}
+.menu-p #who{display:flex; flex-direction:column; gap:3px}
+.menu-p #who .store{justify-content:flex-start}
+.menu-p #lang{align-self:flex-start}
+
+/* ---- une liste déroulante étiquetée ---- */
+/* Le tri et les filtres restent ensemble, à droite : ils se replient en bloc
+   au lieu de laisser un bouton seul sur sa ligne. */
+.bar-r{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-left:auto}
+.pick{display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--ink-3)}
+.pick select{padding:6px 8px; font-size:13px}
 /* ---- filtres ---- */
 .filters{
   display:flex; flex-direction:column; gap:12px;
@@ -83,6 +112,14 @@ p{margin:0}
   background:var(--panel); border:1px solid var(--line); border-radius:4px;
 }
 .filters[hidden]{display:none}
+/* Les listes d'un côté, ce qui est retenu de l'autre : choisir et voir sont
+   deux gestes, pas un seul mur de pastilles. */
+.picks{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px}
+.picks .pick{flex:0 1 auto}
+.picks select{max-width:min(230px, 60vw)}
+.chip .x{font-size:14px; line-height:1; opacity:.75}
+.chip.on{background:var(--ink); border-color:var(--ink); color:var(--bg)}
+.chip.on:hover{opacity:.85; background:var(--ink)}
 .facet{display:flex; flex-direction:column; gap:7px; align-items:flex-start}
 .facet h3{
   font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.09em;
@@ -171,6 +208,8 @@ input[type="text"],input[type="search"],input[type="number"],input[type="passwor
   border:1px solid var(--line-2); border-radius:3px; padding:7px 10px;
 }
 input[type="search"]{min-width:190px; flex:1 1 190px; max-width:320px}
+/* Dans la barre, la recherche passe devant et s'étire : le reste se range autour. */
+.bar input[type="search"]{flex:1 1 240px; max-width:none; order:-1}
 textarea{width:100%; resize:vertical; line-height:1.5}
 label.fld{display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--ink-3);
   font-family:"IBM Plex Mono",monospace; letter-spacing:.07em; text-transform:uppercase}
@@ -280,9 +319,26 @@ table.bands tr.bx td{opacity:.5; text-decoration:line-through}
 .card-f .btn{padding:4px 10px; font-size:12px}
 .card-f .spacer{margin-left:auto}
 .empty{border:1px dashed var(--line-2); border-radius:5px; padding:34px 20px; text-align:center; color:var(--ink-2); font-size:14px}
+.listbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px}
+.listbar .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
+
 .grp{margin-top:26px}
-.grp-h{display:flex; align-items:baseline; gap:10px; padding-bottom:6px; border-bottom:1px solid var(--line-2)}
-.grp-h .c{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
+.grp-h{margin:0; border-bottom:1px solid var(--line-2)}
+/* Tout le titre est cliquable : viser un chevron de huit pixels au doigt
+   n'est pas une cible. */
+.grp-b{
+  display:flex; align-items:baseline; gap:10px; width:100%; padding:0 0 6px;
+  border:0; background:transparent; color:inherit; text-align:left;
+}
+.grp-b:hover .grp-t{color:var(--ink-2)}
+.grp-t{font-family:"Antonio",sans-serif; font-size:17px; letter-spacing:.02em; text-transform:uppercase}
+.grp-b .c{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
+.grp-b .chev{
+  font-size:10px; color:var(--ink-3); flex:none; align-self:center;
+  transition:transform .15s ease;
+}
+.grp-b[aria-expanded="false"] .chev{transform:rotate(-90deg)}
+.grp[data-folded="1"] .grid{display:none}
 
 /* ---- editor ---- */
 .veil{position:fixed; inset:0; background:rgba(12,14,13,.55); display:none; z-index:40; padding:16px; overflow:auto}
@@ -404,7 +460,15 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
   .eyebrow{font-size:10px; letter-spacing:.1em}
   .acts{gap:6px; width:100%}
   .acts .btn{padding:7px 10px; font-size:13px}
-  #lang{margin-left:auto}
+  /* La baseline répète ce que la page montre déjà : sur un téléphone, elle
+     prend deux lignes qu'on préfère donner aux fiches. */
+  .eyebrow{display:none}
+  .acts .store{margin-right:auto}
+  .menu{margin-left:auto}
+  .menu-p #lang{margin-left:0}
+  /* Le compte et le tri tiennent sur une ligne chacun, sans trou au milieu. */
+  .listbar{margin-top:10px}
+  .bar-r{width:100%; justify-content:space-between; margin-left:0}
   .bar{gap:8px; margin:12px 0 4px}
   #q{flex:1 1 100%; max-width:none}
   .tab{padding:5px 8px}
@@ -455,7 +519,9 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
 
   body{background:#fff}
   .wrap{max-width:none; padding:0}
-  header.top, .bar, .filters, .foot, .veil, .gate, .toast,
+  .grp[data-folded="1"] .grid{display:grid}
+  .grp-b .chev{display:none}
+  header.top, .bar, .filters, .listbar, .foot, .veil, .gate, .toast,
   .card-f, [id^="kofi-"], iframe[class*="floatingchat"]{ display:none !important; }
 
   .printhead{
@@ -504,28 +570,38 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
     </div>
     <div class="acts">
       <span class="store" id="store"><span class="dot" id="store-dot"></span><span id="store-txt">chargement…</span></span>
-      <span id="who"></span>
-      <button class="btn" id="btn-gear"></button>
-      <button class="btn" id="btn-io"></button>
-      <button class="btn" id="btn-shared" hidden></button>
-      <button class="btn" id="btn-install" hidden></button>
       <button class="btn primary" id="btn-new"></button>
-      <span class="tabs" id="lang" role="group" aria-label="Langue / Language"></span>
+      <div class="menu">
+        <button class="btn" id="btn-menu" aria-expanded="false" aria-haspopup="true" aria-controls="menu-p"></button>
+        <div class="menu-p" id="menu-p" hidden>
+          <div id="who"></div>
+          <button class="btn" id="btn-gear"></button>
+          <button class="btn" id="btn-shared" hidden></button>
+          <button class="btn" id="btn-io"></button>
+          <button class="btn" id="btn-print"></button>
+          <button class="btn" id="btn-install" hidden></button>
+          <div class="menu-sep"></div>
+          <span class="tabs" id="lang" role="group" aria-label="Langue / Language"></span>
+        </div>
+      </div>
     </div>
   </header>
 
   <div class="bar">
-    <div class="tabs" id="tabs" role="tablist"></div>
     <input type="search" id="q">
-    <div class="seg" id="grp" role="tablist"></div>
-    <button class="btn" id="btn-filters" aria-expanded="false" aria-controls="filters"></button>
-    <button class="btn" id="btn-print"></button>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <div class="bar-r">
+      <label class="pick"><span id="grp-l"></span><select id="grp"></select></label>
+      <button class="btn" id="btn-filters" aria-expanded="false" aria-controls="filters"></button>
+    </div>
   </div>
 
   <div class="filters" id="filters" hidden></div>
 
   <!-- Visible seulement à l'impression : dit ce que la feuille contient. -->
   <div class="printhead" id="printhead"></div>
+
+  <div class="listbar" id="listbar"></div>
 
   <div id="list"></div>
 
@@ -1000,6 +1076,17 @@ var EN = {
   "Par morceau": "By song",
   "Chercher un style, un morceau, un plugin…": "Search a style, a song, a plugin…",
   "Chercher": "Search",
+  "Grouper par": "Group by",
+  "Menu": "Menu",
+  "Mon compte et les réglages": "My account and settings",
+  "Réglages": "Settings",
+  "Style": "Style",
+  "Toutes les marques": "All brands",
+  "Tout le matériel": "All gear",
+  "Tous les styles": "All styles",
+  "Autres": "Others",
+  "Tout replier": "Collapse all",
+  "Tout déplier": "Expand all",
   "Regrouper": "Group",
   "chargement…": "loading…",
 
@@ -1411,6 +1498,8 @@ function renderChrome(){
   setHtml(el("btn-print"), "Imprimer");
   setHtml(el("btn-install"), "Installer");
   setHtml(el("btn-shared"), "Partagés");
+  setHtml(el("grp-l"), "Grouper par");
+  renderMenuButton();
   var q = document.getElementById("q");
   q.setAttribute("placeholder", t("Chercher un style, un morceau, un plugin…"));
   q.setAttribute("aria-label", t("Chercher"));
@@ -1427,9 +1516,27 @@ function renderChrome(){
   var grp = document.getElementById("grp");
   grp.setAttribute("aria-label", t("Regrouper"));
   grp.innerHTML = tHtml(
-    '<button role="tab" data-g="kind" aria-selected="' + (ui.group === "kind") + '">Par matériel</button>' +
-    '<button role="tab" data-g="brand" aria-selected="' + (ui.group === "brand") + '">Par marque</button>' +
-    '<button role="tab" data-g="song" aria-selected="' + (ui.group === "song") + '">Par morceau</button>');
+    '<option value="kind">Par matériel</option>' +
+    '<option value="brand">Par marque</option>' +
+    '<option value="song">Par morceau</option>');
+  grp.value = ui.group;
+}
+
+/** Le bouton du menu porte le nom du compte — ou « Menu » quand il n'y en a pas. */
+function renderMenuButton(){
+  var b = document.getElementById("btn-menu");
+  if (!b) return;
+  var nom = session && session.user ? session.user.name : null;
+  b.innerHTML = (nom ? esc(nom) : tHtml("Menu")) + '<span class="caret" aria-hidden="true">▼</span>';
+  b.setAttribute("aria-label", t(nom ? "Mon compte et les réglages" : "Réglages"));
+}
+
+/** Ouvre ou ferme le menu du compte. */
+function setMenu(ouvert){
+  var b = document.getElementById("btn-menu"), p = document.getElementById("menu-p");
+  if (!b || !p) return;
+  p.hidden = !ouvert;
+  b.setAttribute("aria-expanded", String(!!ouvert));
 }
 
 function applyLang(){
@@ -2651,9 +2758,7 @@ function readUrlFilter(){
     if (kind === "all" || KINDS[kind]) ui.kind = kind;   /* toute famille connue */
     if (group === "song" || group === "kind" || group === "brand") ui.group = group;
     document.getElementById("q").value = ui.q;
-    Array.prototype.forEach.call(document.querySelectorAll("#grp [data-g]"), function(b){
-      b.setAttribute("aria-selected", String(b.getAttribute("data-g") === ui.group));
-    });
+    document.getElementById("grp").value = ui.group;
   } catch (e) { /* pas d'URL exploitable : on garde les valeurs par défaut */ }
 }
 
@@ -2683,6 +2788,7 @@ function renderWho(){
   var bs = document.getElementById("btn-shared");
   if (bs) bs.hidden = !session.user;
 
+  renderMenuButton();
   var host = document.getElementById("who");
   if (!session.user){ host.innerHTML = ""; return; }
   host.innerHTML = tHtml('<span class="store' + (session.isDemo ? " warn" : "") + '">' +
@@ -3931,6 +4037,52 @@ function chip(type, x, on){
          esc(x.l) + '<span class="n">' + x.n + '</span></button>';
 }
 
+/**
+ * Une liste déroulante qui ajoute un filtre.
+ *
+ * Elle ne propose que ce qui n'est pas déjà retenu, et revient à sa première
+ * ligne après chaque choix : elle sert à choisir, pas à afficher l'état. Les
+ * libellés passent par « t » ici même, parce qu'une « option » ne peut pas
+ * porter de balise fille où isoler le compte.
+ */
+function pickFacet(type, label, vide, liste, retenus){
+  var dispo = liste.filter(function(x){ return retenus.indexOf(x.id) < 0; });
+  if (!dispo.length) return "";
+  return '<label class="pick"><span>' + esc(t(label)) + '</span>' +
+    '<select data-fadd="' + type + '" aria-label="' + esc(t(label)) + '">' +
+    '<option value="">' + esc(t(vide)) + '</option>' +
+    dispo.map(function(x){
+      return '<option value="' + esc(x.id) + '">' + esc(t(x.l)) + ' (' + x.n + ')</option>';
+    }).join("") +
+    '</select></label>';
+}
+
+/** Les filtres retenus, en pastilles : un clic en retire un. */
+function pickedChips(type, liste, nommer){
+  return liste.map(function(id){
+    return '<button class="chip on" data-f' + type + '="' + esc(id) + '" aria-pressed="true">' +
+           esc(t(nommer(id))) + '<span class="x" aria-hidden="true">×</span></button>';
+  }).join("");
+}
+
+/* --------------------------------- sections repliées ---------------------
+   Le repli est un confort d'affichage propre au poste : il vit dans le
+   navigateur, pas dans les données. Une lecture peut échouer — navigation
+   privée, stockage bloqué — et la page doit alors s'afficher dépliée. */
+var FOLD_KEY = "presetbook.replies";
+var folded = (function(){
+  try { return JSON.parse(window.localStorage.getItem(FOLD_KEY)) || {}; }
+  catch (e) { return {}; }
+})();
+function saveFolded(){
+  try { window.localStorage.setItem(FOLD_KEY, JSON.stringify(folded)); } catch (e) { /* sans objet */ }
+}
+function isFolded(key){ return folded[key] === 1; }
+function setFolded(key, on){
+  if (on) folded[key] = 1; else delete folded[key];
+  saveFolded();
+}
+
 function renderFilters(){
   var host = document.getElementById("filters");
   if (!host) return;
@@ -3944,25 +4096,26 @@ function renderFilters(){
   host.hidden = !ui.open;
   if (!ui.open){ host.innerHTML = ""; return; }
 
-  var mar = facetBrand(), mat = facetGear(), sty = facetTags(), h = "";
+  var mar = facetBrand(), mat = facetGear(), sty = facetTags(), reg = allGear();
+  var listes = "";
   /* La marque vient en premier : elle dégrossit, le modèle précise. Une seule
      marque dans la vue n'apprend rien à personne, donc on se tait. */
-  if (mar.length > 1){
-    h += '<div class="facet"><h3>Marque</h3><div class="chips">' +
-         mar.map(function(x){ return chip("brand", x, ui.brands.indexOf(x.id) >= 0); }).join("") +
-         '</div></div>';
+  if (mar.length > 1 || ui.brands.length){
+    listes += pickFacet("brand", "Marque", "Toutes les marques", mar, ui.brands);
   }
-  if (mat.length){
-    h += '<div class="facet"><h3>Matériel</h3><div class="chips">' +
-         mat.map(function(x){ return chip("gear", x, ui.gear.indexOf(x.id) >= 0); }).join("") +
-         '</div></div>';
+  listes += pickFacet("gear", "Matériel", "Tout le matériel", mat, ui.gear);
+  listes += pickFacet("tag", "Style", "Tous les styles", sty, ui.tags);
+
+  var h = "";
+  if (listes) h += '<div class="picks">' + listes +
+    (actifs ? '<button class="btn small ghost" data-fclear>Tout effacer</button>' : "") + '</div>';
+  if (actifs){
+    h += '<div class="chips">' +
+      pickedChips("brand", ui.brands, function(b){ return b; }) +
+      pickedChips("gear", ui.gear, function(id){ return reg[id] ? gearName(reg[id]) : id; }) +
+      pickedChips("tag", ui.tags, function(x){ return x; }) +
+      '</div>';
   }
-  if (sty.length){
-    h += '<div class="facet"><h3>Styles</h3><div class="chips">' +
-         sty.map(function(x){ return chip("tag", x, ui.tags.indexOf(x.id) >= 0); }).join("") +
-         '</div></div>';
-  }
-  if (actifs) h += '<div class="facet"><button class="btn small ghost" data-fclear>Tout effacer</button></div>';
   if (!h) h = '<p class="hint">Rien à filtrer dans cette vue.</p>';
   host.innerHTML = tHtml(h);
 }
@@ -4048,11 +4201,50 @@ function render(){
     order.forEach(function(k){ groups.push([k, byGear[k]]); });
   }
 
+  /* Un titre par fiche isolée n'apprend rien : la carte porte déjà le nom du
+     matériel ou de la marque. En « Par morceau », au contraire, le titre est
+     l'information — on n'y touche pas. */
+  if (ui.group !== "song") groups = rassembleIsoles(groups);
+
+  var replies = 0;
   host.innerHTML = tHtml(groups.map(function(g){
-    return '<section class="grp"><div class="grp-h"><h2>' + esc(g[0]) + '</h2>' +
-           '<span class="c">' + g[1].length + '</span></div><div class="grid">' +
-           g[1].map(card).join("") + '</div></section>';
+    var plie = isFolded(g[0]);
+    if (plie) replies++;
+    return '<section class="grp" data-folded="' + (plie ? 1 : 0) + '">' +
+           '<h2 class="grp-h"><button class="grp-b" data-fold="' + esc(g[0]) + '"' +
+           ' aria-expanded="' + (!plie) + '">' +
+           '<span class="chev" aria-hidden="true">▾</span>' +
+           '<span class="grp-t">' + esc(g[0]) + '</span>' +
+           '<span class="c">' + g[1].length + '</span></button></h2>' +
+           '<div class="grid">' + g[1].map(card).join("") + '</div></section>';
   }).join(""));
+
+  renderListBar(shown.length, groups.length, replies);
+}
+
+/** Les groupes d'une seule fiche se rangent ensemble, à la fin. */
+function rassembleIsoles(groups){
+  var gros = [], seuls = [];
+  groups.forEach(function(g){ (g[1].length > 1 ? gros : seuls).push(g); });
+  /* Un seul isolé garde son nom : le renommer « Autres » ne gagnerait rien
+     et perdrait une information. */
+  if (seuls.length < 2) return groups;
+  var reste = [];
+  seuls.forEach(function(g){ reste = reste.concat(g[1]); });
+  return gros.concat([["Autres", reste]]);
+}
+
+/** Le compte de ce qui est affiché, et de quoi tout replier d'un geste. */
+function renderListBar(fiches, groupes, replies){
+  var host = document.getElementById("listbar");
+  if (!host) return;
+  var tout = groupes > 0 && replies >= groupes;
+  host.innerHTML = tHtml(
+    '<span class="n">' + fiches + ' ' + t(fiches > 1 ? "fiches" : "fiche") + '</span>' +
+    (groupes > 1
+      ? '<button class="btn small ghost" data-foldall="' + (tout ? "open" : "close") + '">' +
+        (tout ? "Tout déplier" : "Tout replier") + '</button>'
+      : ""));
 }
 
 /* ============================ éditeur ============================ */
@@ -5336,12 +5528,8 @@ document.getElementById("tabs").addEventListener("click", function(e){
   var b = e.target.closest("[data-k]"); if (!b) return;
   ui.kind = b.getAttribute("data-k"); render();
 });
-document.getElementById("grp").addEventListener("click", function(e){
-  var b = e.target.closest("[data-g]"); if (!b) return;
-  ui.group = b.getAttribute("data-g");
-  Array.prototype.forEach.call(this.querySelectorAll("[data-g]"), function(x){
-    x.setAttribute("aria-selected", String(x === b));
-  });
+document.getElementById("grp").addEventListener("change", function(){
+  ui.group = this.value;
   render();
 });
 /* Chaque frappe reconstruisait toute la liste. Mesuré : environ 2,4 Ko de HTML
@@ -5358,9 +5546,39 @@ document.getElementById("btn-filters").addEventListener("click", function(){
   ui.open = !ui.open;
   renderFilters();
 });
+document.getElementById("listbar").addEventListener("click", function(e){
+  var b = e.target.closest("[data-foldall]"); if (!b) return;
+  var fermer = b.getAttribute("data-foldall") === "close";
+  Array.prototype.forEach.call(document.querySelectorAll("#list [data-fold]"), function(x){
+    setFolded(x.getAttribute("data-fold"), fermer);
+  });
+  render();
+});
 document.getElementById("btn-install").addEventListener("click", doInstall);
 document.getElementById("btn-print").addEventListener("click", function(){
   try { window.print(); } catch (e) { toast("L'impression n'est pas disponible ici."); }
+});
+
+/* Le menu se ferme dès qu'on choisit quelque chose, et dès qu'on clique
+   ailleurs : un panneau qui reste ouvert derrière une fenêtre est un piège. */
+document.getElementById("btn-menu").addEventListener("click", function(e){
+  e.stopPropagation();
+  setMenu(document.getElementById("menu-p").hidden);
+});
+document.getElementById("menu-p").addEventListener("click", function(e){
+  if (e.target.closest("button")) setMenu(false);
+});
+document.addEventListener("click", function(e){
+  if (!e.target.closest(".menu")) setMenu(false);
+});
+document.getElementById("filters").addEventListener("change", function(e){
+  var sel = e.target.closest("[data-fadd]"); if (!sel) return;
+  var type = sel.getAttribute("data-fadd"), val = sel.value;
+  sel.value = "";                       /* la liste choisit, elle n'affiche pas l'état */
+  if (!val) return;
+  var liste = type === "brand" ? ui.brands : type === "gear" ? ui.gear : ui.tags;
+  if (liste.indexOf(val) < 0) liste.push(val);
+  render();
 });
 document.getElementById("filters").addEventListener("click", function(e){
   var t2 = e.target;
@@ -5375,6 +5593,19 @@ document.getElementById("filters").addEventListener("click", function(e){
 });
 
 document.getElementById("list").addEventListener("click", function(e){
+  var pli = e.target.closest("[data-fold]");
+  if (pli){
+    var cle = pli.getAttribute("data-fold"), ferme = !isFolded(cle);
+    setFolded(cle, ferme);
+    pli.setAttribute("aria-expanded", String(!ferme));
+    pli.closest(".grp").setAttribute("data-folded", ferme ? "1" : "0");
+    renderListBar(
+      document.querySelectorAll("#list .card").length,
+      document.querySelectorAll("#list .grp").length,
+      document.querySelectorAll('#list .grp[data-folded="1"]').length
+    );
+    return;
+  }
   var btn = e.target.closest("[data-act]"); if (!btn) return;
   var id = btn.closest("[data-id]").getAttribute("data-id");
   var act = btn.getAttribute("data-act");
@@ -5792,7 +6023,9 @@ document.getElementById("veil").addEventListener("input", function(e){
 });
 
 document.addEventListener("keydown", function(e){
-  if (e.key === "Escape" && document.getElementById("veil").classList.contains("open")) closeEditor();
+  if (e.key !== "Escape") return;
+  if (document.getElementById("veil").classList.contains("open")) { closeEditor(); return; }
+  if (!document.getElementById("menu-p").hidden) setMenu(false);
 });
 
 /* Une erreur d affichage doit se voir, pas laisser une page vide. */

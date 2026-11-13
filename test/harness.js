@@ -40,7 +40,7 @@ setTimeout(() => {
   check("nom du matériel sur les cartes", /class="gearname">Yamaha BB734A/.test(list));
   check("ampli nommé sur ses cartes", /class="gearname">Fender Rumble 40/.test(list));
   check("regroupement par matériel",
-    /<h2>Yamaha BB734A<\/h2>/.test(list) && /<h2>Fender Rumble 40<\/h2>/.test(list));
+    /class="grp-t">Yamaha BB734A</.test(list) && /class="grp-t">Fender Rumble 40</.test(list));
   check("façade de la basse", /class="strip bass"/.test(list));
   check("façade de l'ampli", /class="strip amp"/.test(list));
   check("repère rouge quand l'overdrive est engagé", /knob amp dr/.test(list));

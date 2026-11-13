@@ -231,12 +231,12 @@ const nMarque = (parMarque.__nodes.get("list").innerHTML.match(/<article/g) || [
 check("la vue filtrée par marque est rendue", nMarque > 0 && nMarque < total, String(nMarque));
 
 const groupe = run(page, { search: "?group=brand" });
-const titres = (groupe.__nodes.get("list").innerHTML.match(/<h2>[^<]*<\/h2>/g) || [])
-  .map((x) => x.replace(/<[^>]*>/g, ""));
+const titres = (groupe.__nodes.get("list").innerHTML.match(/class="grp-t">[^<]*</g) || [])
+  .map((x) => x.slice('class="grp-t">'.length, -1));
 check("regrouper par marque produit des sections nommées par marque",
   titres.indexOf("Fender") >= 0 && titres.length > 3, titres.join(" | "));
-check("l'onglet « Par marque » existe",
-  groupe.__nodes.get("grp").innerHTML.indexOf('data-g="brand"') > 0,
+check("« Par marque » est proposé dans la liste de regroupement",
+  groupe.__nodes.get("grp").innerHTML.indexOf('value="brand"') > 0,
   groupe.__nodes.get("grp").innerHTML);
 
 const teteMarque = run(page, { search: "?brand=Ampeg" }).__nodes.get("printhead").innerHTML;
@@ -246,24 +246,30 @@ check("l'en-tête d'impression nomme la marque filtrée",
 /* --- le panneau --- */
 const p2 = run(page, { search: "?gear=lionheart20" });
 const panneau = p2.__nodes.get("filters").innerHTML;
-check("le panneau liste les deux facettes",
-  panneau.indexOf("data-fgear") > 0 && panneau.indexOf("data-ftag") > 0);
+check("le panneau propose les deux facettes",
+  panneau.indexOf('data-fadd="gear"') > 0 && panneau.indexOf('data-fadd="tag"') > 0,
+  panneau.slice(0, 160));
 /* Ce panneau-là est filtré sur un seul modèle, donc sur une seule marque :
    proposer « Laney (8) » tout seul ne dirait rien à personne. */
 check("une vue à marque unique n'affiche pas la facette marque",
-  panneau.indexOf("data-fbrand") < 0, panneau.slice(0, 160));
+  panneau.indexOf("data-fbrand") < 0 && panneau.indexOf('data-fadd="brand"') < 0,
+  panneau.slice(0, 160));
 
 const p3 = run(page, { search: "?tag=rock" });
 const panneau3 = p3.__nodes.get("filters").innerHTML;
 check("une vue à plusieurs marques les propose",
-  panneau3.indexOf("data-fbrand") > 0, panneau3.slice(0, 160));
+  panneau3.indexOf('data-fadd="brand"') > 0, panneau3.slice(0, 160));
 check("la marque vient avant le modèle : elle dégrossit, le modèle précise",
-  panneau3.indexOf("data-fbrand") >= 0
-  && panneau3.indexOf("data-fbrand") < panneau3.indexOf("data-fgear"),
-  panneau3.indexOf("data-fbrand") + " puis " + panneau3.indexOf("data-fgear"));
+  panneau3.indexOf('data-fadd="brand"') >= 0
+  && panneau3.indexOf('data-fadd="brand"') < panneau3.indexOf('data-fadd="gear"'),
+  panneau3.indexOf('data-fadd="brand"') + " puis " + panneau3.indexOf('data-fadd="gear"'));
 check("le matériel choisi est marqué",
   panneau.indexOf('data-fgear="lionheart20" aria-pressed="true"') > 0, panneau.slice(0, 120));
 check("l'effacement est proposé", panneau.indexOf("data-fclear") > 0);
+check("la liste ne propose pas ce qui est déjà retenu",
+  panneau.indexOf('<option value="lionheart20"') < 0, panneau.slice(0, 200));
+check("chaque ligne porte son compte",
+  /<option value="[^"]+">[^<]+\(\d+\)<\/option>/.test(panneau), panneau.slice(0, 200));
 check("le bouton porte le nombre de filtres",
   p2.__nodes.get("btn-filters").innerHTML.indexOf("(1)") > 0,
   p2.__nodes.get("btn-filters").innerHTML);
@@ -291,6 +297,74 @@ check("une fiche ne se coupe pas entre deux pages", bloc.indexOf("break-inside:a
   check("« " + sel + " » est retiré du papier", bloc.indexOf(sel) > 0);
 });
 check("les marges de page sont fixées", src.indexOf("@page{") > 0);
+
+/* --- des sections qu'on replie --- */
+/*
+ * Le repli est un état d'affichage : il vit dans le navigateur et n'a pas à
+ * traverser l'impression. Une feuille amputée des sections qu'on avait
+ * refermées à l'écran serait fausse sans prévenir.
+ */
+const vue = run(page, { search: "" });
+const liste = vue.__nodes.get("list").innerHTML;
+check("chaque section a un titre cliquable",
+  /<button class="grp-b" data-fold="[^"]+" aria-expanded="(true|false)">/.test(liste),
+  liste.slice(0, 200));
+check("le chevron n'est pas annoncé deux fois",
+  liste.indexOf('<span class="chev" aria-hidden="true">') > 0);
+check("le papier rouvre ce qui est replié",
+  bloc.indexOf('.grp[data-folded="1"] .grid{display:grid}') > 0);
+check("la barre de liste propose de tout replier",
+  vue.__nodes.get("listbar").innerHTML.indexOf("data-foldall") > 0,
+  vue.__nodes.get("listbar").innerHTML);
+check("elle dit combien de fiches sont affichées",
+  /class="n">\d+ fiches</.test(vue.__nodes.get("listbar").innerHTML),
+  vue.__nodes.get("listbar").innerHTML);
+
+/* --- un titre par fiche isolée n'apprend rien --- */
+/*
+ * « Par matériel » produisait vingt-cinq titres pour vingt fiches isolées : un
+ * titre « Marshall DSL40 » au-dessus d'une carte qui le dit déjà. En « Par
+ * morceau », au contraire, le titre EST l'information — on n'y touche pas.
+ */
+function titresDe(res) {
+  return (res.__nodes.get("list").innerHTML.match(/class="grp-t">[^<]*</g) || [])
+    .map((x) => x.slice('class="grp-t">'.length, -1));
+}
+const parMateriel = titresDe(run(page, { search: "?group=kind" }));
+check("les fiches isolées se rangent sous « Autres »",
+  parMateriel.indexOf("Autres") >= 0, parMateriel.join(" | "));
+check("« Autres » vient en dernier",
+  parMateriel[parMateriel.length - 1] === "Autres", parMateriel.join(" | "));
+check("les sections fournies gardent leur nom",
+  parMateriel.indexOf("Fender Rumble 40") >= 0 && parMateriel.indexOf("Yamaha BB734A") >= 0,
+  parMateriel.join(" | "));
+check("le regroupement ne perd aucune fiche",
+  (run(page, { search: "?group=kind" }).__nodes.get("list").innerHTML.match(/<article/g) || []).length
+  === (run(page, { search: "" }).__nodes.get("list").innerHTML.match(/<article/g) || []).length);
+
+const parMorceau = titresDe(run(page, { search: "?group=song" }));
+check("« Par morceau » garde le nom de chaque morceau",
+  parMorceau.indexOf("Autres") < 0 && parMorceau.length >= 3, parMorceau.join(" | "));
+
+/* Un seul isolé garde son nom : le renommer « Autres » perdrait une
+   information sans rien gagner. */
+const unSeul = titresDe(run(page, { search: "?kind=reaper&group=kind" }));
+check("un groupe isolé unique n'est pas renommé",
+  unSeul.indexOf("Autres") < 0, unSeul.join(" | "));
+
+/*
+ * L'en-tête tient en deux commandes : créer une fiche, et le menu du compte.
+ * Le reste y est rangé. Le panneau est écrit dans le gabarit, pas rendu par
+ * une fonction — on le lit donc à la source.
+ */
+const menu = src.slice(src.indexOf('id="menu-p"'), src.indexOf("</header>"));
+["btn-gear", "btn-io", "btn-shared", "btn-print", "btn-install", "lang", "who"].forEach((id) => {
+  check("« " + id + " » est rangé dans le menu", menu.indexOf('id="' + id + '"') > 0, menu.slice(0, 160));
+});
+check("le menu part fermé", /id="menu-p" hidden/.test(src));
+const acts = src.slice(src.indexOf('<div class="acts">'), src.indexOf('id="menu-p"'));
+check("seul « Nouveau preset » reste en évidence",
+  (acts.match(/<button/g) || []).length === 2, acts);
 
 console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
 process.exit(failed ? 1 : 0);

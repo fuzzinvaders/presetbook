@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.8.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.9.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,37 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.9.0 — 13 November 2026
+
+Measured before and after, on the shipped library: **328 px of chrome before the first preset on a
+desktop, 237 now; 569 px out of 812 on a phone, 401 now**. The whole page drops from 21,242 to
+15,158 px, and to a single screen when everything is collapsed.
+
+### Changed
+
+- **The header is down to two controls.** Nine identical grey buttons sat there — Gear, Backup,
+  Shared, Install, Accounts, Sign out, FR, EN, New preset — while only one creates content.
+  Everything about the session and the settings moves behind a menu carrying the account name; "New
+  preset" stays on its own.
+- **One toolbar instead of two.** Search comes first and takes the width: it was the fastest tool and
+  the quietest. "By gear / brand / song" is not a filter but a sort — it becomes a "Group by" list.
+- **Filters are picked from lists, no longer from a wall of chips.** The panel lined up 76 of them.
+  The lists carry each entry's count, and what you keep stays as chips — two or three, not
+  seventy-six. Multiple choice is preserved, and there is no "Apply" button: filtering is immediate,
+  a button would only make it slower.
+- **A heading above a single preset teaches nothing.** "By gear" produced 25 headings, 20 of them
+  over a single card that already named the gear. Lone presets gather under one "Others" at the end:
+  25 sections become 7. Not under "By song", where the heading is the information.
+
+### Added
+
+- **Sections collapse.** One click on the heading, and "Collapse all" for the whole list. The state
+  is kept from one visit to the next on this machine. Printing reopens everything: a sheet missing
+  the sections you had closed on screen would be wrong without saying so.
+- The list bar says **how many presets are shown**.
 
 ---
 

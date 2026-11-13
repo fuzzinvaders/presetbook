@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.8.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.9.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,39 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.9.0 — 13 novembre 2026
+
+Mesuré avant et après, sur la bibliothèque livrée : **328 px de décor avant la première fiche sur
+ordinateur, 237 maintenant ; 569 px sur 812 au téléphone, 401 maintenant**. La page entière passe de
+21 242 à 15 158 px, et tombe à un seul écran quand tout est replié.
+
+### Changé
+
+- **L'en-tête tient en deux commandes.** Neuf boutons gris identiques s'y suivaient — Matériel,
+  Sauvegarde, Partagés, Installer, Comptes, Déconnexion, FR, EN, Nouveau preset — alors qu'un seul
+  crée du contenu. Tout ce qui touche à la session et aux réglages passe derrière un menu portant le
+  nom du compte ; « Nouveau preset » reste seul en évidence.
+- **Une seule barre d'outils au lieu de deux.** La recherche passe en premier et prend la largeur :
+  c'était l'outil le plus rapide et le plus discret. « Par matériel / marque / morceau » n'est pas un
+  filtre mais un tri — il devient une liste déroulante « Grouper par ».
+- **Les filtres se choisissent dans des listes, plus dans un mur de pastilles.** Le panneau en
+  alignait 76. Les listes portent le compte de chaque entrée, et ce qui est retenu reste en
+  pastilles — deux ou trois, pas soixante-seize. Le choix multiple est conservé, et il n'y a pas de
+  bouton « Appliquer » : le filtrage est immédiat, un bouton le rendrait plus lent.
+- **Un titre par fiche isolée n'apprend rien.** « Par matériel » produisait 25 titres dont 20 au-dessus
+  d'une seule carte, qui portait déjà le nom du matériel. Les fiches isolées se rassemblent sous un
+  seul « Autres », en fin de liste : 25 sections deviennent 7. Pas en « Par morceau », où le titre
+  est l'information.
+
+### Ajouté
+
+- **Les sections se replient.** Un clic sur le titre, et « Tout replier » pour la liste entière. Le
+  repli se garde d'une visite à l'autre sur ce poste. À l'impression, tout est rouvert : une feuille
+  amputée des sections refermées à l'écran serait fausse sans prévenir.
+- La barre de liste dit **combien de fiches sont affichées**.
 
 ---
 
