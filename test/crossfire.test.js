@@ -131,5 +131,50 @@ if (fiche) {
   });
 }
 
+/* --- déposer le fichier sur la page --------------------------------------
+ * Importer demandait d'ouvrir une fiche Reaper, d'entrer dans son éditeur,
+ * puis de trouver le bouton : trois gestes pour dire « voilà ma chaîne ».
+ */
+const dep = run(page, { search: "", RFX });
+dep.FileReader = function () {
+  this.readAsText = function (file) { this.result = file.__texte; if (this.onload) this.onload(); };
+};
+const avant = dep.__pb.library().length;
+dep.__pb.deposerFichier({ name: "Crossfire.RfxChain", __texte: original });
+const apresDepot = dep.__pb.library();
+const neuve = apresDepot[apresDepot.length - 1];
+check("le fichier déposé devient une fiche", apresDepot.length === avant + 1,
+  avant + " puis " + apresDepot.length);
+check("elle porte le nom du fichier, sans son extension",
+  neuve.name === "Crossfire", neuve.name);
+check("elle est de la famille Reaper", neuve.kind === "reaper", neuve.kind);
+check("toute la chaîne est là", (neuve.chain || []).length === 5,
+  String((neuve.chain || []).length));
+check("les plugins sont reconnus",
+  neuve.chain.map((x) => x.plugin).join(",") === "ReaEQ,TSE BOD,ReaEQ,MCompressor,MTuner",
+  neuve.chain.map((x) => x.plugin).join(","));
+check("elle est datée du jour", /^\d{4}-\d{2}-\d{2}T/.test(neuve.maj), String(neuve.maj));
+check("l'onglet bascule sur Reaper : la fiche créée doit être à l'écran",
+  dep.__pb.ui().kind === "reaper", dep.__pb.ui().kind);
+
+dep.__pb.deposerFichier({ name: "photo.png", __texte: "" });
+check("un fichier qui n'est pas une chaîne ne crée rien",
+  dep.__pb.library().length === avant + 1, String(dep.__pb.library().length));
+
+/* La porte se montre par une classe, pas par l'attribut « hidden » : lire le
+   mauvais signal aurait refusé tous les dépôts, session ouverte comprise. */
+const srcPage = fs.readFileSync(page, "utf8");
+check("le dépôt se refuse à la porte, et la lit comme elle s'affiche",
+  /porte\.classList\.contains\("open"\)/.test(srcPage));
+check("le voile du dépôt ne vole pas les clics",
+  /\.dropzone\{[^}]*pointer-events:none/.test(srcPage));
+
+const porte = dep.document.getElementById("gate");
+porte.classList.add("open");
+dep.__pb.deposerFichier({ name: "Crossfire.RfxChain", __texte: original });
+check("porte fermée, rien n'est créé",
+  dep.__pb.library().length === avant + 1, String(dep.__pb.library().length));
+porte.classList.remove("open");
+
 console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
 process.exit(failed ? 1 : 0);

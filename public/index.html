@@ -347,6 +347,15 @@ table.bands tr.bx td{opacity:.5; text-decoration:line-through}
 .card-f .btn{padding:4px 10px; font-size:12px}
 .card-f .spacer{margin-left:auto}
 .empty{border:1px dashed var(--line-2); border-radius:5px; padding:34px 20px; text-align:center; color:var(--ink-2); font-size:14px}
+/* Le voile du dépôt ne reçoit aucun clic : il dit ce qui va se passer, le
+   document garde l'événement. */
+.dropzone{
+  position:fixed; inset:12px; z-index:60; pointer-events:none;
+  display:flex; align-items:center; justify-content:center;
+  border:2px dashed var(--reaper); border-radius:6px; background:var(--panel);
+  font-family:"IBM Plex Mono",monospace; font-size:13px; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--ink-2); opacity:.96;
+}
 .listbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; flex-wrap:wrap}
 .listbar .lb-r{display:flex; align-items:center; gap:10px; margin-left:auto}
 .listbar .n{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3)}
@@ -640,6 +649,8 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
   <!-- Visible seulement à l'impression : dit ce que la feuille contient. -->
   <div class="printhead" id="printhead"></div>
 
+  <div class="dropzone" id="dropzone" hidden></div>
+
   <div class="listbar" id="listbar"></div>
 
   <div id="list"></div>
@@ -867,6 +878,14 @@ var EN = {
   "apparitions": "appearances",
   "Treble (étage haut)": "Treble (top)",
   "Bass (étage bas)": "Bass (lower)",
+  "Dépose une chaîne .RfxChain pour en faire une fiche":
+    "Drop a .RfxChain here to make it a preset",
+  "Dépose un fichier .RfxChain exporté depuis Reaper.":
+    "Drop a .RfxChain file exported from Reaper.",
+  "Connecte-toi avant de déposer une chaîne.": "Sign in before dropping a chain.",
+  "Le lecteur de chaînes n'est pas disponible ici.": "The chain reader is not available here.",
+  "Chaîne importée : {0}": "Chain imported: {0}",
+  "Chaîne importée": "Imported chain",
   "Garder l'écran allumé": "Keep the screen awake",
   "Laisser l'écran s'éteindre": "Let the screen sleep",
   "L'écran restera allumé tant que cet onglet est devant.":
@@ -4584,6 +4603,55 @@ function importRfx(text){
   refreshBody();
   toast(tf("{0} effets importés, {1} reconnus en détail.", draft.chain.length, connus));
 }
+/** « Fuck-Authority.RfxChain » donne « Fuck-Authority ». */
+function titreDeFichier(nom){
+  return String(nom || "").replace(/\.[A-Za-z0-9]+$/, "").trim() || "Chaîne importée";
+}
+
+/**
+ * Une chaîne déposée devient une fiche. On garde le nom du fichier : c'est
+ * celui que Reaper a écrit, donc celui que l'on reconnaîtra.
+ */
+function deposerFichier(file){
+  /* La porte se montre par une classe, pas par l'attribut « hidden » : le
+     lire ici aurait refusé tous les dépôts, y compris session ouverte. */
+  var porte = document.getElementById("gate");
+  if (porte && porte.classList && porte.classList.contains("open")){
+    toast("Connecte-toi avant de déposer une chaîne."); return;
+  }
+  if (!window.RFX){ toast("Le lecteur de chaînes n'est pas disponible ici."); return; }
+  if (!/\.(rfxchain|txt)$/i.test(file.name)){
+    toast("Dépose un fichier .RfxChain exporté depuis Reaper."); return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(){
+    var lu;
+    try { lu = window.RFX.parse(String(reader.result)); }
+    catch (err){ toast(tf("Fichier illisible : {0}", err.message)); return; }
+    if (!lu.fx.length){ toast("Aucun effet trouvé dans ce fichier."); return; }
+    var p = {
+      id: "u-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36),
+      kind: "reaper", name: titreDeFichier(file.name), tags: [],
+      chain: window.RFX.toChain(lu), song: null, notes: "",
+      maj: new Date().toISOString()
+    };
+    S.custom.push(p);
+    ui.kind = "reaper";            /* la fiche créée doit être à l'écran */
+    render();
+    save().then(function(ok){ if (ok) toast(tf("Chaîne importée : {0}", p.name)); });
+  };
+  reader.onerror = function(){ toast("Lecture du fichier impossible."); };
+  reader.readAsText(file, "iso-8859-1");
+}
+
+/** Le voile du dépôt, montré tant qu'un fichier survole la page. */
+function montreDepot(on){
+  var z = document.getElementById("dropzone");
+  if (!z) return;
+  z.hidden = !on;
+  if (on) setHtml(z, "Dépose une chaîne .RfxChain pour en faire une fiche");
+}
+
 function exportRfx(p){
   p = p || draft;                                  /* depuis une carte, ou depuis l'éditeur */
   var text;
@@ -5823,6 +5891,21 @@ document.getElementById("q").addEventListener("input", function(){
   if (qTimer) window.clearTimeout(qTimer);
   qTimer = window.setTimeout(function(){ qTimer = null; ui.q = v; render(); }, 150);
 });
+/* Un fichier lâché à côté de la cible ouvrirait le fichier à la place de la
+   page : le document prend donc l'événement, partout. Le compteur d'entrées
+   évite que le voile clignote en passant d'un élément à l'autre. */
+var surVol = 0;
+document.addEventListener("dragenter", function(e){
+  e.preventDefault(); surVol++; montreDepot(true);
+});
+document.addEventListener("dragover", function(e){ e.preventDefault(); });
+document.addEventListener("dragleave", function(){ if (--surVol <= 0){ surVol = 0; montreDepot(false); } });
+document.addEventListener("drop", function(e){
+  e.preventDefault(); surVol = 0; montreDepot(false);
+  var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) deposerFichier(f);
+});
+
 document.getElementById("btn-awake").addEventListener("click", function(){
   setVeille(!veille);
 });
@@ -6372,6 +6455,7 @@ window.__pb = {
   plat: plat,
   matches: matches, facetGear: facetGear, facetTags: facetTags,
   chainView: chainView, parClef: parClef, trier: trier, render: render, commit: commit,
+  deposerFichier: deposerFichier, montreDepot: montreDepot, titreDeFichier: titreDeFichier,
   setVeille: setVeille, renderVeille: renderVeille, veilleDispo: veilleDispo,
   getVeille: function(){ return veille; },
   renderFilters: renderFilters, filterLabel: filterLabel, activeFilters: activeFilters,
