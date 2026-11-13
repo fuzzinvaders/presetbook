@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.7.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.8.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,34 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.8.0 — 13 November 2026
+
+Checked on a real Reaper chain — ReaEQ, TSE BOD, ReaEQ, MCompressor, bypassed MTuner — read by
+Presetbook then written back, both ways.
+
+### Added
+
+- **Crossfire, by Stevie Ray Vaughan & Double Trouble, in the shipped catalogue**: the full Reaper
+  chain, and the matching Fender Deluxe Active Jazz Bass setting, tuned a half step down. A preset
+  that never saw the original file regenerates the same settings, effect by effect.
+
+### Fixed
+
+- **Importing then exporting a chain gives the file back unchanged.** Every effect was rewritten
+  from the preset, even untouched; an effect where nothing moved now leaves with its original bytes.
+- **An MCompressor or MTuner assembled here carries everything the plugin writes itself**: the
+  compressor was missing two attributes and the tuner its detection mode.
+- **A Jazz Bass balance reads N / B**, neck and bridge, instead of a P/J bass's P / J — nothing changes
+  for the Yamaha.
+- `tools/rfxchain-import.js` shows the settings read from a Melda plugin instead of announcing a
+  binary block.
+- **The server no longer opens its port before it is ready.** The admin and demo accounts are built
+  with scrypt, which is slow on purpose; meanwhile `/healthz` already answered "ok". On a loaded
+  machine the window lasted long enough for a request to slip in and be refused. An orchestrator
+  waiting on health now waits for the right thing.
 
 ---
 

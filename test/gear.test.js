@@ -264,6 +264,16 @@ check("une échelle garde ses décimales",
 check("un interrupteur s'affiche ON/OFF", pb.ctrlText({ t: "switch" }, true) === "ON");
 check("une balance s'affiche en pourcentage",
   pb.ctrlText({ t: "balance" }, 55) === "P 45 / J 55", pb.ctrlText({ t: "balance" }, 55));
+/* Une Jazz Bass n'a pas de micro P : ses côtés sont le manche et le chevalet. */
+check("une balance nomme les côtés déclarés par la basse",
+  pb.ctrlText({ t: "balance", a: "M", b: "C" }, 55) === "M 45 / C 55", pb.ctrlText({ t: "balance", a: "M", b: "C" }, 55));
+check("une balance en bout de course nomme le bon micro",
+  pb.ctrlText({ t: "balance", a: "M", b: "C" }, 100) === "C seul", pb.ctrlText({ t: "balance", a: "M", b: "C" }, 100));
+{
+  const en = run(path.join(__dirname, "..", "public", "index.html"), { search: "?lang=en" }).__pb;
+  check("en anglais, la balance d'une Jazz se lit N / B",
+    en.ctrlText({ t: "balance", a: "M", b: "C" }, 55) === "N 45 / B 55", en.ctrlText({ t: "balance", a: "M", b: "C" }, 55));
+}
 
 /* --- angle du repère : bornes et milieu --- */
 check("minimum d'une échelle à gauche",

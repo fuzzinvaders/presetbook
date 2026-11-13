@@ -962,6 +962,16 @@ var EN = {
   "Pas plus : le BOD apporte déjà le caractère.": "No more than that: the BOD already brings the character.",
   "Laissée hors circuit : c'est elle qui causait le claquement. À comparer dans le mix avant de trancher.": "Left out of circuit: it was the one causing the click. Compare it in the mix before deciding.",
   "Le caractère All Star tient aux bandes 900 Hz et 2,5 kHz : c'est la présence, pas le volume.": "The All Star character comes from the 900 Hz and 2.5 kHz bands: it is presence, not volume.",
+  "Accordée un demi-ton plus bas : Eb Ab Db Gb. Volume à 100 %, le reste en pourcentage de course : balance 45 % manche / 55 % chevalet, Bass 52 %, Middle 55 %, Treble 50 % — un préampli presque à plat, c'est la chaîne qui fait le son.": "Tuned a half step down: Eb Ab Db Gb. Volume at 100%, the rest as a percentage of travel: blend 45% neck / 55% bridge, Bass 52%, Middle 55%, Treble 50% — a nearly flat preamp, the chain makes the sound.",
+  "EQ avant le préampli": "EQ before the preamp",
+  "EQ après le préampli": "EQ after the preamp",
+  "Préampli": "Preamp",
+  "Retouches légères pour ce que le BOD reçoit : un peu de fond, un peu moins de bas-médium.": "Light touches on what the BOD receives: a little more bottom, a little less low-mid.",
+  "Drive presque à zéro : du grain, pas de saturation audible.": "Drive almost at zero: some grit, no audible distortion.",
+  "La bande qui fait le caractère : 750 Hz, là où la basse se lit sous la guitare.": "The band that makes the character: 750 Hz, where the bass reads under the guitar.",
+  "Seuil pour 2–3 dB de réduction en jeu normal, 4 dB au plus. Genou doux à 25 %, canaux liés, gains à 0 dB, Maximize et Custom Shape coupés : ce sont les défauts du plugin.": "Threshold for 2–3 dB of reduction in normal playing, 4 dB at most. Soft knee at 25%, linked channels, gains at 0 dB, Maximize and Custom Shape off: those are the plugin defaults.",
+  "Hors circuit : il garde sa place pour s'accorder en Eb sans quitter Reaper.": "Out of circuit: it keeps its place so you can tune to Eb without leaving Reaper.",
+  "Un son blues propre et rond. Pas de saturation d'appoint (MSaturator coupé) ni de réverbération : le grain vient du BOD, la présence de la bande à 750 Hz.": "A clean, round blues tone. No extra saturation (MSaturator off) and no reverb: the grit comes from the BOD, the presence from the 750 Hz band.",
   "Une façade décrit les commandes d'un instrument ou d'un ampli. Les façades livrées se dupliquent pour servir de point de départ.": "A front panel describes the controls of an instrument or an amp. Shipped panels can be duplicated to serve as a starting point.",
   "Aperçu : il suit la couleur, la silhouette et les commandes déclarées.": "Preview: it follows the colour, the silhouette and the declared controls.",
   "Sur la BB734A, le second mode est « passif » et met l'égaliseur hors circuit.": "On the BB734A the second mode is “passive” and takes the EQ out of circuit.",
@@ -1620,10 +1630,15 @@ function pctToCrans(p){ return Math.round(((p - 50) / 10) * 4) / 4; }  /* 55 % -
 function ampAngle(v){ return (-150 + (v - 1) * (300 / 9)) + "deg"; }
 function ampLabel(v){ return dec(v); }
 /* Position exacte plutôt qu'un palier : c'est en pourcentage de course qu'on lit un balancer. */
-function balLabel(b){
-  if (b <= 4) return LANG === "en" ? "P only" : "P seul";
-  if (b >= 96) return LANG === "en" ? "J only" : "J seul";
-  return "P " + (100 - b) + " / J " + b;
+/* Les côtés viennent de la commande : P et J sur la BB, mais manche et chevalet
+   (M, C) sur une Jazz Bass — N et B en anglais, neck et bridge. Sans commande, on garde P / J. */
+var BAL_EN = {M: "N", C: "B"};
+function balLabel(b, c){
+  var a = (c && c.a) || "P", z = (c && c.b) || "J";
+  if (LANG === "en"){ a = BAL_EN[a] || a; z = BAL_EN[z] || z; }
+  if (b <= 4) return LANG === "en" ? a + " only" : a + " seul";
+  if (b >= 96) return LANG === "en" ? z + " only" : z + " seul";
+  return a + " " + (100 - b) + " / " + z + " " + b;
 }
 
 function bass(id,name,tags,mode,bal,eq,tech,strings,aim){
@@ -1748,6 +1763,12 @@ var SEED = [
     "les positions viennent en pourcentage de course : balance 45 % manche / 55 % chevalet, " +
     "Bass 55 %, Treble 52 %."),
     "All Star","Smash Mouth"),
+  forSong(mat("b-crossfire", "deluxejazz", "bass", "Crossfire", ["blues","cover"],
+    {vol:pctToCrans(100), balance:55, "eq.b":pctToCrans(52), "eq.m":pctToCrans(55), "eq.t":pctToCrans(50)},
+    "Accordée un demi-ton plus bas : Eb Ab Db Gb. Volume à 100 %, le reste en pourcentage de " +
+    "course : balance 45 % manche / 55 % chevalet, Bass 52 %, Middle 55 %, Treble 50 % — " +
+    "un préampli presque à plat, c'est la chaîne qui fait le son."),
+    "Crossfire","Stevie Ray Vaughan & Double Trouble"),
 
   amp("a-rock","Rock / Hard rock",["rock"],6,["bright"],{on:false,drive:3,level:5},{b:6,lm:5,hm:6.5,tr:6},
     "Médiums tenus pour passer entre deux guitares saturées."),
@@ -1880,6 +1901,39 @@ var SEED = [
   ],
     "Le caractère All Star tient aux bandes 900 Hz et 2,5 kHz : c'est la présence, pas le volume."),
     "All Star","Smash Mouth"),
+
+  /* Relevée sur la chaîne Reaper réelle (test/fixtures/crossfire.RfxChain) : la
+     fiche régénère cette chaîne réglage pour réglage — test/crossfire.test.js. */
+  forSong(chain("r-crossfire","Crossfire",["blues","cover","reaper"],"","Eb standard (Eb Ab Db Gb)",[
+    eqSlot("EQ avant le préampli",[
+      band("High Pass",   35, 0,    1.00),
+      band("Band",       100, 1.0,  1.50),
+      band("Band",       300, -1.0, 1.20),
+      band("Band",      1000, 0.5,  1.20)
+    ], "Retouches légères pour ce que le BOD reçoit : un peu de fond, un peu moins de bas-médium."),
+    slot("TSE BOD","Préampli",
+      {input:0.701, drive:0.077, blend:0.55, bass:0.55, treble:0.481,
+       presence:0.417, level:0.848, output:0.899},
+      "Drive presque à zéro : du grain, pas de saturation audible."),
+    eqSlot("EQ après le préampli",[
+      band("High Pass",   35, 0,    1.00),
+      band("Band",        80, 1.5,  1.50),
+      band("Band",       160, 1.0,  1.40),
+      band("Band",       350, -0.5, 1.30),
+      band("Band",       750, 2.5,  1.20),
+      band("Band",      1800, 1.5,  1.10),
+      band("Low Pass",  7000, 0,    1.00)
+    ], "La bande qui fait le caractère : 750 Hz, là où la basse se lit sous la guitare."),
+    slot("MCompressor","Compression",
+      {threshold:-9.956, ratio:3, attack:25, release:110, rms:5},
+      "Seuil pour 2–3 dB de réduction en jeu normal, 4 dB au plus. Genou doux à 25 %, canaux liés, " +
+      "gains à 0 dB, Maximize et Custom Shape coupés : ce sont les défauts du plugin."),
+    bypassed(slot("MTuner","Accordeur",{},
+      "Hors circuit : il garde sa place pour s'accorder en Eb sans quitter Reaper."))
+  ],
+    "Un son blues propre et rond. Pas de saturation d'appoint (MSaturator coupé) ni de réverbération : " +
+    "le grain vient du BOD, la présence de la bande à 750 Hz."),
+    "Crossfire","Stevie Ray Vaughan & Double Trouble"),
 
   /* --- de quoi montrer le reste du catalogue : une fiche par modèle nommé --- */
   mat("a-svt-rock70", "svtcl", "amp", "Rock 70s au SVT", ["rock"],
@@ -3416,7 +3470,7 @@ function ctrlOff(g, p, c){
 function ctrlText(c, v){
   if (v === null) return "—";
   if (c.t === "clock") return hourLabel(v);
-  if (c.t === "balance") return balLabel(v);
+  if (c.t === "balance") return balLabel(v, c);
   if (c.t === "select") return t(selValue(c, v));
   if (c.t === "switch") return v ? "ON" : "OFF";
   if (c.t === "slider") return fmtDb(v);
@@ -3652,7 +3706,7 @@ function gearTags(p){
     if (c.t === "switch"){
       out.push('<span class="tag ' + (v ? "on" : "off") + '">' + esc(c.l) + '</span>');
     } else if (c.t === "balance"){
-      out.push('<span class="tag">' + esc(c.l) + " " + esc(balLabel(v)) + '</span>');
+      out.push('<span class="tag">' + esc(c.l) + " " + esc(balLabel(v, c)) + '</span>');
     } else if (c.t === "select"){
       out.push('<span class="tag">' + esc(c.l) + " " + esc(t(selValue(c, v))) + '</span>');
     }
@@ -4511,7 +4565,7 @@ function gearEditor(p){
       h += sl(c.k, ctrlLabel(g, p, c), v, -5, 5, 0.25, off ? "hors circuit" : hourLabel(v), off);
     } else if (c.t === "balance"){
       h += sl(c.k, c.l + " " + (c.a || "1") + " ⇄ " + (c.b || "2"), v,
-              c.min || 0, c.max || 100, c.step || 2, balLabel(v), off);
+              c.min || 0, c.max || 100, c.step || 2, balLabel(v, c), off);
     } else {
       h += sl(c.k, c.l, v, c.min, c.max, c.step, ctrlText(c, v), off);
     }

@@ -765,7 +765,9 @@
   /* Gabarit d'un plugin Melda : identité, préfixe du bloc, et l'arbre tel
      qu'il sort du plugin une fois les réglages sonores retirés. Les attributs
      qui restent décrivent la version et la fenêtre, pas le son. */
-  function meldaTemplate(root, extra) {
+  /* `extra` se range avec les réglages « # », `tail` après les attributs de
+     version : c'est l'ordre dans lequel le plugin lui-même les écrit. */
+  function meldaTemplate(root, extra, tail) {
     var attrs = [{ k: "#", t: "1", v: 1 }].concat(extra || []).concat([
       { k: "Version", t: "4", v: 1116672 },
       { k: "MIDIProgramChangeEnable", t: "1", v: 0 },
@@ -773,7 +775,7 @@
       { k: "ControllersEnabled", t: "1", v: 0 },
       { k: "PianoViewCollapsed", t: "1", v: 255 },
       { k: "MaxLFOBlockSize", t: "1", v: 32 }
-    ]);
+    ]).concat(tail || []);
     return { name: root, attrs: attrs, kids: [] };
   }
 
@@ -795,14 +797,22 @@
       head:"\"VST3: MTuner (MeldaProduction)\" MTuner.vst3 0 \"\" 1332983745{4D656C646170726F4D54756E4D54756E} \"\"",
       header64:"wbdzT+5e7f4CAAAAAQAAAAAAAAACAAAAAAAAAAIAAAABAAAAAAAAAAIAAAAAAAAAEAIAAAEAAAAAAAAA",
       name64:"ADAAAAAAAA==", extra:["PRESETNAME 0"],
-      meldaPrefix:"AAEAAAEAAAA=", melda:function(){ return meldaTemplate("MTunersettings"); }},
+      meldaPrefix:"AAEAAAEAAAA=",
+      /* « PitchDetectionMode » figure dans tous les états réels relevés. */
+      melda:function(){ return meldaTemplate("MTunersettings", [],
+        [{k:"PitchDetectionMode", t:"s", v:"Robust"}]); }},
     "MCompressor": {kind:"vst",
       head:"\"VST3: MCompressor (MeldaProduction)\" MCompressor.vst3 0 \"\" 886559297{4D656C646170726F4D4165314D416531} \"\"",
       header64:"QdLXNO5e7f4EAAAAAQAAAAAAAAACAAAAAAAAAAQAAAAAAAAACAAAAAAAAAACAAAAAQAAAAAAAAACAAAAAAAAABAEAAABAAAAAAAAAA==",
       name64:"ADAAAAAAAA==", extra:["PRESETNAME 0"],
       meldaPrefix:"AAIAAAEAAAA=",
-      /* « kneemode » est relevé tel quel : son autre valeur n'est pas établie. */
-      melda:function(){ return meldaTemplate("MCompressorsettings", [{k:"#kneemode", t:"s", v:"Soft"}]); }},
+      /* « kneemode » est relevé tel quel : son autre valeur n'est pas établie.
+         « halfgain » et « amplituderatio » figurent, à 0, dans tous les états
+         réels relevés : le plugin les écrit toujours, le gabarit aussi. Le
+         genou à 25 %, la liaison des canaux et les gains à 0 dB, eux, n'y
+         figurent jamais — ce sont les défauts du plugin.                      */
+      melda:function(){ return meldaTemplate("MCompressorsettings", [{k:"#kneemode", t:"s", v:"Soft"}],
+        [{k:"halfgain", t:"1", v:0}, {k:"amplituderatio", t:"1", v:0}]); }},
     "MSaturator": {kind:"vst",
       head:"\"VST3: MSaturator (MeldaProduction)\" MSaturator.vst3 0 \"\" 1093031185{4D656C646170726F4D4165344D416534} \"\"",
       header64:"EVUmQe5e7f4CAAAAAQAAAAAAAAACAAAAAAAAAAIAAAABAAAAAAAAAAIAAAAAAAAAEAQAAAEAAAAAAAAA",
@@ -847,36 +857,86 @@
   function toChain(parsed) {
     var out = [], i;
     for (i = 0; i < parsed.fx.length; i++) {
-      var fx = parsed.fx[i];
-      var s = { plugin: pbName(fx), role: "", on: !fx.bypassed, p: {}, settings: "" };
-
-      if (fx.decoded === "bod") {
-        var p = fx.params;
-        s.p = {
-          input: round(p.Input, 3), drive: round(p.Drive, 3), blend: round(p.Blend, 3),
-          bass: round(p.Bass, 3), treble: round(p.Treble, 3), presence: round(p.Presence, 3),
-          level: round(p.Level, 3), output: round(p.Output, 3)
-        };
-      } else if (fx.decoded === "reaeq") {
-        s.bands = fx.bands.map(function (b) {
-          return { t: b.typeName, f: round(b.freq, 2),
-                   g: EQ_NO_GAIN[b.type] ? 0 : round(b.gainDb, 2),
-                   bw: round(b.bw, 3), on: b.on };
-        });
-      } else if (fx.decoded === "reacomp" || fx.decoded === "reaverbate" || fx.decoded === "melda") {
-        s.p = fx.params;
-      } else if (fx.decoded === "js") {
-        var used = [], k;
-        for (k = 0; k < fx.sliders.length; k++) if (fx.sliders[k] !== "-") used.push(fx.sliders[k]);
-        if (used.length) s.p = { drive: Number(used[0]) };
-        s.settings = "Curseurs : " + used.join(" ");
-      } else {
-        s.settings = "État conservé tel quel (" + fx.chunkLen + " octets) — non modifiable ici.";
-      }
-      s.rfx = keepRfx(fx);
+      var s = slotOf(parsed.fx[i]);
+      s.rfx = keepRfx(parsed.fx[i]);
       out.push(s);
     }
     return out;
+  }
+
+  /** Un effet décodé -> son maillon Presetbook, sans l'empreinte d'origine. */
+  function slotOf(fx) {
+    var s = { plugin: pbName(fx), role: "", on: !fx.bypassed, p: {}, settings: "" };
+
+    if (fx.decoded === "bod") {
+      var p = fx.params;
+      s.p = {
+        input: round(p.Input, 3), drive: round(p.Drive, 3), blend: round(p.Blend, 3),
+        bass: round(p.Bass, 3), treble: round(p.Treble, 3), presence: round(p.Presence, 3),
+        level: round(p.Level, 3), output: round(p.Output, 3)
+      };
+    } else if (fx.decoded === "reaeq") {
+      s.bands = fx.bands.map(function (b) {
+        return { t: b.typeName, f: round(b.freq, 2),
+                 g: EQ_NO_GAIN[b.type] ? 0 : round(b.gainDb, 2),
+                 bw: round(b.bw, 3), on: b.on };
+      });
+    } else if (fx.decoded === "reacomp" || fx.decoded === "reaverbate" || fx.decoded === "melda") {
+      s.p = fx.params;
+    } else if (fx.decoded === "js") {
+      var used = [], k;
+      for (k = 0; k < fx.sliders.length; k++) if (fx.sliders[k] !== "-") used.push(fx.sliders[k]);
+      if (used.length) s.p = { drive: Number(used[0]) };
+      s.settings = "Curseurs : " + used.join(" ");
+    } else {
+      s.settings = "État conservé tel quel (" + fx.chunkLen + " octets) — non modifiable ici.";
+    }
+    return s;
+  }
+
+  /* --------------------------------- un maillon a-t-il bougé ? --------- */
+
+  /** Forme stable d'une valeur : clés triées, vide et absent confondus. */
+  function canon(v) {
+    if (v === undefined || v === null || v === "") return "null";
+    if (Array.isArray(v)) return "[" + v.map(canon).join(",") + "]";
+    if (typeof v === "object") {
+      return "{" + Object.keys(v).sort().filter(function (k) {
+        return v[k] !== undefined && v[k] !== null && v[k] !== "";
+      }).map(function (k) { return JSON.stringify(k) + ":" + canon(v[k]); }).join(",") + "}";
+    }
+    if (typeof v === "number") return String(+v.toPrecision(12));
+    return JSON.stringify(v);
+  }
+
+  /** Ce qu'un maillon dit du son de l'effet : ses valeurs, et l'état « on »
+      quand il est écrit DANS l'état du plugin (le paramètre Bypass du BOD). */
+  function soundOf(slot, decoded) {
+    var o = { p: slot.p || {} };
+    if (slot.bands) o.bands = slot.bands.map(function (b) {
+      return { t: b.t, f: b.f, g: b.g, bw: b.bw, on: b.on !== false };
+    });
+    if (decoded === "bod") o.on = slot.on !== false;
+    return canon(o);
+  }
+
+  /**
+   * Vrai si le maillon porte exactement les valeurs de l'état importé.
+   * L'effet repart alors avec ses octets d'origine : réencoder un réglage
+   * inchangé ne servirait qu'à l'arrondir (0,700999975 deviendrait 0,701) ou
+   * à recompresser l'état d'un plugin — un aller-retour doit rendre le fichier.
+   */
+  function unchanged(slot, o) {
+    if (!o || !o.chunk64 || o.decoded === "opaque" || o.kind === "js") return false;
+    try {
+      var fx = { kind: o.kind, head: o.head, bypass: o.bypass || "0 0", extra: [],
+                 body: [o.header64].concat(wrap64(o.chunk64)).concat([o.name64 || ""]) };
+      decorate(fx);
+      if (fx.decoded !== o.decoded) return false;
+      return soundOf(slotOf(fx), o.decoded) === soundOf(slot, o.decoded);
+    } catch (e) {
+      return false;
+    }
   }
 
   /** Origine synthétique : identité du plugin, état laissé à construire. */
@@ -962,6 +1022,8 @@
           "Maillon " + (i + 1) + " : impossible de fabriquer l'état de « " + s.plugin + " »."
         );
       }
+      /* réglages inchangés depuis l'import : l'état d'origine repart tel quel */
+      if (unchanged(s, o)) fx.dirty = false;
       items.push({ type: "fx", fx: fx });
     }
     return build({ items: items });

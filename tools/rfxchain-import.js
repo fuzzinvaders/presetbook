@@ -38,7 +38,7 @@ parsed.fx.forEach((fx, i) => {
   const s = chain[i];
   const etat = { bod: "XML décodé", reaeq: "bandes décodées", reacomp: "flottants décodés",
                  reaverbate: "flottants décodés", js: "curseurs en clair",
-                 opaque: "conservé tel quel" };
+                 melda: "réglages Melda décodés", opaque: "conservé tel quel" };
   console.log(
     String(i + 1).padStart(2) + ". " + s.plugin.padEnd(16) +
     (fx.bypassed ? " [hors circuit]" : "              ") +
@@ -70,6 +70,12 @@ parsed.fx.forEach((fx, i) => {
   } else if (fx.decoded === "js") {
     const used = fx.sliders.filter((v) => v !== "-");
     console.log("      " + fx.path + " — curseurs utilisés : " + (used.join(" ") || "aucun"));
+  } else if (fx.decoded === "melda") {
+    /* Les réglages que Presetbook sait modifier ; le reste de l'état Melda
+       repart tel quel. Un réglage absent est à sa valeur par défaut. */
+    const p = s.p || {};
+    const vus = Object.keys(p).map((k) => k + " " + fmt(p[k]));
+    console.log("      " + (vus.join("   ") || "tous les réglages à leur valeur par défaut"));
   } else {
     console.log("      " + fx.chunkLen + " octets d'état binaire, réécrits à l'identique");
   }

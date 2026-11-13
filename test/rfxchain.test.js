@@ -188,8 +188,12 @@ function boutons(opts) {
   const w = run(page, opts);
   return (w.__nodes.get("list").innerHTML.match(/data-act="rfx"/g) || []).length;
 }
-check("une carte de chaîne porte le bouton d'export",
-  boutons({ search: "?kind=reaper", RFX }) === 1, String(boutons({ search: "?kind=reaper", RFX })));
+/* Une chaîne de plus au catalogue ne doit pas faire échouer ce test : on compte
+   les cartes de chaîne, et chacune doit porter son bouton. */
+const nbChaines = run(page, { search: "", RFX }).__pb.library().filter((p) => p.kind === "reaper").length;
+check("chaque carte de chaîne porte le bouton d'export",
+  nbChaines > 0 && boutons({ search: "?kind=reaper", RFX }) === nbChaines,
+  boutons({ search: "?kind=reaper", RFX }) + " bouton(s) pour " + nbChaines + " chaîne(s)");
 check("sans le codec servi, le bouton disparaît",
   boutons({ search: "?kind=reaper" }) === 0, String(boutons({ search: "?kind=reaper" })));
 check("une carte d'instrument n'en porte pas",

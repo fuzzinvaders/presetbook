@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.7.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.8.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,36 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.8.0 — 13 novembre 2026
+
+Vérifié sur une vraie chaîne Reaper — ReaEQ, TSE BOD, ReaEQ, MCompressor, MTuner hors circuit —
+lue par Presetbook puis réécrite, dans les deux sens.
+
+### Ajouté
+
+- **Crossfire, de Stevie Ray Vaughan & Double Trouble, au catalogue livré** : la chaîne Reaper
+  complète, et le réglage de la Fender Deluxe Active Jazz Bass qui va avec, accordée un demi-ton plus
+  bas. Une fiche qui n'a jamais vu le fichier d'origine régénère les mêmes réglages, effet par effet.
+
+### Corrigé
+
+- **Importer puis exporter une chaîne redonne le fichier à l'identique.** Chaque effet était
+  réécrit à partir de la fiche, même sans retouche ; un effet dont rien n'a bougé repart maintenant
+  avec ses octets d'origine.
+- **Un MCompressor ou un MTuner composé ici porte tout ce que le plugin écrit lui-même** : il
+  manquait deux attributs au compresseur et le mode de détection à l'accordeur.
+- **La balance d'une Jazz Bass se lit M / C**, manche et chevalet, au lieu du P / J d'une basse
+  P/J — pour la Yamaha, rien ne change.
+- `tools/rfxchain-import.js` affiche les réglages relus d'un plugin Melda, au lieu d'annoncer un
+  bloc binaire.
+- **Le serveur n'ouvre plus son port avant d'être prêt.** L'administrateur et le compte de
+  démonstration se fabriquent avec scrypt, qui est lent exprès ; pendant ce temps `/healthz`
+  répondait déjà « ok ». Sur une machine chargée, la fenêtre durait assez pour qu'une requête y
+  passe et reçoive un refus. Un orchestrateur qui attend la bonne santé attend maintenant la
+  bonne chose.
 
 ---
 

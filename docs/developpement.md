@@ -195,8 +195,11 @@ réglage à zéro. Seules les clés relevées dans un état réel sont nommées 
 autres repartent telles quelles. La courbe de MCompressor est rangée à part, en points : à 0 dB
 d'entrée la sortie vaut seuil × (1 − 1/taux) en décibels, vérifié au bit près sur une chaîne réelle.
 
-Deux règles de fidélité, que les tests vérifient :
+Trois règles de fidélité, que les tests vérifient :
 
+- **un effet dont aucun réglage n'a bougé repart avec ses octets d'origine.** `fromChain` relit
+  l'état conservé dans `rfx`, le compare à la fiche, et ne réécrit rien s'ils disent la même chose :
+  importer puis exporter une chaîne redonne le fichier à l'identique ;
 - **un paramètre dont la valeur affichée n'a pas changé est réécrit avec son flottant d'origine.**
   Sans cette précaution, l'arrondi d'affichage se glisserait dans un réglage non touché ;
 - **on ne devine pas.** Les types de bande ReaEQ affichés par le plugin sont Low Shelf, High Shelf,

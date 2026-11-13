@@ -196,8 +196,11 @@ zero. Only keys read from a real state are named in `MELDA_PARAMS`; the rest are
 untouched. MCompressor's curve is stored separately, as points: at 0 dB in, the output is
 threshold × (1 − 1/ratio) in decibels, verified to the bit on a real chain.
 
-Two fidelity rules, which the tests enforce:
+Three fidelity rules, which the tests enforce:
 
+- **an effect none of whose settings moved leaves with its original bytes.** `fromChain` reads the
+  state kept in `rfx` back, compares it with the preset, and rewrites nothing when they say the same
+  thing: importing then exporting a chain gives the file back unchanged;
 - **a parameter whose displayed value has not changed is rewritten with its original float.** Without
   that precaution, display rounding would creep into a setting nobody touched;
 - **no guessing.** The ReaEQ band types the plugin displays are Low Shelf, High Shelf, Band, Low

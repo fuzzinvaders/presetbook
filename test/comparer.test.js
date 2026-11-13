@@ -96,12 +96,18 @@ check("le nombre d'écarts est annoncé",
   feuille.indexOf(String(rows.filter((r) => r.diff).length)) > 0);
 check("on peut choisir l'autre fiche", feuille.indexOf("data-compare-b") > 0);
 
-/* une fiche seule de son genre : on le dit plutôt que d'afficher un tableau vide */
-const seule = par("reaper")[0];
-pb.openCompare(seule.id, null);
+/* une fiche seule de son genre : on le dit plutôt que d'afficher un tableau vide.
+   Le catalogue livre plusieurs chaînes ; on masque toutes les autres. */
+const w2 = run(page, { search: "" });
+const chaines = w2.__pb.library().filter((p) => p.kind === "reaper");
+chaines.slice(1).forEach((p) => w2.__pb.removePreset(p.id));
+const seule = chaines[0];
+check("une seule chaîne reste visible",
+  w2.__pb.library().filter((p) => p.kind === "reaper").length === 1);
+w2.__pb.openCompare(seule.id, null);
 check("sans seconde fiche, l'écran l'explique",
-  w.__nodes.get("veil").innerHTML.indexOf("seconde fiche du même genre") > 0,
-  w.__nodes.get("veil").innerHTML.slice(0, 120));
+  w2.__nodes.get("veil").innerHTML.indexOf("seconde fiche du même genre") > 0,
+  w2.__nodes.get("veil").innerHTML.slice(0, 120));
 
 /* --- l'anglais --- */
 const en = run(page, { search: "?lang=en" }).__pb;
