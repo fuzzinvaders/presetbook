@@ -68,7 +68,7 @@ check("EQ de sortie : sept bandes, de 35 Hz à 7 kHz",
 const mc = chain[3].p;
 check("MCompressor : 3:1, attaque 25 ms, relâchement 110 ms, RMS 5 ms",
   mc.ratio === 3 && mc.attack === 25 && mc.release === 110 && mc.rms === 5, JSON.stringify(mc));
-check("MCompressor : seuil −9,956 dB", near(mc.threshold, -9.956, 0.001), String(mc.threshold));
+check("MCompressor : seuil −19,912 dB, le chiffre du plugin", near(mc.thr, -19.912, 0.001), String(mc.thr));
 
 console.log("\nAller-retour sans modification");
 const back = RFX.fromChain(chain);
@@ -98,7 +98,7 @@ const modifie = JSON.parse(JSON.stringify(chain));
 modifie[1].p.drive = 0.15;
 modifie[2].bands[4].g = 3;
 modifie[3].p.ratio = 4;
-modifie[3].p.threshold = -14;
+modifie[3].p.thr = -14;
 modifie[4].on = true;
 const sortie = RFX.parse(RFX.fromChain(modifie));
 check("le drive du BOD passe à 0,15", near(sortie.fx[1].params.Drive, 0.15), String(sortie.fx[1].params.Drive));
@@ -108,7 +108,7 @@ check("la bande 750 Hz passe à +3 dB", near(sortie.fx[2].bands[4].gainDb, 3), S
 check("les autres bandes ne bougent pas",
   sortie.fx[2].bands.every((b, i) => i === 4 || (near(b.freq, orig.fx[2].bands[i].freq) && near(b.gainDb, orig.fx[2].bands[i].gainDb))));
 check("le MCompressor passe à 4:1, seuil −14 dB",
-  near(sortie.fx[3].params.ratio, 4) && near(sortie.fx[3].params.threshold, -14, 0.001), JSON.stringify(sortie.fx[3].params));
+  near(sortie.fx[3].params.ratio, 4) && near(sortie.fx[3].params.thr, -14, 0.001), JSON.stringify(sortie.fx[3].params));
 check("attaque, relâchement et RMS ne bougent pas",
   sortie.fx[3].params.attack === 25 && sortie.fx[3].params.release === 110 && sortie.fx[3].params.rms === 5);
 check("le MTuner revient en circuit", sortie.fx[4].bypassed === false);

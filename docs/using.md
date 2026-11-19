@@ -373,8 +373,8 @@ There are three exports, not to be confused: **Export** on a card gives *that pr
 library* as JSON.
 
 Export does **not** require a prior import: a chain assembled by hand here writes out too, for the
-eight plugins whose format is established — TSE BOD, ReaEQ, ReaComp, ReaVerbate, the saturation
-JSFX, and the three free MeldaProduction plugins MCompressor, MSaturator and MTuner. A plugin
+nine plugins whose format is established — TSE BOD, ReaEQ, ReaComp, ReaVerbate, the saturation and
+chorus JSFX, and the three free MeldaProduction plugins MCompressor, MSaturator and MTuner. A plugin
 outside that list makes the export **refuse, naming it**, rather than writing an invented state.
 
 Not everything in a chain file can be read the same way:
@@ -386,7 +386,9 @@ Not everything in a chain file can be read the same way:
 | ReaComp, ReaVerbate | editable: their parameters have been established |
 | MCompressor, MSaturator | threshold, ratio, attack, release, gains, dry/wet: editable |
 | MTuner | no sound setting, but it keeps its place in the chain |
-| JSFX | the first slider is read, the others preserved |
+| JS: Chorus | all six sliders, under the names and in the order of the plugin's window |
+| JS: Saturation | Drive is read, the other sliders preserved |
+| Other JSFX | sliders shown as they are and preserved, with no invented name |
 | Other plugins | **preserved byte for byte**, but not editable here |
 
 Two safeguards. An effect whose values you did not change is rewritten **identically**: no display
@@ -396,8 +398,13 @@ in Reaper — imported here, they are preserved and rewritten unharmed.
 
 The same rule applies to Melda: a plugin only writes what departs from its own defaults, so a
 missing setting is not a setting at zero. The settings whose key was read from a real state are
-editable here; the rest — saturation mode, analog amount, compressor knee — keep the plugin's value,
-or the imported chain's, and are set in Reaper.
+editable here; the rest — saturation mode, analog amount, compressor knee, MCompressor's input and
+output gains — keep the plugin's value, or the imported chain's, and are set in Reaper.
+
+**MCompressor's threshold** reads as it does in the plugin: a chain whose compressor shows −20.6 dB
+reads −20.6 dB here. Up to 1.12 it was shown at half (−10.3 dB) — the file written was right, only
+the number was wrong. Older presets are converted when they open, without the exported sound
+changing.
 
 ## The catalogue and your data
 

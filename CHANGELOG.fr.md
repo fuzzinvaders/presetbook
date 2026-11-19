@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.12.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.13.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,33 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.13.0 — 19 novembre 2026
+
+### Ajouté
+
+- **Le chorus livré avec Reaper (JSFX guitar/chorus) est établi.** Ses six curseurs se lisent et se
+  règlent sous leurs noms — Chorus Length, Number Of Voices, Rate, Pitch Fudge Factor, Wet Mix, Dry
+  Mix — avec les plages et les défauts de sa source. Un chorus ajouté à la main s'écrit comme le
+  plugin s'ouvre.
+
+### Corrigé
+
+- **Le seuil de MCompressor s'affichait à la moitié de sa valeur.** Le plugin range son seuil sur
+  une échelle à 40·log10, pas 20·log10 : une chaîne réglée à −20,6 dB s'affichait −10,3 dB. Le
+  fichier écrit était juste — c'est le chiffre qui mentait. La fiche « Crossfire » affiche
+  maintenant −19,9 dB, ce que montre Reaper.
+- **Les fiches d'avant sont converties à l'ouverture**, à l'octet près dans le fichier : le seuil
+  enregistré est doublé, et le son exporté ne bouge pas. Un fichier `.presetbook.json` exporté avant
+  la correction, ou une fiche de l'étagère, est converti de la même façon à l'import.
+- **Un JSFX inconnu n'a plus de « Drive ».** Son premier curseur était affiché sous le nom de celui
+  de la Saturation ; il garde maintenant ses curseurs tels quels, sans nom inventé.
+- **Après une mise à jour, la page pouvait tourner une heure avec l'ancien lecteur de chaînes.** Le
+  serveur laissait le navigateur garder `rfxchain.js` une heure, alors que la page, elle, était
+  toujours relue. Les scripts se revalident maintenant à chaque ouverture, comme la page — une
+  simple question au serveur, rien n'est retéléchargé s'ils n'ont pas changé.
 
 ---
 

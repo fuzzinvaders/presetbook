@@ -395,8 +395,8 @@ Il y a trois exports, à ne pas confondre : **Exporter** sur une carte donne *ce
 *toute la bibliothèque* en JSON.
 
 L'export ne demande **pas** d'import préalable : une chaîne composée à la main ici s'écrit aussi,
-pour les huit plugins dont le format est établi — TSE BOD, ReaEQ, ReaComp, ReaVerbate, le JSFX de
-saturation, et les trois MeldaProduction gratuits MCompressor, MSaturator et MTuner. Un plugin hors
+pour les neuf plugins dont le format est établi — TSE BOD, ReaEQ, ReaComp, ReaVerbate, les JSFX de
+saturation et de chorus, et les trois MeldaProduction gratuits MCompressor, MSaturator et MTuner. Un plugin hors
 de cette liste fait refuser l'export **en le nommant**, plutôt que d'écrire un état inventé.
 
 
@@ -409,7 +409,9 @@ Tout n'est pas lisible de la même façon dans un fichier de chaîne :
 | ReaComp, ReaVerbate | modifiables : leurs paramètres ont été établis |
 | MCompressor, MSaturator | seuil, taux, attaque, rétablissement, gains, dosage : modifiables |
 | MTuner | aucun réglage sonore, mais il garde sa place dans la chaîne |
-| JSFX | le premier curseur est repris, les autres conservés |
+| JS: Chorus | les six curseurs, sous les noms et dans l'ordre de la fenêtre du plugin |
+| JS: Saturation | le Drive est repris, les autres curseurs conservés |
+| Autres JSFX | curseurs affichés tels quels et conservés, sans nom inventé |
 | Autres plugins | **conservés à l'octet près**, mais non modifiables ici |
 
 Deux garde-fous. Un effet dont les valeurs n'ont pas changé est réécrit **à l'identique** : aucun
@@ -421,8 +423,13 @@ sans dommage.
 Même règle chez Melda : un plugin n'écrit dans le fichier que ce qui s'écarte de ses valeurs par
 défaut, donc un réglage absent n'est pas un réglage à zéro. Les réglages dont la clé a été relevée
 dans un état réel sont modifiables ici ; les autres — mode de saturation, taux d'analogique, genou
-du compresseur — gardent la valeur du plugin, ou celle de la chaîne importée, et se règlent dans
-Reaper.
+du compresseur, gains d'entrée et de sortie de MCompressor — gardent la valeur du plugin, ou celle
+de la chaîne importée, et se règlent dans Reaper.
+
+Le **seuil de MCompressor** s'affiche comme dans le plugin : une chaîne dont le compresseur montre
+−20,6 dB se lit −20,6 dB ici. Jusqu'à la 1.12, il s'affichait à la moitié (−10,3 dB) — le fichier
+écrit était juste, seul le chiffre était faux. Les fiches d'avant sont converties à l'ouverture, sans
+que le son exporté change.
 
 ## Le catalogue et vos données
 

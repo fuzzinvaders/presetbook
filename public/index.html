@@ -1148,6 +1148,9 @@ var EN = {
   "Le délai initial est conservé normalisé : son étendue en millisecondes n'est pas établie.": "The initial delay is kept normalised: its range in milliseconds is not established.",
   "Les JSFX gardent leurs curseurs en texte clair dans la chaîne. Seul le premier est renseigné ici — les suivants restent au défaut dans tes chaînes et sont conservés à l'import.": "JSFX keep their sliders as plain text in the chain. Only the first one is filled in here — the others stay at their default in your chains and are preserved on import.",
   "JSFX loser/Saturation, livré avec Reaper": "JSFX loser/Saturation, shipped with Reaper",
+  "JSFX guitar/chorus, livré avec Reaper": "JSFX guitar/chorus, shipped with Reaper",
+  "Les six curseurs du plugin, dans l'ordre de sa fenêtre. Le mélange se règle en décibels : Wet à −15 dB sous un Dry à 0 dB, c'est un chorus qu'on devine plus qu'on ne l'entend.":
+    "The plugin's six sliders, in the order of its window. The mix is set in decibels: Wet at −15 dB under a Dry at 0 dB is a chorus you sense more than you hear.",
   "pédales dans l’ordre du signal": "pedals in signal order",
   "commandes": "controls",
   "fiche": "preset",
@@ -1848,7 +1851,9 @@ var PLUGINS = {
          "écrite dans le fichier. Les réglages absents de cette liste — genou, gain d'entrée et de " +
          "sortie, liaison des canaux — gardent la valeur du plugin, ou celle de la chaîne importée.",
     params:[
-      {k:"threshold", l:"Threshold", min:-60, max:0,    step:0.1,  d:-9, u:"dB"},
+      /* « thr » et non « threshold » : la clé a changé avec l'échelle, pour
+         qu'une valeur écrite avant se reconnaisse (voir migreFiche). */
+      {k:"thr",       l:"Threshold", min:-60, max:0,    step:0.1,  d:-20, u:"dB"},
       {k:"ratio",     l:"Ratio",     min:1,   max:20,   step:0.01, d:4,  u:": 1"},
       {k:"attack",    l:"Attack",    min:0,   max:1000, step:0.1,  d:15, u:"ms"},
       {k:"release",   l:"Release",   min:0,   max:5000, step:1,    d:90, u:"ms"},
@@ -1878,6 +1883,21 @@ var PLUGINS = {
          "ici — les suivants restent au défaut dans tes chaînes et sont conservés à l'import.",
     params:[
       {k:"drive", l:"Drive", min:0, max:1, step:0.01, d:0}
+    ]
+  },
+  /* Les six curseurs de guitar/chorus, relevés dans sa source : mêmes noms,
+     mêmes plages, mêmes défauts que la fenêtre du plugin. */
+  "JS: Chorus": {
+    vendor:"JSFX guitar/chorus, livré avec Reaper",
+    note:"Les six curseurs du plugin, dans l'ordre de sa fenêtre. Le mélange se règle en décibels : " +
+         "Wet à −15 dB sous un Dry à 0 dB, c'est un chorus qu'on devine plus qu'on ne l'entend.",
+    params:[
+      {k:"length", l:"Chorus Length",      min:1,    max:250, step:0.1,  d:15,  u:"ms"},
+      {k:"voices", l:"Number Of Voices",   min:1,    max:8,   step:1,    d:1},
+      {k:"rate",   l:"Rate",               min:0.1,  max:16,  step:0.01, d:0.5, u:"Hz"},
+      {k:"fudge",  l:"Pitch Fudge Factor", min:0,    max:1,   step:0.01, d:0.7},
+      {k:"wet",    l:"Wet Mix",            min:-100, max:12,  step:1,    d:-6,  u:"dB"},
+      {k:"dry",    l:"Dry Mix",            min:-100, max:12,  step:1,    d:-6,  u:"dB"}
     ]
   },
   "Autre plugin": {
@@ -2226,7 +2246,7 @@ var SEED = [
       band("Low Pass",  7000, 0,    1.00)
     ], "La bande qui fait le caractère : 750 Hz, là où la basse se lit sous la guitare."),
     slot("MCompressor","Compression",
-      {threshold:-9.956, ratio:3, attack:25, release:110, rms:5},
+      {thr:-19.912, ratio:3, attack:25, release:110, rms:5},
       "Seuil pour 2–3 dB de réduction en jeu normal, 4 dB au plus. Genou doux à 25 %, canaux liés, " +
       "gains à 0 dB, Maximize et Custom Shape coupés : ce sont les défauts du plugin."),
     bypassed(slot("MTuner","Accordeur",{},
@@ -3727,7 +3747,35 @@ function boot(){
     });
   });
 }
+/**
+ * Le seuil de MCompressor a longtemps été lu en 20·log10 alors que le plugin
+ * l'affiche en 40·log10 : la fiche disait −10,3 dB là où Reaper montrait
+ * −20,6. Le fichier écrit, lui, était juste — c'est le chiffre qui mentait.
+ *
+ * Une valeur d'avant porte la clé « threshold » ; elle devient « thr », au
+ * double. Le même octet repart dans Reaper, donc le son ne bouge pas, et le
+ * chiffre affiché devient celui du plugin. Une fiche déjà convertie n'a plus
+ * de « threshold » : passer deux fois ne double pas deux fois.
+ */
+function migreFiche(p){
+  if (!p || !Array.isArray(p.chain)) return p;
+  p.chain.forEach(function(s){
+    if (!s || s.plugin !== "MCompressor" || !s.p) return;
+    if (s.p.thr !== undefined && s.p.thr !== null) return;
+    var v = s.p.threshold;
+    delete s.p.threshold;
+    if (v === undefined || v === null || v === "") return;
+    s.p.thr = Math.round(2 * Number(v) * 1000) / 1000;
+  });
+  return p;
+}
+
 function normalize(j){
+  if (Array.isArray(j.custom)) j.custom.forEach(migreFiche);
+  if (j.overrides && typeof j.overrides === "object"){
+    Object.keys(j.overrides).forEach(function(k){ migreFiche(j.overrides[k]); });
+  }
+  if (Array.isArray(j.trash)) j.trash.forEach(function(x){ if (x) migreFiche(x.preset); });
   return {
     v: 1,
     custom: Array.isArray(j.custom) ? j.custom : [],
@@ -6126,7 +6174,7 @@ function exportPreset(id){
 /* Une fiche exportée revient ici. Elle s'ajoute — jamais elle n'écrase — et
    reçoit un nouvel identifiant si le sien est déjà pris. */
 function addPreset(env){
-  var p = clone(env.preset);
+  var p = migreFiche(clone(env.preset));     /* un fichier ou une étagère d'avant */
   if (!p || !p.kind || !KINDS[p.kind]){ toast("Ce fichier ne contient pas de fiche."); return; }
   var g = env.gear && typeof env.gear === "object" ? env.gear : {};
   Object.keys(g).forEach(function(k){ if (!allGear()[k]) S.gear[k] = g[k]; });
@@ -6816,6 +6864,7 @@ window.__pb = {
   chainView: chainView, parClef: parClef, trier: trier, render: render, commit: commit,
   deposerFichier: deposerFichier, montreDepot: montreDepot, titreDeFichier: titreDeFichier,
   deposerJson: deposerJson, importerJson: importerJson, estSauvegarde: estSauvegarde,
+  migreFiche: migreFiche, pluginDef: pluginDef, fmtParam: fmtParam,
   chargerSauvegarde: chargerSauvegarde, doImport: doImport,
   depotActif: depotActif, depotFini: depotFini,
   openSets: openSets, openSetEditor: openSetEditor, setlists: setlists, setlistDe: setlistDe,

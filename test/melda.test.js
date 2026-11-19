@@ -74,7 +74,7 @@ check("aller-retour sans modification à l'octet près",
 
 const chaine = RFX.toChain(lu);
 const comp = chaine[1].p, sat = chaine[2].p;
-check("seuil du MCompressor lu en décibels", Math.abs(comp.threshold + 9.033) < 0.001, comp.threshold);
+check("seuil du MCompressor lu comme le plugin l'affiche (40·log10)", Math.abs(comp.thr + 18.066) < 0.001, comp.thr);
 check("taux lu", Math.abs(comp.ratio - 4) < 0.01, comp.ratio);
 check("attaque lue en millisecondes", comp.attack === 15, comp.attack);
 check("rétablissement lu en millisecondes", comp.release === 90, comp.release);
@@ -99,7 +99,7 @@ for (let i = 0; i < lu.fx.length; i++) {
 
 const neuve = RFX.fromChain([
   { plugin: "MCompressor", on: true,
-    p: { threshold: -12, ratio: 3, attack: 8, release: 120, rms: 4 } },
+    p: { thr: -12, ratio: 3, attack: 8, release: 120, rms: 4 } },
   { plugin: "MSaturator", on: true, p: { input: 2, output: -2, drywet: 40, clip: true } },
   { plugin: "MTuner", on: false, p: {} }
 ]);
@@ -109,7 +109,7 @@ check("les identités sont celles du plugin",
   neuveLue.fx.map((f) => f.name).join(",") === "MCompressor,MSaturator,MTuner",
   neuveLue.fx.map((f) => f.name).join(","));
 const n2 = RFX.toChain(neuveLue);
-check("seuil relu", n2[0].p.threshold === -12, n2[0].p.threshold);
+check("seuil relu", n2[0].p.thr === -12, n2[0].p.thr);
 check("taux relu", Math.abs(n2[0].p.ratio - 3) < 1e-9, n2[0].p.ratio);
 check("attaque relue", n2[0].p.attack === 8, n2[0].p.attack);
 check("dosage relu", n2[1].p.drywet === 40, n2[1].p.drywet);
@@ -128,7 +128,7 @@ check("la courbe de compression est écrite", !!graphe && graphe.kids.length ===
   graphe ? graphe.kids.length : "absente");
 if (graphe && graphe.kids.length === 3) {
   const attr = (nd, k) => (nd.attrs.filter((a) => a.k === k)[0] || {}).v;
-  const seuil = Math.pow(10, -12 / 20);
+  const seuil = Math.pow(10, -12 / 40);           /* l'échelle du plugin : 40·log10 */
   check("le coude est sur la diagonale, au seuil",
     Math.abs(attr(graphe.kids[1], "x") - seuil) < 1e-12 &&
     Math.abs(attr(graphe.kids[1], "y") - seuil) < 1e-12);
@@ -179,13 +179,13 @@ check("le ReaEQ fabriqué porte la queue du bloc", eqLu.eqTail && eqLu.eqTail.le
 /* --------------------------- les clés inconnues repartent avec la chaîne */
 
 const avecInconnu = RFX.toChain(lu);
-avecInconnu[1].p.threshold = -15;                 /* on change un seul réglage */
+avecInconnu[1].p.thr = -15;                       /* on change un seul réglage */
 const apres = etatDe(RFX.parse(RFX.fromChain(avecInconnu)).fx[1]);
 const cles = apres.attrs.map((a) => a.k);
 check("les clés qu'on ne sait pas nommer sont conservées",
   cles.indexOf("#kneemode") >= 0 && cles.indexOf("EditorSize") >= 0, cles.join(" "));
 check("le réglage modifié est bien écrit",
-  Math.abs(RFX.toChain(RFX.parse(RFX.fromChain(avecInconnu)))[1].p.threshold + 15) < 0.001);
+  Math.abs(RFX.toChain(RFX.parse(RFX.fromChain(avecInconnu)))[1].p.thr + 15) < 0.001);
 
 console.log(echecs ? "\n" + echecs + " échec(s)" : "\ntout est vert");
 process.exit(echecs ? 1 : 0);

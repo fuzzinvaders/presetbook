@@ -175,7 +175,7 @@ check("le refus nomme le plugin et les possibles",
   refusPlugin || "");
 /* Un compte ne dit rien ; la liste, si : un gabarit qui disparaît fait
    refuser un export qui marchait la veille. */
-var GABARITS = ["TSE BOD", "ReaEQ", "ReaComp", "JS: Saturation", "ReaVerbate",
+var GABARITS = ["TSE BOD", "ReaEQ", "ReaComp", "JS: Saturation", "JS: Chorus", "ReaVerbate",
                 "MTuner", "MCompressor", "MSaturator"];
 check("les gabarits couvrent les plugins établis",
   Object.keys(RFX.TEMPLATES).sort().join(",") === GABARITS.slice().sort().join(","),

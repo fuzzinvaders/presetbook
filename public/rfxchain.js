@@ -415,8 +415,13 @@
      fichier. Seules celles relevées dans un état réel figurent ici : écrire
      une clé devinée ne produirait rien, en silence.                          */
   var MELDA_PARAMS = {
+    /* Le seuil est rangé sur une échelle à 40·log10 et non 20·log10 : relevé
+       sur une chaîne réelle, 0,30596 dans le fichier s'affiche « −20,6 dB »
+       dans le plugin, là où 20·log10 aurait donné −10,3. La clé change de nom
+       avec l'échelle (« thr », plus « threshold ») : une valeur écrite avant
+       se reconnaît d'elle-même et se convertit — voir migreMaillon. */
     "MCompressor": [
-      { k: "threshold", a: "#threshold", u: "db" },
+      { k: "thr",       a: "#threshold", u: "db40" },
       { k: "ratio",     a: "#ratio" },
       { k: "attack",    a: "#attack",    u: "ms" },
       { k: "release",   a: "#release",   u: "ms" },
@@ -433,6 +438,7 @@
 
   function meldaFromFile(def, v) {
     if (def.u === "db") return v > 0 ? round(20 * Math.log10(v), 3) : -120;
+    if (def.u === "db40") return v > 0 ? round(40 * Math.log10(v), 3) : -120;
     if (def.u === "ms") return round(v * 1000, 4);
     if (def.u === "pct") return round(v * 100, 2);
     if (def.u === "bool") return !!v;
@@ -440,6 +446,7 @@
   }
   function meldaToFile(def, v) {
     if (def.u === "db") return Math.pow(10, Number(v) / 20);
+    if (def.u === "db40") return Math.pow(10, Number(v) / 40);
     if (def.u === "ms") return Number(v) / 1000;
     if (def.u === "pct") return Number(v) / 100;
     if (def.u === "bool") return v ? 1 : 0;
@@ -511,7 +518,7 @@
       /* identique à l'affichage près : on laisse le flottant d'origine */
       if (a && meldaFromFile(defs[i], a.v) === v) continue;
       setAttr(tree, defs[i].a, meldaType(defs[i]), meldaToFile(defs[i], v));
-      if (defs[i].k === "threshold" || defs[i].k === "ratio") bouge = true;
+      if (defs[i].k === "thr" || defs[i].k === "ratio") bouge = true;
     }
     if (fx.name === "MCompressor" && bouge) {
       var thr = findAttr(tree, "#threshold"), rat = findAttr(tree, "#ratio");
@@ -779,6 +786,23 @@
     return { name: root, attrs: attrs, kids: [] };
   }
 
+  /**
+   * Les JSFX dont on connaît les curseurs, par chemin. L'ordre est celui des
+   * « sliderN » de la source livrée avec Reaper ; les défauts aussi, pour
+   * qu'un maillon saisi à la main s'écrive comme le plugin s'ouvre.
+   * Un JSFX absent d'ici garde ses curseurs tels quels, sans nom inventé.
+   */
+  var JS_FX = {
+    "loser/Saturation": { plugin: "JS: Saturation", keys: ["drive"] },
+    "guitar/chorus": { plugin: "JS: Chorus",
+      keys: ["length", "voices", "rate", "fudge", "wet", "dry"],
+      defaults: ["15", "1", "0.5", "0.7", "-6", "-6"] }
+  };
+  function jsPath(head) {
+    var m = String(head || "").match(/^([^\s"]+)/);
+    return m ? m[1] : "";
+  }
+
   var TEMPLATES = {
     "TSE BOD": {kind:"vst",
       head:"\"VST: BOD (TSE AUDIO)\" BOD_x64.dll 0 \"\" 1414742596<56535454534244626F64000000000000> \"\"",
@@ -793,6 +817,7 @@
       header64:"bWNlcu9e7f4EAAAAAQAAAAAAAAACAAAAAAAAAAQAAAAAAAAACAAAAAAAAAACAAAAAQAAAAAAAAACAAAAAAAAAFwAAAAAAAAAAAAQAA==",
       name64:"AFByb2dyYW0gMQAQAAAA"},
     "JS: Saturation": {kind:"js", head:"loser/Saturation \"\"", sliders:64},
+    "JS: Chorus": {kind:"js", head:"guitar/chorus \"\"", sliders:64},
     "MTuner": {kind:"vst",
       head:"\"VST3: MTuner (MeldaProduction)\" MTuner.vst3 0 \"\" 1332983745{4D656C646170726F4D54756E4D54756E} \"\"",
       header64:"wbdzT+5e7f4CAAAAAQAAAAAAAAACAAAAAAAAAAIAAAABAAAAAAAAAAIAAAAAAAAAEAIAAAEAAAAAAAAA",
@@ -835,7 +860,7 @@
   /* --------------------------------- conversion vers/depuis un preset --- */
 
   function pbName(fx) {
-    if (fx.kind === "js") return "JS: " + fx.name;
+    if (fx.kind === "js") return JS_FX[fx.path] ? JS_FX[fx.path].plugin : "JS: " + fx.name;
     if (/^BOD$/i.test(fx.name)) return "TSE BOD";
     return fx.name;
   }
@@ -884,10 +909,16 @@
     } else if (fx.decoded === "reacomp" || fx.decoded === "reaverbate" || fx.decoded === "melda") {
       s.p = fx.params;
     } else if (fx.decoded === "js") {
-      var used = [], k;
-      for (k = 0; k < fx.sliders.length; k++) if (fx.sliders[k] !== "-") used.push(fx.sliders[k]);
-      if (used.length) s.p = { drive: Number(used[0]) };
-      s.settings = "Curseurs : " + used.join(" ");
+      var connu = JS_FX[fx.path], used = [], k;
+      if (connu) {
+        for (k = 0; k < connu.keys.length; k++) {
+          if (fx.sliders[k] !== undefined && fx.sliders[k] !== "-") s.p[connu.keys[k]] = Number(fx.sliders[k]);
+        }
+      } else {
+        /* Pas de nom à donner : les curseurs restent lisibles, et intacts. */
+        for (k = 0; k < fx.sliders.length; k++) if (fx.sliders[k] !== "-") used.push(fx.sliders[k]);
+        s.settings = "Curseurs : " + used.join(" ");
+      }
     } else {
       s.settings = "État conservé tel quel (" + fx.chunkLen + " octets) — non modifiable ici.";
     }
@@ -961,8 +992,9 @@
     if (t.melda) { o.meldaPrefix = t.meldaPrefix; o.meldaTree = t.melda(); }
     if (t.eqTail) o.eqTail = t.eqTail;
     if (t.kind === "js") {
+      var defs = (JS_FX[jsPath(t.head)] || {}).defaults || [];
       o.sliders = [];
-      for (var k = 0; k < t.sliders; k++) o.sliders.push("-");
+      for (var k = 0; k < t.sliders; k++) o.sliders.push(defs[k] !== undefined ? defs[k] : "-");
     } else {
       var mh = t.head.match(/^"([^"]*)"\s+(\S+)\s+(.*)$/);
       o.label = mh ? mh[1] : t.head;
@@ -980,7 +1012,7 @@
   function fromChain(slots) {
     var items = [], i;
     for (i = 0; i < slots.length; i++) {
-      var s = slots[i], o = s.rfx;
+      var s = migreMaillon(slots[i]), o = s.rfx;
       if (!o) o = fromTemplate(s.plugin, i);      /* maillon saisi à la main */
       var rest = String(o.bypass || "0 0").split(/\s+/).slice(1).join(" ");
       var fx = {
@@ -1014,7 +1046,11 @@
         fx.meldaTree = JSON.parse(JSON.stringify(o.meldaTree));   /* l'origine reste intacte */
       } else if (o.kind === "js") {
         fx.sliders = (o.sliders || []).slice();
-        if (s.p && s.p.drive !== undefined && s.p.drive !== null) fx.sliders[0] = String(s.p.drive);
+        var connu = JS_FX[jsPath(o.head)], cles = connu ? connu.keys : ["drive"], v, k2;
+        for (k2 = 0; k2 < cles.length; k2++) {
+          v = s.p ? s.p[cles[k2]] : undefined;
+          if (v !== undefined && v !== null && v !== "") fx.sliders[k2] = String(v);
+        }
       } else if (o.chunk64) {
         fx.dirty = false;                     /* bloc opaque : réécrit tel quel */
       } else {
@@ -1029,13 +1065,33 @@
     return build({ items: items });
   }
 
+  /**
+   * Un maillon écrit avant que l'échelle du seuil de MCompressor soit
+   * corrigée porte « threshold », lu en 20·log10. Le même octet du fichier
+   * vaut le double en 40·log10 : on double, et le son ne bouge pas — seul le
+   * chiffre affiché devient celui du plugin. Rend une copie, jamais l'original.
+   */
+  function migreMaillon(slot) {
+    if (!slot || slot.plugin !== "MCompressor" || !slot.p) return slot;
+    var p = slot.p;
+    if (p.thr !== undefined && p.thr !== null) return slot;
+    if (p.threshold === undefined || p.threshold === null || p.threshold === "") return slot;
+    var copie = {}, k, np = {};
+    for (k in slot) if (Object.prototype.hasOwnProperty.call(slot, k)) copie[k] = slot[k];
+    for (k in p) if (Object.prototype.hasOwnProperty.call(p, k) && k !== "threshold") np[k] = p[k];
+    np.thr = round(2 * Number(p.threshold), 3);
+    copie.p = np;
+    return copie;
+  }
+
   var api = {
     parse: parse, build: build, toChain: toChain, fromChain: fromChain,
     TEMPLATES: TEMPLATES, canWrite: function (plugin) { return !!TEMPLATES[plugin]; },
     EQ_TYPES: EQ_TYPES, EQ_TYPE_IDS: EQ_TYPE_IDS, EQ_TYPE_NAMES: EQ_TYPE_NAMES,
     eqTypeId: eqTypeId, BOD_KEYS: BOD_KEYS,
     MELDA_PARAMS: MELDA_PARAMS, zlibInflate: zlibInflate, zlibStore: zlibStore,
-    parseMelda: parseMelda, buildMelda: buildMelda
+    parseMelda: parseMelda, buildMelda: buildMelda,
+    JS_FX: JS_FX, migreMaillon: migreMaillon
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = api;

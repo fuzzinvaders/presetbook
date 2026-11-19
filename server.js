@@ -1154,7 +1154,12 @@ async function serveStatic(req, res, pathname) {
     "Content-Type": type,
     "Content-Length": stat.size,
     ETag: etag,
-    "Cache-Control": type.startsWith("text/html") ? "no-cache" : "public, max-age=3600",
+    /* La page et ses scripts vont ensemble : un script gardé une heure après
+       une mise à jour ferait tourner la nouvelle page avec l'ancien lecteur de
+       chaînes. Les deux se revalident donc à chaque ouverture — l'ETag rend
+       cela gratuit : un 304 sans contenu quand rien n'a changé. */
+    "Cache-Control": type.startsWith("text/html") || type.includes("javascript")
+      ? "no-cache" : "public, max-age=3600",
     "X-Content-Type-Options": "nosniff",
     Vary: "Accept-Encoding",
   };

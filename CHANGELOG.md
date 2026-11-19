@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.12.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.13.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,32 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.13.0 — 19 November 2026
+
+### Added
+
+- **The chorus that ships with Reaper (JSFX guitar/chorus) is established.** Its six sliders read
+  and are set under their names — Chorus Length, Number Of Voices, Rate, Pitch Fudge Factor, Wet
+  Mix, Dry Mix — with the ranges and defaults of its source. A chorus added by hand is written the
+  way the plugin opens.
+
+### Fixed
+
+- **MCompressor's threshold was displayed at half its value.** The plugin stores its threshold on a
+  40·log10 scale, not 20·log10: a chain set to −20.6 dB displayed −10.3 dB. The file written was
+  right — the number was what lied. The "Crossfire" preset now shows −19.9 dB, as Reaper does.
+- **Older presets are converted when they open**, byte for byte in the file: the stored threshold
+  is doubled, and the exported sound does not move. A `.presetbook.json` exported before the fix,
+  or a preset from the shelf, is converted the same way on import.
+- **An unknown JSFX no longer has a "Drive".** Its first slider was shown under the Saturation's
+  name; it now keeps its sliders as they are, with no invented name.
+- **After an update, the page could run for an hour with the old chain reader.** The server let
+  the browser keep `rfxchain.js` for an hour, while the page itself was always re-read. Scripts are
+  now revalidated on every visit, like the page — a single question to the server, nothing is
+  downloaded again if they have not changed.
 
 ---
 

@@ -112,6 +112,16 @@ function brut(chemin, entetes) {
     check("le service worker passe aussi par gzip", sw.h("content-encoding") === "gzip");
     check("et se relit correctement",
       zlib.gunzipSync(sw.buf).toString("utf8").indexOf("presetbook-v1") > 0);
+
+    /* Gardé une heure, le lecteur de chaînes survivait à une mise à jour : la
+       nouvelle page tournait avec l'ancien codec — vu en 1.13, où la clé du
+       seuil de MCompressor change. Il se revalide comme la page. */
+    const lecteur = await brut("/rfxchain.js", {});
+    check("le lecteur de chaînes se revalide à chaque ouverture, comme la page",
+      lecteur.h("cache-control") === "no-cache", lecteur.h("cache-control"));
+    const icone = await brut("/icone.svg", {});
+    check("une image, elle, se garde", /max-age=3600/.test(icone.h("cache-control") || ""),
+      icone.h("cache-control"));
   } catch (err) {
     failed++;
     console.log("  ÉCHEC exécution — " + err.message);
