@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.11.2   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.12.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,21 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.12.0 — 19 November 2026
+
+### Added
+
+- **An exported preset can be imported back from its file.** "Export" wrote a `.presetbook.json`,
+  but taking it back meant opening it in a text editor, copying its contents and pasting them into
+  the backup block. The file now comes in like a Reaper chain: **dropped on the page**, or picked
+  through **Backup → Import a file**. Several files dropped together make as many presets.
+- The contents decide what happens, as in the block: a **single preset is added** — a duplicate gets
+  a fresh id and *(imported)* in its name, nothing is overwritten. A **full backup** would replace
+  the whole library: a file dropped on the page cannot stand for that order, so it **lands in the
+  block** and waits for "Restore".
 
 ---
 

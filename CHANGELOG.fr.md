@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.11.2   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.12.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,22 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.12.0 — 19 novembre 2026
+
+### Ajouté
+
+- **Une fiche exportée se réimporte depuis son fichier.** « Exporter » écrivait un `.presetbook.json`,
+  mais pour le reprendre il fallait l'ouvrir dans un éditeur de texte, copier son contenu et le coller
+  dans le bloc de la sauvegarde. Le fichier entre maintenant comme une chaîne Reaper : **déposé sur
+  la page**, ou choisi par **Sauvegarde → Importer un fichier**. Plusieurs fichiers lâchés ensemble
+  font autant de fiches.
+- Le contenu décide de ce qui arrive, comme dans le bloc : une **fiche seule s'ajoute** — un doublon
+  prend un nouvel identifiant et *(importée)* dans son nom, rien n'est écrasé. Une **sauvegarde
+  complète**, elle, remplacerait toute la bibliothèque : un fichier lâché sur la page ne peut pas
+  valoir cet ordre-là, alors elle **s'installe dans le bloc** et attend « Restaurer ».
 
 ---
 

@@ -450,9 +450,12 @@ vous avez dessinée voyage avec le pédalier qui l'utilise, sans quoi la fiche s
 l'arrivée. Les façades livrées, elles, ne sont pas recopiées puisqu'elles existent déjà de l'autre
 côté.
 
-Pour la reprendre : **Sauvegarde**, collez le fichier dans le bloc, puis **Restaurer**. Une fiche
-seule **s'ajoute** à la bibliothèque au lieu de la remplacer — c'est le contenu du fichier qui décide,
-donc il n'y a pas de bouton séparé à ne pas confondre. Si la fiche est déjà là, la nouvelle prend un
+Pour la reprendre : **déposez le fichier sur la page**, ou passez par **Sauvegarde → Importer un
+fichier**. Plusieurs fichiers déposés ensemble font autant de fiches. Coller son contenu dans le bloc
+puis **Restaurer** marche toujours. Une fiche seule **s'ajoute** à la bibliothèque au lieu de la
+remplacer — c'est le contenu du fichier qui décide, donc il n'y a pas de bouton séparé à ne pas
+confondre. Une **sauvegarde complète** déposée de la même façon ne s'applique pas d'elle-même : elle
+remplacerait tout, alors elle s'affiche dans le bloc et attend **Restaurer**. Si la fiche est déjà là, la nouvelle prend un
 identifiant neuf et son nom reçoit *(importée)*, pour que vous puissiez comparer avant de choisir. Et
 si une façade manque, l'import est **refusé en la nommant**, plutôt que d'ajouter une fiche qu'on ne
 pourrait pas afficher.

@@ -114,5 +114,67 @@ suffixes.forEach((suf) => {
     en.tf(motif, "Motown"));
 });
 
+/* --- un fichier .json se dépose ou se choisit ----------------------------
+ * Exporter écrivait un fichier ; le reprendre demandait de l'ouvrir, de le
+ * copier et de le coller dans le bloc. Il entre maintenant comme une chaîne.
+ */
+const lus = [];
+function lecteur() {
+  this.readAsText = function (file, enc) {
+    this.enc = enc; this.result = file.__texte; lus.push(this);
+    if (this.onload) this.onload();
+  };
+}
+const imp = run(page, { search: "" });
+imp.FileReader = lecteur;
+const nb = () => imp.__pb.library().length;
+const avantImp = nb();
+imp.__pb.deposerFichier({ name: "Fiche-d-essai.presetbook.json", __texte: JSON.stringify(env) });
+check("une fiche .json déposée s'ajoute", nb() === avantImp + 1, avantImp + " puis " + nb());
+check("avec sa façade personnelle", !!imp.__pb.allGear()["g-perso"]);
+check("lue en UTF-8, comme Exporter l'écrit", lus[0] && lus[0].enc === "utf-8", lus[0] && lus[0].enc);
+
+imp.__pb.deposerFichier({ name: "encore.json", __texte: JSON.stringify(env) });
+check("la même fiche une seconde fois s'ajoute sans rien remplacer",
+  nb() === avantImp + 2, String(nb()));
+
+let n0 = nb();
+imp.__pb.deposerFichier({ name: "casse.json", __texte: "{ pas du json" });
+check("un JSON cassé ne crée rien", nb() === n0);
+imp.__pb.deposerFichier({ name: "autre.json", __texte: JSON.stringify({ bonjour: 1 }) });
+check("un JSON qui n'est ni fiche ni sauvegarde ne crée rien", nb() === n0);
+
+/* Une sauvegarde complète ne s'applique pas sur un simple dépôt : elle
+   remplacerait toute la bibliothèque. Elle s'installe dans le bloc. */
+const sauvegarde = JSON.stringify({ v: 1, library: [],
+  mine: { v: 1, custom: [], overrides: {}, gear: {}, hidden: [] } });
+check("une sauvegarde se reconnaît", imp.__pb.estSauvegarde(JSON.parse(sauvegarde)));
+check("un objet quelconque n'en est pas une", !imp.__pb.estSauvegarde({ bonjour: 1 }));
+imp.__pb.deposerFichier({ name: "presetbook-presets.json", __texte: sauvegarde });
+check("une sauvegarde déposée ne remplace rien d'elle-même", nb() === n0, nb() + " au lieu de " + n0);
+check("elle attend dans le bloc", imp.__nodes.get("io").value === sauvegarde);
+check("le bloc est ouvert sous les yeux", imp.__nodes.get("veil").classList.contains("open"));
+imp.__pb.doImport();
+check("et « Restaurer » l'applique", imp.__pb.getState().custom.length === 0,
+  String(imp.__pb.getState().custom.length));
+
+/* La porte vaut pour le .json comme pour la chaîne. */
+const imp2 = run(page, { search: "" });
+imp2.FileReader = lecteur;
+imp2.document.getElementById("gate").classList.add("open");
+const a2 = imp2.__pb.library().length;
+imp2.__pb.deposerFichier({ name: "x.json", __texte: JSON.stringify(env) });
+check("porte fermée, rien n'est importé", imp2.__pb.library().length === a2);
+
+/* Le sélecteur et le dépôt passent par le même aiguillage. */
+const src = require("node:fs").readFileSync(page, "utf8");
+check("la sauvegarde propose d'importer un fichier",
+  /data-pick>Importer un fichier</.test(src) &&
+  /type="file" id="io-file" data-json-in accept="\.json/.test(src));
+check("le sélecteur passe par la porte",
+  /hasAttribute\("data-json-in"\)[\s\S]{0,200}deposerFichier\(choisi\)/.test(src));
+check("tous les fichiers lâchés sont lus, pas seulement le premier",
+  /for \(var i=0;i<lot\.length;i\+\+\) deposerFichier\(lot\[i\]\)/.test(src));
+
 console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
 process.exit(failed ? 1 : 0);

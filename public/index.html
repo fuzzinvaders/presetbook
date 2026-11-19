@@ -897,11 +897,11 @@ var EN = {
   "apparitions": "appearances",
   "Treble (étage haut)": "Treble (top)",
   "Bass (étage bas)": "Bass (lower)",
-  "Dépose une chaîne .RfxChain pour en faire une fiche":
-    "Drop a .RfxChain here to make it a preset",
-  "Dépose un fichier .RfxChain exporté depuis Reaper.":
-    "Drop a .RfxChain file exported from Reaper.",
-  "Connecte-toi avant de déposer une chaîne.": "Sign in before dropping a chain.",
+  "Dépose une chaîne .RfxChain ou une fiche .json":
+    "Drop a .RfxChain chain or a .json preset here",
+  "Ce format ne s'importe pas : une chaîne .RfxChain ou une fiche .json.":
+    "That format cannot be imported: a .RfxChain chain or a .json preset.",
+  "Connecte-toi avant de déposer un fichier.": "Sign in before dropping a file.",
   "Le lecteur de chaînes n'est pas disponible ici.": "The chain reader is not available here.",
   "Chaîne importée : {0}": "Chain imported: {0}",
   "Chaîne importée": "Imported chain",
@@ -1113,7 +1113,7 @@ var EN = {
   "Fiche importée : {0}": "Preset imported: {0}",
   "Écrit la fiche dans un fichier, façades comprises": "Writes the preset to a file, front panels included",
   "Écrit un fichier de chaîne pour Reaper": "Writes a chain file for Reaper",
-  "Pour restaurer : colle une sauvegarde dans le bloc, puis « Restaurer ». Une fiche exportée seule se colle ici aussi : elle s'ajoute à la bibliothèque au lieu de la remplacer.": "To restore: paste a backup into the block, then “Restore”. A single exported preset can be pasted here too: it is added to the library instead of replacing it.",
+  "Pour restaurer : colle une sauvegarde dans le bloc, puis « Restaurer ». « Importer un fichier » lit le même JSON depuis le disque, et un fichier déposé sur la page arrive au même endroit. Une fiche exportée seule s'ajoute à la bibliothèque au lieu de la remplacer ; une sauvegarde complète attend « Restaurer ».": "To restore: paste a backup into the block, then “Restore”. “Import a file” reads the same JSON from disk, and a file dropped on the page arrives at the same place. A single exported preset is added to the library instead of replacing it; a full backup waits for “Restore”.",
   "{0} (copie)": "{0} (copy)",
   "{0} (importée)": "{0} (imported)",
   "Le serveur n'a pas répondu ({0}) — enregistré dans ce navigateur.": "The server did not answer ({0}) — saved in this browser.",
@@ -1380,6 +1380,10 @@ var EN = {
   "Catalogue d'origine rétabli.": "Shipped catalogue restored.",
   "Sauvegarde illisible.": "Unreadable backup.",
   "Ce bloc n'est pas un JSON valide.": "This block is not valid JSON.",
+  "Ce fichier n'est pas un JSON valide.": "This file is not valid JSON.",
+  "Importer un fichier": "Import a file",
+  "Sauvegarde chargée dans le bloc : relis-la, puis « Restaurer ».":
+    "Backup loaded into the block: read it over, then “Restore”.",
 
   /* ---- comptes ---- */
   "Se connecter": "Sign in",
@@ -4777,11 +4781,28 @@ function deposerFichier(file){
      lire ici aurait refusé tous les dépôts, y compris session ouverte. */
   var porte = document.getElementById("gate");
   if (porte && porte.classList && porte.classList.contains("open")){
-    toast("Connecte-toi avant de déposer une chaîne."); return;
+    toast("Connecte-toi avant de déposer un fichier."); return;
   }
+  /* Deux formats entrent par la même porte : l'extension dit lequel. */
+  if (/\.json$/i.test(file.name)){ deposerJson(file); return; }
+  deposerChaine(file);
+}
+
+/**
+ * Une fiche exportée revient par où une chaîne arrive. Lue en UTF-8, puisque
+ * c'est ce que « Exporter » écrit — là où Reaper, lui, écrit en latin-1.
+ */
+function deposerJson(file){
+  var reader = new FileReader();
+  reader.onload = function(){ importerJson(String(reader.result), false); };
+  reader.onerror = function(){ toast("Lecture du fichier impossible."); };
+  reader.readAsText(file, "utf-8");
+}
+
+function deposerChaine(file){
   if (!window.RFX){ toast("Le lecteur de chaînes n'est pas disponible ici."); return; }
   if (!/\.(rfxchain|txt)$/i.test(file.name)){
-    toast("Dépose un fichier .RfxChain exporté depuis Reaper."); return;
+    toast("Ce format ne s'importe pas : une chaîne .RfxChain ou une fiche .json."); return;
   }
   var reader = new FileReader();
   reader.onload = function(){
@@ -4809,7 +4830,7 @@ function montreDepot(on){
   var z = document.getElementById("dropzone");
   if (!z) return;
   z.hidden = !on;
-  if (on) setHtml(z, "Dépose une chaîne .RfxChain pour en faire une fiche");
+  if (on) setHtml(z, "Dépose une chaîne .RfxChain ou une fiche .json");
 }
 
 function exportRfx(p){
@@ -5908,11 +5929,14 @@ function openIO(){
         '<textarea id="io" rows="10" spellcheck="false">' + esc(dump) + '</textarea>' +
         '<div class="acts"><button class="btn" data-copy>Copier</button>' +
         '<button class="btn" data-dl>Télécharger le fichier</button>' +
+        '<button class="btn" data-pick>Importer un fichier</button>' +
+        '<input type="file" id="io-file" data-json-in accept=".json,application/json" hidden>' +
         '<button class="btn" data-import>Restaurer depuis ce bloc</button>' +
         '<button class="btn ghost danger" data-reset>Réinitialiser mes modifications</button></div>' +
         '<p class="hint">Pour restaurer : colle une sauvegarde dans le bloc, puis « Restaurer ». ' +
-        'Une fiche exportée seule se colle ici aussi : elle s\'ajoute à la bibliothèque ' +
-        'au lieu de la remplacer.</p>' +
+        '« Importer un fichier » lit le même JSON depuis le disque, et un fichier déposé ' +
+        'sur la page arrive au même endroit. Une fiche exportée seule s\'ajoute à la ' +
+        'bibliothèque au lieu de la remplacer ; une sauvegarde complète attend « Restaurer ».</p>' +
         trashBody() +
         '<div id="versions"></div>' +
       '</div></div>');
@@ -5992,15 +6016,50 @@ function trashBody(){
 }
 
 function doImport(){
-  var ta = document.getElementById("io");
+  importerJson(document.getElementById("io").value, true);
+}
+
+/** Une sauvegarde porte un état : des fiches à soi, des retouches, des façades. */
+function estSauvegarde(j){
+  var src = j && j.mine ? j.mine : j;
+  return !!(src && typeof src === "object" &&
+            (Array.isArray(src.custom) || src.overrides || src.gear));
+}
+
+/**
+ * Tout le JSON entre ici : le bloc de sauvegarde, le sélecteur de fichier, un
+ * dépôt sur la page. Le contenu décide de ce qui arrive, pas le chemin pris.
+ *
+ * Une fiche seule s'ajoute sur-le-champ : rien n'est écrasé, donc rien à
+ * confirmer. Une sauvegarde complète, elle, remplace toute la bibliothèque —
+ * un fichier lâché sur la page ne peut pas valoir cet ordre-là. Elle s'installe
+ * alors dans le bloc, sous les yeux, et c'est « Restaurer » qui tranche.
+ */
+function importerJson(texte, bloc){
   var j;
-  try { j = JSON.parse(ta.value); } catch (e) { toast("Ce bloc n'est pas un JSON valide."); return; }
+  try { j = JSON.parse(texte); }
+  catch (e){
+    toast(bloc ? "Ce bloc n'est pas un JSON valide." : "Ce fichier n'est pas un JSON valide.");
+    return;
+  }
   if (j && j.presetbook === "preset" && j.preset){ addPreset(j); return; }
+  if (!bloc){
+    if (!estSauvegarde(j)){ toast("Ce fichier ne contient pas de fiche."); return; }
+    chargerSauvegarde(texte); return;
+  }
   var src = j && j.mine ? j.mine : j;
   if (!src || typeof src !== "object"){ toast("Sauvegarde illisible."); return; }
   S = normalize(src);
   closeEditor(); render();
   save().then(function(ok){ if (ok) toast("Sauvegarde restaurée."); });
+}
+
+/** La sauvegarde déposée s'affiche avant de s'appliquer. */
+function chargerSauvegarde(texte){
+  openIO();
+  var ta = document.getElementById("io");
+  if (ta) ta.value = texte;
+  toast("Sauvegarde chargée dans le bloc : relis-la, puis « Restaurer ».");
 }
 function doReset(){
   S = {v:1, custom:[], overrides:{}, gear:{}, hidden:[]};
@@ -6156,8 +6215,10 @@ document.addEventListener("dragend", depotFini);
 document.addEventListener("drop", function(e){
   e.preventDefault();
   depotFini();
-  var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-  if (f) deposerFichier(f);
+  /* Trois fiches lâchées ensemble font trois imports : n'en lire qu'une
+     perdrait les autres sans rien dire. */
+  var lot = (e.dataTransfer && e.dataTransfer.files) || [];
+  for (var i=0;i<lot.length;i++) deposerFichier(lot[i]);
 });
 
 document.getElementById("btn-sets").addEventListener("click", openSets);
@@ -6442,6 +6503,11 @@ document.getElementById("veil").addEventListener("click", function(e){
   if (untrash){ restoreTrash(untrash.getAttribute("data-untrash")); closeEditor(); return; }
   if (t.closest("[data-emptytrash]")){ emptyTrash(); closeEditor(); return; }
   if (t.closest("[data-dl]")){ doDownload(); return; }
+  if (t.closest("[data-pick]")){
+    var pick = document.getElementById("io-file");
+    if (pick) pick.click();                 /* le bouton du navigateur reste caché */
+    return;
+  }
   if (t.closest("[data-rfx-out]") && draft){ exportRfx(); return; }
   if (t.closest("[data-import]")){ doImport(); return; }
   if (t.closest("[data-reset]")){
@@ -6525,6 +6591,12 @@ document.getElementById("veil").addEventListener("change", function(e){
   }
   if (f && f.hasAttribute && f.hasAttribute("data-compare-b")){
     openCompare(compareA, f.value);
+    return;
+  }
+  if (f && f.hasAttribute && f.hasAttribute("data-json-in")){
+    var choisi = f.files && f.files[0];
+    f.value = "";                           /* le même fichier doit pouvoir revenir */
+    if (choisi) deposerFichier(choisi);
     return;
   }
   if (!draft || !f.hasAttribute || !f.hasAttribute("data-rfx-in")) return;
@@ -6743,6 +6815,8 @@ window.__pb = {
   matches: matches, facetGear: facetGear, facetTags: facetTags,
   chainView: chainView, parClef: parClef, trier: trier, render: render, commit: commit,
   deposerFichier: deposerFichier, montreDepot: montreDepot, titreDeFichier: titreDeFichier,
+  deposerJson: deposerJson, importerJson: importerJson, estSauvegarde: estSauvegarde,
+  chargerSauvegarde: chargerSauvegarde, doImport: doImport,
   depotActif: depotActif, depotFini: depotFini,
   openSets: openSets, openSetEditor: openSetEditor, setlists: setlists, setlistDe: setlistDe,
   setlistNouvelle: setlistNouvelle, setlistOuvre: setlistOuvre, setlistFerme: setlistFerme,

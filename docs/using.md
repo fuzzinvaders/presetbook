@@ -422,9 +422,12 @@ The file **carries the front panels the preset needs**, if they are yours: a ped
 with the pedalboard that uses it, otherwise the preset would be unreadable on arrival. Shipped
 panels are not copied, since they already exist on the other side.
 
-To take it back in: **Backup**, paste the file into the block, then **Restore**. A single preset is
-**added** to the library instead of replacing it — the file's contents decide, so there is no
-separate button to confuse. If the preset is already there, the new one gets a fresh id and its name
+To take it back in: **drop the file on the page**, or go through **Backup → Import a file**.
+Several files dropped together make as many presets. Pasting its contents into the block and then
+**Restore** still works. A single preset is **added** to the library instead of replacing it — the
+file's contents decide, so there is no separate button to confuse. A **full backup** dropped the
+same way does not apply itself: it would replace everything, so it shows up in the block and waits
+for **Restore**. If the preset is already there, the new one gets a fresh id and its name
 receives *(imported)*, so you can compare before choosing. And if a panel is missing, the import is
 **refused, naming it**, rather than adding a preset that could not be displayed.
 
