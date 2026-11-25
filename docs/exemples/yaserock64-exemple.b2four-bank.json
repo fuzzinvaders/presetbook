@@ -3,7 +3,7 @@
   "presetbook": "bank",
   "device": "zoom-b2four",
   "catalog": "B2FOUR-FX/Z2I-4875-01",
-  "name": "YASEROCK64 — exemple",
+  "name": "YASEROCK64",
   "config": {
     "di": null
   },
@@ -17,10 +17,14 @@
       "patchName": "REPTILIA",
       "patch": 251,
       "tempo": null,
-      "song": {
-        "title": "Reptilia",
-        "artist": "The Strokes"
-      },
+      "family": "Indie Drive",
+      "song": null,
+      "songs": [
+        {
+          "title": "Reptilia",
+          "artist": "The Strokes"
+        }
+      ],
       "tags": [
         "indie-rock",
         "garage-rock",
@@ -95,97 +99,7 @@
       },
       "variant": "",
       "variantOf": null,
-      "notes": "Médiator rond et mordant, médiums présents pour passer sous deux guitares. La compression rapide égalise les croches, le préampli ajoute un grain léger mélangé au son direct (BLEND 40), l'ampli donne le corps, le passe-haut à 50 Hz garde la sono propre. Réglages de départ, à ajuster à l'oreille en répétition. Le Rumble 40 en retour se règle à plat : le son est fait ici.",
-      "maj": "2026-11-25T12:00:00.000Z"
-    },
-    {
-      "id": "u-reptilia-sat",
-      "kind": "zoom",
-      "gear": "b2four",
-      "catalog": "B2FOUR-FX/Z2I-4875-01",
-      "name": "Reptilia — refrain",
-      "patchName": "REPTILIA SAT",
-      "patch": 252,
-      "tempo": null,
-      "song": {
-        "title": "Reptilia",
-        "artist": "The Strokes"
-      },
-      "tags": [
-        "indie-rock",
-        "garage-rock",
-        "rock-alternatif"
-      ],
-      "bass": {
-        "gear": "bb734a",
-        "mode": "actif",
-        "balance": 50,
-        "eq": {
-          "b": 0.5,
-          "m": 1,
-          "t": 1
-        },
-        "strings": "Rondes nickel",
-        "gauge": "45-105",
-        "jeu": "médiator",
-        "tech": "Dunlop Ultex 0,60 mm, croches régulières, attaque franche près du micro chevalet"
-      },
-      "chain": [
-        {
-          "fx": "DYNAMIC COMPRESSOR",
-          "on": true,
-          "p": {
-            "SENSE": 6,
-            "ATTACK": "FAST",
-            "TONE": 55,
-            "VOL": 50
-          }
-        },
-        {
-          "fx": "BASS DRIVER PREAMP",
-          "on": true,
-          "p": {
-            "BASS": 55,
-            "TREBLE": 55,
-            "PRESENC": 45,
-            "BLEND": 55,
-            "GAIN": 55,
-            "VOL": 50,
-            "MID-FREQ": "1.0 kHz",
-            "MID": 60
-          }
-        },
-        {
-          "fx": "AMPG SVT",
-          "on": true,
-          "p": {
-            "BASS": 2,
-            "MID-FREQ": 500,
-            "MID": 3,
-            "TREBLE": 3,
-            "GAIN": 35,
-            "ULTRA": "OFF",
-            "VOL": 70,
-            "BLEND": 100
-          }
-        },
-        {
-          "fx": "LOW EQ",
-          "on": true,
-          "p": {
-            "TYPE": "HPF",
-            "FREQ": 50,
-            "VOL": 80
-          }
-        }
-      ],
-      "level": {
-        "state": "a-verifier",
-        "note": "Plus de grain donc plus fort à l'oreille : vérifier contre le patch 251."
-      },
-      "variant": "refrain, plus saturé",
-      "variantOf": "u-reptilia",
-      "notes": "Variante pour les refrains : le préampli pousse davantage (GAIN 55, BLEND 55), le reste ne bouge pas.",
+      "notes": "Représentant de la famille Indie Drive : à essayer sur les autres morceaux indie et garage de la setlist, et à leur ajouter s'il leur convient, plutôt que de créer un patch par morceau. Médiator rond et mordant, médiums présents pour passer sous deux guitares. La compression rapide égalise les croches, le préampli ajoute un grain léger mélangé au son direct (BLEND 40), l'ampli donne le corps, le passe-haut à 50 Hz garde la sono propre. Réglages de départ, à ajuster à l'oreille en répétition. Le Rumble 40 en retour se règle à plat : le son est fait ici.",
       "maj": "2026-11-25T12:00:00.000Z"
     }
   ],

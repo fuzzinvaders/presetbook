@@ -4,13 +4,19 @@ Presetbook décrit des patchs du multi-effets basse **Zoom B2 FOUR** : la chaîn
 modèles d'ampli et leurs réglages, la basse et la façon de la jouer, le niveau à vérifier en groupe. Les fiches
 s'organisent en **banques** (une setlist), s'exportent et se réimportent en JSON.
 
+**Un preset par famille sonore, pas par morceau.** Une fiche représente une famille cohérente — Clean Rock, Indie
+Drive, Punk Attack, New Wave… — et liste les morceaux qu'elle sert. Une banque de six à huit familles joue tout un
+set avec peu de patchs et peu de changements au pédalier ; une variante ne s'ajoute que lorsqu'un morceau demande
+vraiment autre chose. Presetbook signale les doublons et les différences artificielles.
+
 > Ce JSON est le format d'échange de Presetbook. **Ce n'est pas un fichier que le B2 FOUR peut charger** : on
 > recopie les réglages sur l'appareil.
 
 - Liste exhaustive des effets et paramètres : [zoom-b2four-effets.md](zoom-b2four-effets.md)
 - Schéma JSON complet : [zoom-b2four.schema.json](zoom-b2four.schema.json)
 - Exemple importable, une fiche : [exemples/reptilia.presetbook.json](exemples/reptilia.presetbook.json)
-- Exemple importable, une banque : [exemples/yaserock64-exemple.b2four-bank.json](exemples/yaserock64-exemple.b2four-bank.json)
+- Exemple importable, une banque (REPTILIA seul, point de départ de YASEROCK64) :
+  [exemples/yaserock64-exemple.b2four-bank.json](exemples/yaserock64-exemple.b2four-bank.json)
 
 ## D'où viennent les données
 
@@ -54,7 +60,8 @@ filtre par marque et par matériel, la comparaison. Les fiches des cinq autres g
 {
   "id": "u-reptilia", "kind": "zoom", "gear": "b2four", "catalog": "B2FOUR-FX/Z2I-4875-01",
   "name": "Reptilia", "patchName": "REPTILIA", "patch": 251, "tempo": null,
-  "song": { "title": "Reptilia", "artist": "The Strokes" },
+  "family": "Indie Drive",
+  "songs": [{ "title": "Reptilia", "artist": "The Strokes" }],
   "tags": ["indie-rock", "garage-rock", "rock-alternatif"],
   "bass": { "gear": "bb734a", "mode": "actif", "balance": 50, "eq": { "b": 0.5, "m": 1, "t": 1 },
             "strings": "Rondes nickel", "gauge": "45-105", "jeu": "médiator", "tech": "Dunlop Ultex 0,60 mm…" },
@@ -70,13 +77,15 @@ filtre par marque et par matériel, la comparaison. Les fiches des cinq autres g
 
 | Champ | Sens |
 | --- | --- |
+| `family` | la famille sonore : Clean Rock, Indie Drive, Punk Attack… |
+| `songs` | les morceaux que le preset sert, `{title, artist}`. Remplace le `song` unique de la 1.14 : une fiche qui le porte encore est convertie à l'ouverture ou à l'import. |
 | `patch` | mémoire 1 à 300 (affichée 001–300). 001–250 sont les patchs d'usine : 251–300 restent libres. |
 | `patchName` | nom sur l'appareil (par défaut, `name`) |
 | `tempo` | tempo du patch, 40 à 250 bpm ; utile aux delays en mode métronome |
 | `bass` | la basse, avec les clés de sa façade dans Presetbook (BB734A : `mode`, `balance`, `eq.b/m/t` en crans), les cordes, le tirant, le jeu (`doigts`, `médiator`) et la technique |
 | `chain` | les blocs **dans l'ordre du signal**, 5 au plus. `fx` est le nom exact de ZOOM, `p` ses réglages par nom de paramètre, `on` l'état du bloc. Les modèles d'ampli y figurent comme les autres effets. |
 | `level` | `a-verifier` ou `equilibre`, et une note : le niveau ne se calcule pas, il se vérifie en groupe |
-| `variant`, `variantOf` | une variante du même morceau (couplet/refrain, avec/sans saturation) et la fiche dont elle part |
+| `variant`, `variantOf` | une variante ponctuelle (couplet/refrain, avec/sans saturation) et la fiche dont elle part ; elle liste les seuls morceaux où elle sert |
 
 Valeurs : un nombre dans la plage du document ; une chaîne pour une liste (`"FAST"`, `"1.0 kHz"`, `"4:1"`) ; une
 fréquence en Hz (`500` pour 500 Hz) ; `"OFF"` là où le document l'imprime ; une valeur de note (texte) pour le temps
@@ -90,8 +99,11 @@ configuration de la **banque**. Une recommandation propre à un morceau peut all
 
 ## Une banque
 
-Une banque est une setlist : ses morceaux dans l'ordre, et leurs fiches Zoom triées par numéro de patch. Sa
-configuration porte le DI MODEL.
+Une banque est une setlist : ses morceaux dans l'ordre, et les fiches Zoom qui en servent au moins un — chacune une
+seule fois, triées par numéro de patch. Sa configuration porte le DI MODEL.
+
+L'écran de la banque dit, morceau par morceau, quel preset le joue (le principal, puis ses variantes), combien de
+**changements de patch** demande le set d'un bout à l'autre, et quels morceaux n'ont encore **aucun preset**.
 
 ```json
 { "v": 1, "presetbook": "bank", "device": "zoom-b2four", "catalog": "B2FOUR-FX/Z2I-4875-01",
@@ -123,6 +135,20 @@ configuration porte le DI MODEL.
 | tempo hors 40–250 bpm |
 | caractère qu'un nom du B2 FOUR ne prend pas ; nom de plus de 14 caractères |
 | DI MODEL inconnu ; basse dont la façade n'existe pas ici |
+| morceau sans titre dans la liste ; famille illisible |
+
+**Signalé dans une banque, pour la garder compacte** — deux fiches comparées bloc par bloc, quand leur chaîne est la
+même (mêmes effets, même ordre, même état) :
+
+| Cas | Message |
+| --- | --- |
+| mêmes réglages | un seul patch suffit |
+| écarts tous petits — moins d'un dixième de la course d'un paramètre, moins d'un quart d'octave pour une fréquence, aucun choix de liste différent | une seule famille suffirait sans doute |
+| une variante identique à sa fiche d'origine | elle ne change rien |
+| une variante qui en diffère à peine | est-elle utile ? |
+| deux fiches principales (pas des variantes) pour un même morceau | un seul preset principal par morceau |
+
+Rien de tout cela n'est refusé : c'est au musicien de trancher.
 
 Rien n'est écrasé : une fiche déjà présente entre en copie, nom suivi de *(importée)*, et une variante suit sa
 fiche d'origine même si celle-ci a changé d'identifiant. Un compte-rendu liste chaque fiche, refusée ou non, et
@@ -148,17 +174,20 @@ perdre aucune valeur.
 
 ## Créer, importer, modifier, exporter
 
-1. **Créer** — *Nouveau preset* → *Zoom B2 FOUR*. Donne le nom, le morceau et l'artiste, les styles. Dans *Patch du
-   B2 FOUR*, le numéro (251 à 300 pour ne rien écraser), le nom sur l'appareil, le tempo si un delay le suit.
+1. **Créer** — *Nouveau preset* → *Zoom B2 FOUR*. Donne le nom et les styles. Dans *Patch du B2 FOUR*, le numéro
+   (251 à 300 pour ne rien écraser), le nom sur l'appareil, le tempo si un delay le suit, et la **famille sonore**.
+   Dans *Morceaux servis*, ajoute chaque morceau que ce preset joue — ou reprends un morceau déjà saisi.
 2. **La basse** — choisis l'instrument : ses boutons apparaissent comme sur sa fiche. Note les cordes, le tirant,
    le jeu et la technique.
 3. **La chaîne** — *+ Ajouter un effet*, par catégorie. Chaque bloc montre ses paramètres avec la plage du
    document ; les flèches changent l'ordre. Le contrôle en tête de la chaîne dit tout de suite si la fiche tient
    dans l'appareil. Un second ampli ou une sixième place ne se proposent pas.
 4. **Le niveau** — laisse *À vérifier aux essais* ; passe à *Équilibré* une fois réglé en groupe, avec une note.
-5. **Une variante** — *Variante* sur la carte : même morceau et mêmes réglages, son propre numéro de patch.
-6. **La banque** — *Setlists* → une setlist → *Banque Zoom B2 FOUR* : le DI MODEL, le tableau des patchs (les
-   doublons y sont signalés), puis *Exporter la banque (.json)*. *Exporter toutes les fiches Zoom* est dans la liste
+5. **Une variante** — *Variante* sur la carte : mêmes réglages, son propre numéro de patch. Garde-lui les seuls
+   morceaux où elle sert, et un vrai changement de son : sinon la banque le signale.
+6. **La banque** — *Setlists* → une setlist → *Banque Zoom B2 FOUR* : le DI MODEL, le nombre de presets et de
+   changements de patch, le preset de chaque morceau, les doublons, le tableau des patchs, puis *Exporter la banque
+   (.json)*. *Exporter toutes les fiches Zoom* est dans la liste
    des setlists.
 7. **Exporter une fiche** — *Exporter* sur sa carte.
 8. **Importer** — dépose un ou plusieurs `.json` sur la page, ou *Sauvegarde* → *Importer un fichier*. Une fiche

@@ -106,14 +106,60 @@ check("REPTILIA tient dans l'appareil : 4 effets dont un ampli",
   exFiche.preset.chain.length === 4 && exFiche.preset.chain.filter((x) => Z.FX[x.fx].cat === "BASS AMP").length === 1);
 check("REPTILIA prend un patch libre, hors des patchs d'usine",
   exFiche.preset.patch > Z.LIMITS.factoryMax && exFiche.preset.patch <= Z.LIMITS.patchMax);
+check("REPTILIA est de la famille Indie Drive, et sert Reptilia",
+  exFiche.preset.family === "Indie Drive" && exFiche.preset.song === null &&
+  JSON.stringify(exFiche.preset.songs) === JSON.stringify([{ title: "Reptilia", artist: "The Strokes" }]));
 const rBk = Z.validateBank(exBanque);
 check("la banque d'exemple est conforme", rBk.errors.length === 0 && rBk.warnings.length === 0 &&
   rBk.presets.every((x) => !x.errors.length && !x.warnings.length), JSON.stringify(rBk.presets.map((x) => x.warnings)));
+check("une famille, pas un patch par morceau : pas de variante inventée",
+  exBanque.presets.length === 1 && !exBanque.presets[0].variantOf);
 check("la banque refuse un format plus récent", Z.validateBank(Object.assign(copie(exBanque), { v: 2 })).errors.length === 1);
 check("et un autre appareil", Z.validateBank(Object.assign(copie(exBanque), { device: "zoom-b1four" })).errors.length === 1);
-const doublon = copie(exBanque); doublon.presets[1].patch = doublon.presets[0].patch;
+
+/* Une banque de test : deux familles bien distinctes et une variante qui
+   change vraiment quelque chose. Les morceaux sont inventés pour le test. */
+const S1 = { title: "Morceau A", artist: "Groupe X" }, S2 = { title: "Morceau B", artist: "Groupe Y" };
+const S3 = { title: "Morceau C", artist: "Groupe X" }, S4 = { title: "Morceau D", artist: "Groupe Z" };
+const cle = (m) => m.title + " — " + m.artist;
+const indie = Object.assign(copie(exFiche.preset), { songs: [copie(exFiche.preset.songs[0]), S1, S3] });
+const punk = Object.assign(copie(exFiche.preset), {
+  id: "u-punk", name: "Punk Attack", patchName: "PUNK ATTACK", patch: 252, family: "Punk Attack", songs: [S2],
+  chain: [{ fx: "BASS OVER DRIVE", on: true, p: { GAIN: 70, TONE: 60, BALANCE: 60, VOL: 50 } },
+          { fx: "FLIPTOP", on: true, p: { BRIGHT: "ON", GAIN: 60, VOL: 70, BLEND: 100 } }] });
+const indieRefrain = Object.assign(copie(indie), {
+  id: "u-indie-refrain", name: "Indie Drive — refrain", patchName: "INDIE REF", patch: 253,
+  variant: "refrain", variantOf: "u-reptilia", songs: [S3] });
+indieRefrain.chain[1].p.GAIN = 55;
+const banqueTest = Z.bankEnvelope("Test", { di: "TUBE 1" }, [indie, punk, indieRefrain], {});
+const rT = Z.validateBank(banqueTest);
+check("deux familles distinctes et une vraie variante : rien à redire",
+  rT.presets.every((x) => !x.errors.length && !x.warnings.length), JSON.stringify(rT.presets.map((x) => x.warnings)));
+const doublon = copie(banqueTest); doublon.presets[1].patch = doublon.presets[0].patch;
 check("deux fiches sur le même patch sont signalées",
   Z.validateBank(doublon).presets[1].warnings.some((w) => /déjà pris/.test(w.m)));
+
+/* --- les doublons et les différences artificielles ------------------------ */
+const avis = (presets) => Z.validateBank(Z.bankEnvelope("T", {}, presets, {})).presets
+  .map((x) => x.warnings.map((w) => w.m).join(" | ")).join(" || ");
+const jumeau = Object.assign(copie(indie), { id: "u-jumeau", name: "Jumeau", patch: 260, songs: [S4] });
+check("deux presets aux mêmes réglages : un seul patch suffit", /exactement les réglages/.test(avis([indie, jumeau])));
+const presque = copie(jumeau); presque.chain[2].p.VOL = 75; presque.chain[0].p.TONE = 60;
+check("deux presets qui ne diffèrent que de peu : une seule famille suffirait",
+  /petits réglages/.test(avis([indie, presque])));
+const autre = copie(jumeau); autre.chain[1].p.GAIN = 70;
+check("une vraie différence de son n'est pas signalée", avis([indie, autre]) === " || ", avis([indie, autre]));
+const autreChaine = copie(jumeau); autreChaine.chain.pop();
+check("une autre chaîne n'est jamais un doublon", avis([indie, autreChaine]) === " || ");
+const varianteVide = Object.assign(copie(indie), { id: "u-v", name: "Variante vide", patch: 261, variantOf: "u-reptilia", songs: [S1] });
+check("une variante qui ne change rien est signalée", /ne change rien/.test(avis([indie, varianteVide])));
+const varianteMince = copie(varianteVide); varianteMince.chain[2].p.VOL = 72;
+check("une variante qui change à peine est questionnée", /est-elle utile/.test(avis([indie, varianteMince])));
+const concurrent = Object.assign(copie(punk), { id: "u-concurrent", name: "Concurrent", patch: 262, songs: [S1] });
+check("deux presets principaux pour un même morceau sont signalés", /déjà couvert/.test(avis([indie, concurrent])));
+check("une fréquence à un quart d'octave près reste « proche »",
+  Z.procheDe({ chain: [{ fx: "AMPG SVT", p: { "MID-FREQ": 500 } }] }, { chain: [{ fx: "AMPG SVT", p: { "MID-FREQ": 560 } }] }).proche &&
+  !Z.procheDe({ chain: [{ fx: "AMPG SVT", p: { "MID-FREQ": 500 } }] }, { chain: [{ fx: "AMPG SVT", p: { "MID-FREQ": 800 } }] }).proche);
 
 /* --- la liste des effets et le schéma se déduisent du catalogue ----------- */
 const gen = require("../tools/zoom-docs.js").tout();
@@ -149,11 +195,18 @@ check("les fréquences s'écrivent comme sur le document", carte.indexOf("500 Hz
 check("le GAIN du LOW EQ en HPF est dit sans effet", /sans effet ici/.test(carte));
 check("le niveau reste à vérifier, il n'est pas calculé", carte.indexOf("Niveau à vérifier aux essais") >= 0);
 check("la basse se lit sur sa propre façade", carte.indexOf("Yamaha BB734A") >= 0 && carte.indexOf("45-105") >= 0);
-check("l'aperçu replié dit patch, effets et ampli", pb.apercuFiche(rep) === "251 · 4 effets · AMPG SVT", pb.apercuFiche(rep));
+check("l'aperçu replié dit patch, famille, effets et ampli",
+  pb.apercuFiche(rep) === "251 · Indie Drive · 4 effets · AMPG SVT", pb.apercuFiche(rep));
+check("la carte nomme la famille", /Zoom B2 FOUR · <b>Indie Drive<\/b>/.test(carte));
+check("et les morceaux servis", carte.indexOf("Pour 1 morceau") >= 0 && carte.indexOf("Reptilia") >= 0);
 
 pb.openEditor(rep, false);
 const ed = w.__nodes.get("veil").innerHTML;
 check("l'éditeur a un bloc par effet", (ed.match(/data-zi="/g) || []).length === 4);
+check("l'éditeur demande la famille, avec celles déjà nommées", /data-f="family"/.test(ed) && /<datalist id="zfamilles">/.test(ed));
+check("l'éditeur liste les morceaux servis, un par ligne", (ed.match(/data-zs="/g) || []).length === 1 &&
+  /data-zsact="add"/.test(ed));
+check("le champ « morceau » unique a disparu pour une famille", !/data-f="song.title"/.test(ed));
 check("chaque paramètre a son champ", (ed.match(/data-zp="/g) || []).length ===
   rep.chain.reduce((a, s) => a + Z.FX[s.fx].params.length, 0));
 check("l'éditeur dit la fiche conforme", /Conforme au B2 FOUR : 4 effets sur 5/.test(ed));
@@ -194,45 +247,63 @@ check("une fiche exportée revient à l'identique",
 /* --- une banque ---------------------------------------------------------- */
 const w3 = run(page, { search: "", ZB2F: Z });
 const p3 = w3.__pb;
-p3.importerBanque(copie(exBanque));
+p3.importerBanque(copie(banqueTest));
 const sets3 = p3.getState().sets;
-check("une banque importe toutes ses fiches", !!p3.findPreset("u-reptilia") && !!p3.findPreset("u-reptilia-sat"));
-check("sa configuration devient une setlist", sets3.length === 1 && sets3[0].name === exBanque.name &&
-  sets3[0].songs.join() === "Reptilia — The Strokes", JSON.stringify(sets3));
+check("une banque importe toutes ses fiches",
+  ["u-reptilia", "u-punk", "u-indie-refrain"].every((id) => !!p3.findPreset(id)));
+check("sa configuration devient une setlist, avec chaque morceau une fois",
+  sets3.length === 1 && sets3[0].name === "Test" && sets3[0].di === "TUBE 1" &&
+  sets3[0].songs.join("|") === ["Reptilia — The Strokes", cle(S1), cle(S3), cle(S2)].join("|"), JSON.stringify(sets3));
+sets3[0].songs.push(cle(S4));
+sets3[0].songs = [cle(S1), cle(S2), cle(S3), cle(S4)];
+const cv = p3.couverture(sets3[0]);
+check("chaque morceau a son preset principal, pas une variante",
+  cv.lignes[2].principal.id === "u-reptilia" && cv.lignes[2].variantes[0].id === "u-indie-refrain");
+check("un morceau sans preset se voit", cv.sans === 1 && cv.lignes[3].principal === null);
+check("le set compte ses changements de patch", cv.changements === 2 && cv.presets === 3, JSON.stringify(cv));
+const section = p3.zoomBankSection(sets3[0]);
+check("la banque le dit en une ligne", /3 presets pour 4 morceaux · 2 changements de patch sur le set/.test(section) &&
+  /1 morceau\(x\) sans preset/.test(section));
+check("une famille paraît sous chacun de ses morceaux quand on range par morceau",
+  (() => { p3.ui().group = "song"; p3.render(); const h = w3.__nodes.get("list").innerHTML;
+           return (h.match(/data-id="u-reptilia"/g) || []).length === 3; })());
+check("ouvrir la setlist garde une famille dès qu'un de ses morceaux y est",
+  (() => { p3.ui().group = "kind"; p3.setlistOuvre(sets3[0].id);
+           return p3.matches(p3.findPreset("u-punk")) && p3.matches(p3.findPreset("u-reptilia")); })());
 sets3[0].di = "TUBE 2";
 const env3 = p3.enveloppeBanque(sets3[0]);
 check("la banque exportée garde le DI MODEL au niveau de la banque",
   env3.config.di === "TUBE 2" && env3.presets.every((x) => x.di === undefined));
-check("et ses fiches dans l'ordre des patchs", env3.presets.map((x) => x.patch).join() === "251,252");
+check("chaque famille une seule fois, dans l'ordre des patchs", env3.presets.map((x) => x.patch).join() === "251,252,253");
 check("l'enveloppe se décrit : format, appareil, catalogue",
   env3.v === 1 && env3.presetbook === "bank" && env3.device === "zoom-b2four" && env3.catalog === Z.CATALOG);
 const w4 = run(page, { search: "", ZB2F: Z });
 w4.__pb.importerBanque(copie(env3));
-const relues = ["u-reptilia", "u-reptilia-sat"].map((id) => JSON.stringify(w4.__pb.findPreset(id)));
 check("réimportée ailleurs, la banque revient sans perte",
-  relues[0] === JSON.stringify(p3.findPreset("u-reptilia")) && relues[1] === JSON.stringify(p3.findPreset("u-reptilia-sat")));
+  ["u-reptilia", "u-punk", "u-indie-refrain"].every((id) =>
+    JSON.stringify(w4.__pb.findPreset(id)) === JSON.stringify(p3.findPreset(id))));
 check("avec son DI MODEL", w4.__pb.getState().sets[0].di === "TUBE 2");
 
 /* réimportée dans la même bibliothèque : rien n'est écrasé, les liens suivent */
 p3.importerBanque(copie(env3));
 const copies = p3.library().filter((x) => x.kind === "zoom");
-const neuveSat = copies.find((x) => x.id !== "u-reptilia-sat" && x.name.indexOf("refrain") >= 0);
-const neuveRep = copies.find((x) => x.id !== "u-reptilia" && x.variant === "");
-check("réimportée sur elle-même, elle s'ajoute sans rien écraser", copies.length === 4);
+const neuveSat = copies.find((x) => x.id !== "u-indie-refrain" && x.name.indexOf("refrain") >= 0);
+const neuveRep = copies.find((x) => x.id !== "u-reptilia" && x.family === "Indie Drive" && !x.variantOf);
+check("réimportée sur elle-même, elle s'ajoute sans rien écraser", copies.length === 6);
 check("et la variante suit sa fiche d'origine renommée",
   !!neuveSat && !!neuveRep && neuveSat.variantOf === neuveRep.id, neuveSat && neuveSat.variantOf);
 
 /* une banque refusée n'ajoute rien, et dit pourquoi */
 const w5 = run(page, { search: "", ZB2F: Z });
 const n5 = w5.__pb.library().length;
-w5.__pb.importerBanque(Object.assign(copie(exBanque), { v: 9 }));
+w5.__pb.importerBanque(Object.assign(copie(banqueTest), { v: 9 }));
 check("une banque d'un format plus récent n'ajoute rien", w5.__pb.library().length === n5);
 check("et un compte-rendu dit pourquoi", /plus récent/.test(w5.__nodes.get("veil").innerHTML));
-const mauvaise = copie(exBanque);
+const mauvaise = copie(banqueTest);
 mauvaise.presets[0].chain.push({ fx: "FLIPTOP", on: true, p: {} });
 w5.__pb.importerBanque(mauvaise);
 check("une fiche invalide est écartée, les autres entrent",
-  w5.__pb.library().length === n5 + 1 && !!w5.__pb.findPreset("u-reptilia-sat"));
+  w5.__pb.library().length === n5 + 2 && !!w5.__pb.findPreset("u-punk") && !w5.__pb.findPreset("u-reptilia"));
 
 /* le même JSON passe aussi par le bloc de sauvegarde et par un dépôt */
 const w6 = run(page, { search: "", ZB2F: Z });
@@ -240,7 +311,15 @@ w6.FileReader = function () {
   this.readAsText = function (file) { this.result = file.__texte; if (this.onload) this.onload(); };
 };
 w6.__pb.deposerFichier({ name: "yaserock64.b2four-bank.json", __texte: JSON.stringify(exBanque) });
-check("une banque déposée sur la page s'importe", !!w6.__pb.findPreset("u-reptilia-sat"));
+check("une banque déposée sur la page s'importe", !!w6.__pb.findPreset("u-reptilia"));
+
+/* une fiche écrite en 1.14 portait un seul morceau : il passe dans la liste */
+const ancienne = copie(exFiche.preset);
+ancienne.id = "u-114"; ancienne.song = { title: "Reptilia", artist: "The Strokes" }; delete ancienne.songs; delete ancienne.family;
+w6.__pb.addPreset({ v: 1, presetbook: "preset", preset: ancienne, gear: {} });
+const convertie = w6.__pb.findPreset("u-114");
+check("une fiche 1.14 garde son morceau, rangé dans la liste",
+  !!convertie && convertie.song === null && convertie.songs.length === 1 && convertie.songs[0].title === "Reptilia");
 
 /* les filtres : la marque de la basse ramène aussi le patch */
 check("la fiche Zoom compte la marque de sa basse et celle de l'appareil",
@@ -304,7 +383,7 @@ Object.keys(ecrans).forEach((nom) => {
     const relu = await (await fetch(BASE + "/api/presets", { headers: { Cookie: cookie } })).json();
     const zr = (relu.custom || []).filter((x) => x.kind === "zoom");
     check("le serveur garde les fiches Zoom telles quelles",
-      zr.length === 4 && JSON.stringify(zr[0]) === JSON.stringify(etat.custom.filter((x) => x.kind === "zoom")[0]));
+      zr.length === 6 && JSON.stringify(zr[0]) === JSON.stringify(etat.custom.filter((x) => x.kind === "zoom")[0]));
     check("et le DI MODEL de la banque", (relu.sets || []).some((x) => x.di === "TUBE 2"), JSON.stringify(relu.sets));
   } catch (e) {
     failed++; console.log("  ÉCHEC serveur — " + e.message);

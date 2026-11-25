@@ -155,7 +155,11 @@ function schema() {
           patch: { anyOf: [{ type: "integer", minimum: Z.LIMITS.patchMin, maximum: Z.LIMITS.patchMax }, { type: "null" }],
             description: "Numéro de mémoire, 1 à 300 (affiché 001 à 300). Les patchs d'usine occupent 001 à " + Z.LIMITS.factoryMax + "." },
           tempo: { anyOf: [{ type: "number", minimum: Z.LIMITS.tempoMin, maximum: Z.LIMITS.tempoMax }, { type: "null" }] },
-          song: { type: "object", properties: { title: { type: "string" }, artist: { type: "string" } } },
+          family: { type: "string", description: "Famille sonore : Clean Rock, Indie Drive, Punk Attack… Un preset par famille, pas par morceau." },
+          songs: { type: "array", description: "Les morceaux que ce preset sert.",
+            items: { type: "object", required: ["title"],
+              properties: { title: { type: "string", minLength: 1 }, artist: { type: "string" } } } },
+          song: { type: "null", description: "Remplacé par « songs » ; une fiche 1.14 qui le porte est convertie à l'import." },
           tags: { type: "array", items: { type: "string" }, description: "Styles." },
           bass: { anyOf: [{ $ref: "#/$defs/basse" }, { type: "null" }] },
           chain: {

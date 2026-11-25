@@ -434,18 +434,22 @@ que le son exporté change.
 
 ## Le Zoom B2 FOUR
 
-Une fiche **Zoom** décrit un patch du multi-effets basse : son numéro (001 à 300), les effets dans l'ordre du
-signal — cinq au plus, un seul ampli, une seule pédale —, chacun avec ses paramètres sous leur nom exact, la basse
+Une fiche **Zoom** décrit un patch du multi-effets basse, pensé comme une **famille sonore** (Clean Rock, Indie
+Drive, Punk Attack…) qui sert plusieurs morceaux, et non comme un patch par morceau : quelques familles jouent tout
+un set avec peu de changements au pédalier. Elle porte son numéro (001 à 300), la liste des morceaux servis, les
+effets dans l'ordre du signal — cinq au plus, un seul ampli, une seule pédale —, chacun avec ses paramètres sous leur nom exact, la basse
 avec ses boutons, ses cordes et le jeu, et un **niveau à vérifier** en groupe : aucun réglage ne donne le volume
 final, il se constate aux essais et se note.
 
 Les 104 effets et leurs plages viennent des documents de ZOOM ; rien n'y est inventé. Le baffle est compris dans
 chaque modèle d'ampli (le B2 FOUR n'en propose pas à part), et le **DI MODEL** est un réglage de l'appareil, pas
 d'un patch : il se note sur la **banque**, c'est-à-dire la setlist (*Setlists* → une setlist → *Banque Zoom B2
-FOUR*), d'où elle s'exporte en un fichier `.json`.
+FOUR*), d'où elle s'exporte en un fichier `.json`. Cet écran dit aussi quel preset joue chaque morceau, combien
+de changements de patch demande le set, quels morceaux n'ont pas encore de preset, et signale les doublons : deux
+presets aux réglages presque identiques, une variante qui ne change rien.
 
-*Variante* sur la carte crée une variante du même morceau — couplet et refrain, avec ou sans saturation — avec son
-propre numéro de patch. Une fiche ou une banque se réimporte sans perte, par dépôt sur la page ou par *Sauvegarde* →
+*Variante* sur la carte crée une variante ponctuelle — couplet et refrain, avec ou sans saturation — avec son
+propre numéro de patch, pour les seuls morceaux qui la demandent. Une fiche ou une banque se réimporte sans perte, par dépôt sur la page ou par *Sauvegarde* →
 *Importer un fichier* ; ce qui ne tient pas dans l'appareil est refusé, le reste est signalé dans un compte-rendu.
 
 Ce JSON est le format de Presetbook, pas un fichier que le B2 FOUR sait charger : les réglages se recopient sur

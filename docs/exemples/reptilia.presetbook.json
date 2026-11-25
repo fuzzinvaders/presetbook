@@ -10,10 +10,14 @@
     "patchName": "REPTILIA",
     "patch": 251,
     "tempo": null,
-    "song": {
-      "title": "Reptilia",
-      "artist": "The Strokes"
-    },
+    "family": "Indie Drive",
+    "song": null,
+    "songs": [
+      {
+        "title": "Reptilia",
+        "artist": "The Strokes"
+      }
+    ],
     "tags": [
       "indie-rock",
       "garage-rock",
@@ -88,7 +92,7 @@
     },
     "variant": "",
     "variantOf": null,
-    "notes": "Médiator rond et mordant, médiums présents pour passer sous deux guitares. La compression rapide égalise les croches, le préampli ajoute un grain léger mélangé au son direct (BLEND 40), l'ampli donne le corps, le passe-haut à 50 Hz garde la sono propre. Réglages de départ, à ajuster à l'oreille en répétition. Le Rumble 40 en retour se règle à plat : le son est fait ici.",
+    "notes": "Représentant de la famille Indie Drive : à essayer sur les autres morceaux indie et garage de la setlist, et à leur ajouter s'il leur convient, plutôt que de créer un patch par morceau. Médiator rond et mordant, médiums présents pour passer sous deux guitares. La compression rapide égalise les croches, le préampli ajoute un grain léger mélangé au son direct (BLEND 40), l'ampli donne le corps, le passe-haut à 50 Hz garde la sono propre. Réglages de départ, à ajuster à l'oreille en répétition. Le Rumble 40 en retour se règle à plat : le son est fait ici.",
     "maj": "2026-11-25T12:00:00.000Z"
   },
   "gear": {}

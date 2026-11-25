@@ -416,6 +416,18 @@
       warnings.push(msg("Le nom « {0} » dépasse 14 caractères, la longueur des noms d'usine.", [nom]));
     }
     if (p.bass !== undefined && p.bass !== null && typeof p.bass !== "object") errors.push(msg("Bloc basse illisible."));
+    /* Un preset est une famille sonore qui sert plusieurs morceaux. */
+    if (p.songs !== undefined && p.songs !== null) {
+      if (!Array.isArray(p.songs)) errors.push(msg("La liste des morceaux est illisible."));
+      else p.songs.forEach(function (m, i) {
+        if (!m || typeof m !== "object" || typeof m.title !== "string" || !m.title.trim()) {
+          warnings.push(msg("Morceau {0} sans titre.", [i + 1]));
+        }
+      });
+    }
+    if (p.family !== undefined && p.family !== null && typeof p.family !== "string") {
+      warnings.push(msg("Famille illisible : {0}.", [String(p.family)]));
+    }
     if (p.level && typeof p.level === "object" && p.level.state &&
         ["a-verifier", "equilibre"].indexOf(p.level.state) < 0) {
       warnings.push(msg("État de niveau inconnu : {0}.", [String(p.level.state)]));
@@ -454,7 +466,82 @@
       }
       fiches.push({ preset: p, errors: r.errors, warnings: r.warnings });
     });
+    redondances(fiches);
     return { errors: errors, warnings: warnings, presets: fiches };
+  }
+
+  /** Les morceaux d'une fiche : « songs » d'abord, « song » pour les fiches d'avant. */
+  function morceaux(p) {
+    if (p && Array.isArray(p.songs)) return p.songs.filter(function (m) { return m && m.title; });
+    return p && p.song && p.song.title ? [p.song] : [];
+  }
+  function cle(m) { return m.title + (m.artist ? " — " + m.artist : ""); }
+
+  /**
+   * Ce qui sépare deux fiches, bloc par bloc. null quand la chaîne diffère
+   * (autres effets, autre ordre, autre état) : ce ne sont alors pas deux
+   * réglages d'un même son. Une différence est « petite » quand elle reste
+   * sous le dixième de la course du paramètre — ou sous un quart d'octave
+   * pour une fréquence — et qu'aucun choix de liste ne change.
+   */
+  function ecarts(a, b) {
+    var ca = (a && a.chain) || [], cb = (b && b.chain) || [], out = [], i;
+    if (ca.length !== cb.length) return null;
+    for (i = 0; i < ca.length; i++) {
+      if (!ca[i] || !cb[i] || ca[i].fx !== cb[i].fx || (ca[i].on !== false) !== (cb[i].on !== false)) return null;
+      var pa = ca[i].p || {}, pb = cb[i].p || {}, vus = {};
+      Object.keys(pa).concat(Object.keys(pb)).forEach(function (k) {
+        if (vus[k]) return;
+        vus[k] = 1;
+        var va = pa[k], vb = pb[k];
+        if (va === vb || (va == null && vb == null)) return;
+        var def = paramDef(ca[i].fx, k), petit = false;
+        if (def && !def.opts && typeof va === "number" && typeof vb === "number") {
+          if (def.u === "Hz") petit = Math.max(va, vb) / Math.max(1, Math.min(va, vb)) <= 1.19;
+          else petit = Math.abs(va - vb) <= 0.1 * (def.max - def.min);
+        }
+        out.push({ bloc: i + 1, fx: ca[i].fx, k: k, a: va, b: vb, petit: petit });
+      });
+    }
+    return out;
+  }
+  function procheDe(a, b) {
+    var e = ecarts(a, b);
+    if (!e) return { proche: false, identique: false, ecarts: null };
+    return { proche: e.every(function (x) { return x.petit; }), identique: e.length === 0, ecarts: e };
+  }
+
+  /**
+   * Une banque compacte vit de familles bien distinctes. Deux fiches aux
+   * mêmes réglages, ou presque, sont un patch de trop ; deux fiches
+   * principales pour un même morceau, une hésitation à trancher. Signalé,
+   * jamais refusé : c'est au musicien de décider.
+   */
+  function redondances(fiches) {
+    var ok = fiches.filter(function (x) { return !x.errors.length && x.preset; });
+    var i, j;
+    for (i = 0; i < ok.length; i++) for (j = i + 1; j < ok.length; j++) {
+      var a = ok[i].preset, b = ok[j].preset, r = procheDe(a, b);
+      if (!r.proche) continue;
+      var lien = b.variantOf === a.id || a.variantOf === b.id;
+      if (r.identique) {
+        ok[j].warnings.push(lien ? msg("La variante « {0} » ne change rien à « {1} ».", [b.name, a.name])
+                                 : msg("« {0} » a exactement les réglages de « {1} » : un seul patch suffit.", [b.name, a.name]));
+      } else {
+        ok[j].warnings.push(lien ? msg("La variante « {0} » diffère à peine de « {1} » : est-elle utile ?", [b.name, a.name])
+                                 : msg("« {0} » et « {1} » ne diffèrent que de petits réglages : une seule famille suffirait sans doute.", [b.name, a.name]));
+      }
+    }
+    var principal = {};
+    ok.forEach(function (x) {
+      if (x.preset.variantOf) return;
+      morceaux(x.preset).forEach(function (m) {
+        var k = cle(m);
+        if (principal[k] && principal[k] !== x.preset.name) {
+          x.warnings.push(msg("« {0} » est déjà couvert par « {1} » : un seul preset principal par morceau.", [k, principal[k]]));
+        } else principal[k] = x.preset.name;
+      });
+    });
   }
 
   /** L'enveloppe d'une banque, prête à écrire. */
@@ -470,7 +557,7 @@
   function blankPreset(id) {
     return {
       id: id, kind: "zoom", gear: "b2four", catalog: CATALOG, name: "", tags: [], patch: null, tempo: null,
-      song: { title: "", artist: "" }, bass: null, chain: [],
+      song: null, songs: [], family: "", bass: null, chain: [],
       level: { state: "a-verifier", note: "" }, variant: "", variantOf: null, notes: ""
     };
   }
@@ -480,7 +567,8 @@
     CATEGORIES: CATEGORIES, FX: FX, ORDER: ORDRE,
     catDef: catDef, paramDef: paramDef, fmtValue: fmtValue, fmtHz: fmtHz, isInactive: isInactive,
     checkValue: checkValue, validatePreset: validatePreset, validateBank: validateBank,
-    bankEnvelope: bankEnvelope, blankPreset: blankPreset, nomPatch: nomPatch
+    bankEnvelope: bankEnvelope, blankPreset: blankPreset, nomPatch: nomPatch,
+    morceaux: morceaux, cleMorceau: cle, procheDe: procheDe, ecarts: ecarts
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = api;

@@ -344,6 +344,13 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
 .zmsgs .bad{color:var(--danger)} .zmsgs .warn{color:var(--warn)}
 .bands td.bad{color:var(--danger); font-weight:600}
 .rap{border-bottom:1px solid var(--line); padding:8px 0}
+.zsongs{display:flex; flex-direction:column; gap:3px; font-size:12.5px}
+.zsongs .k{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3)}
+.zsongs ul{margin:0; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:2px 14px}
+.zsongs li span{color:var(--ink-3)}
+.zsong{align-items:end}
+.zstat{margin:6px 0; font-size:12.5px; font-weight:600}
+.zstat .bad,.bands td.bad{color:var(--danger)}
 .rap .rn{margin:0 0 4px; display:flex; flex-wrap:wrap; gap:8px; align-items:baseline}
 .tags{display:flex; flex-wrap:wrap; gap:5px}
 .tag{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.05em; color:var(--ink-2); border:1px solid var(--line); padding:2px 7px; border-radius:2px}
@@ -384,6 +391,9 @@ table.bands{border-collapse:collapse; font-family:"IBM Plex Mono",monospace; fon
 table.bands th{text-align:left; font-size:9px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
   font-weight:600; padding:0 8px 3px 0; border-bottom:1px solid var(--line)}
 table.bands td{padding:2px 8px 2px 0; white-space:nowrap}
+/* Des noms de morceaux et de presets, pas des chiffres : ils passent à la ligne
+   plutôt que de faire défiler le tableau sur un téléphone. */
+table.bands.zbank td{white-space:normal; overflow-wrap:break-word; vertical-align:top}
 table.bands tr.bx td{opacity:.5; text-decoration:line-through}
 .slot .sn{font-size:12px; color:var(--ink-2); font-style:italic; margin-top:5px}
 .card .maj{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.04em; color:var(--ink-3)}
@@ -1547,6 +1557,36 @@ var EN = {
   "hors plage ({0} à {1})": "out of range ({0} to {1})",
   "trop de décimales": "too many decimals",
   "Fiche refusée : {0}": "Preset refused: {0}",
+  "Pour {0} morceaux": "For {0} songs",
+  "Pour {0} morceau": "For {0} song",
+  "Aucun morceau associé : indique ceux que ce preset sert.": "No song attached: list the ones this preset serves.",
+  "Famille sonore": "Sound family",
+  "Clean Rock, Indie Drive, Punk Attack…": "Clean Rock, Indie Drive, Punk Attack…",
+  "Un preset par famille de son, pas par morceau : la banque reste courte et le pédalier change peu. Une variante ne se justifie que si un morceau demande vraiment autre chose.":
+    "One preset per sound family, not per song: the bank stays short and the pedal changes little. A variant is only worth it when a song really asks for something else.",
+  "Morceaux servis": "Songs served",
+  "Les morceaux de la setlist pour lesquels ce preset convient.": "The setlist songs this preset suits.",
+  "Titre": "Title",
+  "+ Ajouter un morceau": "+ Add a song",
+  "Morceau déjà saisi": "Song already entered",
+  "Morceau déjà saisi…": "Song already entered…",
+  "{0} presets pour {1} morceaux · {2} changements de patch sur le set": "{0} presets for {1} songs · {2} patch changes over the set",
+  "{0} morceau(x) sans preset": "{0} song(s) without a preset",
+  "aucun preset": "no preset",
+  "Preset": "Preset",
+  "Variantes": "Variants",
+  "Famille": "Family",
+  "Morceaux": "Songs",
+  "La liste des morceaux est illisible.": "The song list is unreadable.",
+  "Morceau {0} sans titre.": "Song {0} has no title.",
+  "Famille illisible : {0}.": "Unreadable family: {0}.",
+  "La variante « {0} » ne change rien à « {1} ».": "The variant “{0}” changes nothing from “{1}”.",
+  "« {0} » a exactement les réglages de « {1} » : un seul patch suffit.": "“{0}” has exactly the settings of “{1}”: one patch is enough.",
+  "La variante « {0} » diffère à peine de « {1} » : est-elle utile ?": "The variant “{0}” barely differs from “{1}”: is it useful?",
+  "« {0} » et « {1} » ne diffèrent que de petits réglages : une seule famille suffirait sans doute.":
+    "“{0}” and “{1}” only differ by small settings: one family would probably do.",
+  "« {0} » est déjà couvert par « {1} » : un seul preset principal par morceau.":
+    "“{0}” is already covered by “{1}”: one main preset per song.",
   "Importer un fichier": "Import a file",
   "Sauvegarde chargée dans le bloc : relis-la, puis « Restaurer ».":
     "Backup loaded into the block: read it over, then “Restore”.",
@@ -3930,6 +3970,12 @@ function boot(){
  * de « threshold » : passer deux fois ne double pas deux fois.
  */
 function migreFiche(p){
+  /* 1.14 rangeait un seul morceau dans « song » ; une fiche Zoom en sert
+     désormais plusieurs. Le morceau passe dans la liste, rien ne se perd. */
+  if (p && p.kind === "zoom" && !Array.isArray(p.songs)){
+    p.songs = p.song && p.song.title ? [{title:p.song.title, artist:p.song.artist || ""}] : [];
+    p.song = null;
+  }
   if (!p || !Array.isArray(p.chain)) return p;
   p.chain.forEach(function(s){
     if (!s || s.plugin !== "MCompressor" || !s.p) return;
@@ -4454,7 +4500,7 @@ function passeGear(p){
 function passeSet(p){
   var set = setlistCourante();
   if (!set) return true;
-  return set.songs.indexOf(cleMorceau(p)) >= 0;
+  return clesMorceaux(p).some(function(k){ return set.songs.indexOf(k) >= 0; });
 }
 function passeTags(p){
   if (!ui.tags.length) return true;
@@ -4488,7 +4534,7 @@ function passeQ(p){
              (p.tags||[]).map(function(x){ return EN[x] || ""; }).join(" "),
              (p.kind === "reaper" || p.kind === "board" ? "" : gearName(gearOf(p))),
              (p.slots||[]).map(function(x){ var g = allGear()[x.gear]; return g ? g.model : ""; }).join(" "),
-             p.song ? (p.song.title + " " + p.song.artist) : "",
+             morceauxDe(p).map(function(m){ return m.title + " " + (m.artist || ""); }).join(" "), p.family || "",
              (p.chain||[]).map(function(s){
                return (s.plugin || s.fx || "") + " " + (s.role || "") + " " + (s.settings || "");
              }).join(" "),
@@ -4707,19 +4753,14 @@ function render(){
 
   var groups = [];
   if (ui.group === "song"){
-    var by = {};
-    shown.forEach(function(p){
-      var key = cleMorceau(p) || "Sans morceau";
-      (by[key] = by[key] || []).push(p);
-    });
-    Object.keys(by).sort(function(a,b){
-      if (a === "Sans morceau") return 1;
-      if (b === "Sans morceau") return -1;
-      return a.localeCompare(b, "fr");
-    }).forEach(function(k){ groups.push([k, by[k]]); });
+    /* Une famille sonore paraît sous chacun des morceaux qu'elle sert : c'est
+       morceau par morceau qu'on prépare un concert. */
+    groups = parClef(shown, clesMorceaux, "Sans morceau");
   } else if (ui.group === "artist"){
     groups = parClef(shown, function(p){
-      return (p.song && p.song.artist) ? [p.song.artist] : [];
+      var vus = [];
+      morceauxDe(p).forEach(function(m){ if (m.artist && vus.indexOf(m.artist) < 0) vus.push(m.artist); });
+      return vus;
     }, "Sans artiste");
   } else if (ui.group === "tag"){
     groups = parClef(shown, function(p){ return p.tags || []; }, "Sans style");
@@ -4806,10 +4847,20 @@ function parClef(fiches, clefs, vide){
    en demande plusieurs — la basse, la chaîne, le pédalier — et c'est le
    morceau qu'on annonce sur scène. Les fiches suivent. */
 
-/** La clé d'un morceau : « titre — artiste », ou rien. */
+/**
+ * Les morceaux d'une fiche. Une fiche Zoom est une famille sonore : elle en
+ * sert plusieurs, rangés dans « songs ». Les autres fiches en ont un, ou aucun.
+ */
+function morceauxDe(p){
+  if (p && Array.isArray(p.songs)) return p.songs.filter(function(m){ return m && m.title; });
+  return p && p.song && p.song.title ? [p.song] : [];
+}
+function cleDe(m){ return m.title + (m.artist ? " — " + m.artist : ""); }
+function clesMorceaux(p){ return morceauxDe(p).map(cleDe); }
+/** La clé d'un morceau : « titre — artiste », ou rien. Le premier, s'il y en a plusieurs. */
 function cleMorceau(p){
-  if (!p.song || !p.song.title) return "";
-  return p.song.title + (p.song.artist ? " — " + p.song.artist : "");
+  var k = clesMorceaux(p);
+  return k.length ? k[0] : "";
 }
 function setlists(){ return Array.isArray(S.sets) ? S.sets : (S.sets = []); }
 function setlistDe(id){
@@ -4822,14 +4873,15 @@ function setlistCourante(){ return ui.set ? setlistDe(ui.set) : null; }
 function morceauxConnus(){
   var vus = {}, out = [];
   library().forEach(function(p){
-    var k = cleMorceau(p);
-    if (k && !vus[k]){ vus[k] = 1; out.push(k); }
+    clesMorceaux(p).forEach(function(k){
+      if (k && !vus[k]){ vus[k] = 1; out.push(k); }
+    });
   });
   return out.sort(function(a, b){ return a.localeCompare(b, "fr"); });
 }
 /** Combien de fiches porte ce morceau. */
 function fichesDuMorceau(cle){
-  return library().filter(function(p){ return cleMorceau(p) === cle; }).length;
+  return library().filter(function(p){ return clesMorceaux(p).indexOf(cle) >= 0; }).length;
 }
 
 function setlistNouvelle(){
@@ -5648,7 +5700,7 @@ function editorBody(){
     '<label class="fld">Styles (séparés par des virgules)<input type="text" data-f="tags" value="' + esc((p.tags||[]).join(", ")) + '"></label>' +
     '</div>' +
     '<div class="sug" id="sug-name" data-sug="name"></div>';
-  h += '<div class="row">' +
+  if (p.kind !== "zoom") h += '<div class="row">' +
     '<label class="fld">Morceau<input type="text" id="f-song-title" data-f="song.title" value="' + esc(p.song ? p.song.title : "") + '" placeholder="Titre de la cover"></label>' +
     '<label class="fld">Artiste<input type="text" id="f-song-artist" data-f="song.artist" value="' + esc(p.song ? p.song.artist : "") + '"></label>' +
     '</div>' +
@@ -5731,12 +5783,13 @@ function suggestSong(q){
   if (plat(q).length < SUGGEST_FROM) return [];
   var aplati = plat(q), vus = {}, out = [];
   library().forEach(function(p){
-    if (!p.song || !p.song.title) return;
-    var cle = plat(p.song.title) + "|" + plat(p.song.artist || "");
-    if (vus[cle]) return;
-    if (!debutDeMot(p.song.title, q)) return;
-    vus[cle] = 1;
-    out.push({title:p.song.title, artist:p.song.artist || ""});
+    morceauxDe(p).forEach(function(m){
+      var cle = plat(m.title) + "|" + plat(m.artist || "");
+      if (vus[cle]) return;
+      if (!debutDeMot(m.title, q)) return;
+      vus[cle] = 1;
+      out.push({title:m.title, artist:m.artist || ""});
+    });
   });
   return out.slice(0, SUGGEST_MAX);
 }
@@ -5946,6 +5999,8 @@ function compareRows(a, b){
     /* Bloc par bloc : l'ordre fait le son. Quand les deux fiches ont le même
        effet au même rang, on descend jusqu'aux réglages qui diffèrent. */
     ligne("Patch", a.patch ? pad3(a.patch) : "—", b.patch ? pad3(b.patch) : "—");
+    if (a.family || b.family) ligne("Famille", a.family || "—", b.family || "—");
+    ligne("Morceaux", clesMorceaux(a).join(", ") || "—", clesMorceaux(b).join(", ") || "—");
     if (a.tempo || b.tempo) ligne("Tempo", a.tempo || "—", b.tempo || "—");
     var za = a.chain || [], zb = b.chain || [], zm = Math.max(za.length, zb.length), zj;
     var nomBloc = function(x){ return x ? x.fx + (x.on === false ? " (" + t("hors circuit") + ")" : "") : "—"; };
@@ -6553,7 +6608,7 @@ function zoomBody(p){
   if (p.patchName && p.patchName !== p.name) meta.push(p.patchName);
   if (p.tempo) meta.push(p.tempo + " bpm");
   if (p.variant) meta.push(tf("Variante : {0}", p.variant));
-  h += '<p class="gearname">Zoom B2 FOUR</p>';
+  h += '<p class="gearname">Zoom B2 FOUR' + (p.family ? ' · <b>' + esc(p.family) + '</b>' : "") + '</p>';
   if (meta.length) h += '<div class="tags">' + meta.map(function(m){
     return '<span class="tag">' + esc(m) + '</span>';
   }).join("") + '</div>';
@@ -6561,6 +6616,13 @@ function zoomBody(p){
     var src = findPreset(p.variantOf);
     if (src) h += '<p class="song">' + esc(tf("Variante de « {0} »", src.name)) + '</p>';
   }
+  var ms = morceauxDe(p);
+  h += ms.length
+    ? '<div class="zsongs"><span class="k">' + esc(tf(ms.length > 1 ? "Pour {0} morceaux" : "Pour {0} morceau", ms.length)) +
+      '</span><ul>' + ms.map(function(m){
+        return '<li>♪ ' + esc(m.title) + (m.artist ? ' <span>— ' + esc(m.artist) + '</span>' : "") + '</li>';
+      }).join("") + '</ul></div>'
+    : '<p class="hint">' + esc("Aucun morceau associé : indique ceux que ce preset sert.") + '</p>';
   h += zoomLevel(p);
   h += zoomPath(p);
   h += zoomChainView(p);
@@ -6574,6 +6636,7 @@ function apercuZoom(p){
   rows.forEach(function(s){ if (zCat(s.fx) === "BASS AMP") ampli = s.fx; });
   var bouts = [];
   if (p.patch) bouts.push(pad3(p.patch));
+  if (p.family) bouts.push(p.family);
   bouts.push(rows.length + " " + t(rows.length > 1 ? "effets" : "effet"));
   if (ampli) bouts.push(ampli);
   return bouts.join(" · ");
@@ -6723,6 +6786,13 @@ function zoomEditor(p){
       esc(p.tempo == null ? "" : p.tempo) + '"></label></div>';
   h += '<p class="hint">Les patchs d\'usine occupent 001 à 250 : 251 à 300 restent libres sans rien écraser. ' +
        'Un nom ne prend que lettres, chiffres, espace et ! % & \' + , - . = _ ; ceux d\'usine font 14 caractères au plus.</p>';
+  var familles = [];
+  library().forEach(function(x){ if (x.kind === "zoom" && x.family && familles.indexOf(x.family) < 0) familles.push(x.family); });
+  h += '<label class="fld">Famille sonore<input type="text" data-f="family" list="zfamilles" value="' + esc(p.family || "") +
+    '" placeholder="' + esc("Clean Rock, Indie Drive, Punk Attack…") + '"></label>' +
+    '<datalist id="zfamilles">' + familles.map(function(f){ return '<option value="' + esc(f) + '">'; }).join("") + '</datalist>';
+  h += '<p class="hint">Un preset par famille de son, pas par morceau : la banque reste courte et le pédalier ' +
+       'change peu. Une variante ne se justifie que si un morceau demande vraiment autre chose.</p>';
   var autres = library().filter(function(x){ return x.kind === "zoom" && x.id !== p.id; });
   h += '<div class="row">' +
     '<label class="fld">Variante<input type="text" data-f="variant" value="' + esc(p.variant || "") +
@@ -6734,6 +6804,7 @@ function zoomEditor(p){
       }).join("") + '</select></label></div>';
   h += '</fieldset>';
 
+  h += zoomSongsEditor(p);
   h += zoomBassEditor(p);
 
   h += '<fieldset style="--acc:var(--zoom)"><legend>Chaîne d\'effets</legend>';
@@ -6780,12 +6851,41 @@ function zoomEditor(p){
   return h;
 }
 
+/** Les morceaux que sert la fiche, avec un raccourci vers ceux déjà connus. */
+function zoomSongsEditor(p){
+  var ms = Array.isArray(p.songs) ? p.songs : [], dans = ms.map(cleDe);
+  var connus = {}, liste = [];
+  library().forEach(function(x){
+    morceauxDe(x).forEach(function(m){
+      var k = cleDe(m);
+      if (!connus[k] && dans.indexOf(k) < 0){ connus[k] = 1; liste.push(k); }
+    });
+  });
+  liste.sort(function(a, b){ return a.localeCompare(b, "fr"); });
+  var h = '<fieldset style="--acc:var(--zoom)"><legend>Morceaux servis</legend>' +
+    '<p class="hint">Les morceaux de la setlist pour lesquels ce preset convient.</p>';
+  ms.forEach(function(m, i){
+    h += '<div class="row zsong" data-zs="' + i + '">' +
+      '<label class="fld">Titre<input type="text" data-zsk="title" value="' + esc(m.title || "") + '"></label>' +
+      '<label class="fld">Artiste<input type="text" data-zsk="artist" value="' + esc(m.artist || "") + '"></label>' +
+      '<button class="btn small ghost" data-zsact="rm" aria-label="Retirer">✕</button></div>';
+  });
+  h += '<div class="chain-acts"><button class="btn small" data-zsact="add">+ Ajouter un morceau</button>';
+  if (liste.length){
+    h += '<select data-zsadd aria-label="' + esc("Morceau déjà saisi") + '"><option value="">' + esc("Morceau déjà saisi…") + '</option>' +
+      liste.map(function(k){ return '<option value="' + esc(k) + '">' + esc(k) + '</option>'; }).join("") + '</select>';
+  }
+  return h + '</div></fieldset>';
+}
+
 /** Une fiche Zoom vierge, la basse en façade par défaut. */
 function blankZoom(id){
   var Z = zoomCatalogue();
   var p = Z ? Z.blankPreset(id) : {id:id, kind:"zoom", gear:"b2four", name:"", tags:[], chain:[],
                                     level:{state:"a-verifier", note:""}, notes:""};
-  p.song = {title:"", artist:""};
+  p.song = null;
+  p.songs = [];
+  p.family = p.family || "";
   p.bass = bassNeuve(DEFAULT_GEAR.bass);
   return p;
 }
@@ -6815,11 +6915,13 @@ function banqueDe(set){
   if (!set){
     return library().filter(function(p){ return p.kind === "zoom"; }).sort(tri);
   }
-  set.songs.forEach(function(cle){
-    library().filter(function(p){ return p.kind === "zoom" && cleMorceau(p) === cle; })
-      .sort(tri).forEach(function(p){ out.push(p); });
+  /* Une famille sert plusieurs morceaux : elle n'entre qu'une fois, et la
+     banque se lit dans l'ordre des patchs, celui du pédalier. */
+  library().forEach(function(p){
+    if (p.kind !== "zoom") return;
+    if (clesMorceaux(p).some(function(k){ return set.songs.indexOf(k) >= 0; })) out.push(p);
   });
-  return out;
+  return out.sort(tri);
 }
 
 /** L'enveloppe d'une banque : la configuration de l'appareil, puis les fiches. */
@@ -6842,6 +6944,22 @@ function exportBank(id){
            "application/json", tf("Banque exportée : {0} fiches.", env.presets.length));
 }
 
+/**
+ * Le set morceau par morceau : le preset qui le joue (le principal, pas une
+ * variante), et combien de fois on change de patch d'un bout à l'autre.
+ */
+function couverture(set){
+  var L = banqueDe(set), prec = null, changements = 0, sans = 0;
+  var lignes = set.songs.map(function(cle){
+    var ps = L.filter(function(p){ return clesMorceaux(p).indexOf(cle) >= 0; });
+    var principal = ps.filter(function(p){ return !p.variantOf; })[0] || ps[0] || null;
+    if (!principal) sans++;
+    else { if (prec && prec !== principal.id) changements++; prec = principal.id; }
+    return {cle:cle, principal:principal, variantes:ps.filter(function(p){ return p !== principal; })};
+  });
+  return {lignes:lignes, presets:L.length, changements:changements, sans:sans};
+}
+
 function zoomBankSection(set){
   var Z = zoomCatalogue();
   if (!Z) return "";
@@ -6856,7 +6974,26 @@ function zoomBankSection(set){
   if (!L.length){
     h += '<p class="hint">Aucune fiche Zoom pour les morceaux de cette setlist.</p>';
   } else {
-    h += '<div class="bwrap"><table class="bands"><thead><tr><th>Patch</th><th>Fiche</th><th>Variante</th>' +
+    var cv = couverture(set);
+    h += '<p class="zstat">' + esc(tf("{0} presets pour {1} morceaux · {2} changements de patch sur le set",
+           cv.presets, set.songs.length, cv.changements)) +
+         (cv.sans ? ' · <span class="bad">' + esc(tf("{0} morceau(x) sans preset", cv.sans)) + '</span>' : "") + '</p>';
+    var avis = [];
+    Z.validateBank(enveloppeBanque(set)).presets.forEach(function(x){
+      x.warnings.forEach(function(w){
+        if (/doublon|réglages de|petits réglages|à peine|ne change rien|déjà couvert/.test(w.m)) avis.push(zMsg(w));
+      });
+    });
+    if (avis.length) h += '<ul class="zmsgs">' + avis.map(function(a){ return '<li class="warn">' + esc(a) + '</li>'; }).join("") + '</ul>';
+    h += '<div class="bwrap"><table class="bands zbank"><thead><tr><th>Morceau</th><th>Preset</th><th>Variantes</th>' +
+         '</tr></thead><tbody>' + cv.lignes.map(function(l){
+           return '<tr><td>' + esc(l.cle) + '</td>' +
+             (l.principal ? '<td>' + esc((l.principal.patch ? pad3(l.principal.patch) + " · " : "") + l.principal.name) + '</td>'
+                          : '<td class="bad">' + esc("aucun preset") + '</td>') +
+             '<td>' + esc(l.variantes.map(function(p){ return (p.patch ? pad3(p.patch) + " · " : "") + (p.variant || p.name); }).join(", ") || "—") +
+             '</td></tr>';
+         }).join("") + '</tbody></table></div>';
+    h += '<div class="bwrap"><table class="bands zbank"><thead><tr><th>Patch</th><th>Fiche</th><th>Famille</th>' +
          '<th>Ampli</th><th>Niveau</th></tr></thead><tbody>';
     L.forEach(function(p){
       var ampli = "";
@@ -6865,7 +7002,8 @@ function zoomBankSection(set){
       if (p.patch) vus[p.patch] = 1;
       h += '<tr><td' + (double ? ' class="bad"' : "") + '>' + esc(p.patch ? pad3(p.patch) : "—") +
            (double ? " " + esc("en double") : "") + '</td>' +
-           '<td>' + esc(p.name) + '</td><td>' + esc(p.variant || "—") + '</td><td>' + esc(ampli || "—") + '</td>' +
+           '<td>' + esc(p.name) + '</td><td>' + esc(p.family || "—") + '</td>' +
+           '<td>' + esc(ampli || "—") + '</td>' +
            '<td>' + esc((p.level || {}).state === "equilibre" ? "équilibré" : "à vérifier") + '</td></tr>';
     });
     h += '</tbody></table></div>';
@@ -6931,8 +7069,7 @@ function importerBanque(env){
     if (!res.ok) return;
     entrees.push(res.preset);
     if (res.ancien && res.ancien !== res.preset.id) renomme[res.ancien] = res.preset.id;
-    var cle = cleMorceau(res.preset);
-    if (cle && morceaux.indexOf(cle) < 0) morceaux.push(cle);
+    clesMorceaux(res.preset).forEach(function(cle){ if (morceaux.indexOf(cle) < 0) morceaux.push(cle); });
   });
   /* Une variante pointe vers sa fiche d'origine : si celle-ci a changé
      d'identifiant en entrant, le lien suit. */
@@ -7355,6 +7492,13 @@ document.getElementById("veil").addEventListener("click", function(e){
     setPath(draft, seg.closest("[data-seg]").getAttribute("data-seg") || "mode", seg.getAttribute("data-v"));
     refreshBody(); return;
   }
+  var zsa = t.closest("[data-zsact]");
+  if (zsa && draft.kind === "zoom"){
+    draft.songs = Array.isArray(draft.songs) ? draft.songs : [];
+    if (zsa.getAttribute("data-zsact") === "add") draft.songs.push({title:"", artist:""});
+    else draft.songs.splice(parseInt(zsa.closest("[data-zs]").getAttribute("data-zs"), 10), 1);
+    refreshBody(); return;
+  }
   var za = t.closest("[data-zact]");
   if (za && draft.kind === "zoom"){
     var zi = parseInt(za.closest("[data-zi]").getAttribute("data-zi"), 10), zc = draft.chain;
@@ -7598,6 +7742,20 @@ document.getElementById("veil").addEventListener("input", function(e){
       draft.bass = t.value ? bassNeuve(t.value, draft.bass) : null;
       refreshBody(); return;
     }
+    var zsk = t.getAttribute("data-zsk");
+    if (zsk){
+      var zs = draft.songs[parseInt(t.closest("[data-zs]").getAttribute("data-zs"), 10)];
+      if (zs) zs[zsk] = t.value;
+      return;
+    }
+    if (t.hasAttribute("data-zsadd")){
+      if (t.value){
+        var trouve = null;
+        library().forEach(function(x){ morceauxDe(x).forEach(function(m){ if (!trouve && cleDe(m) === t.value) trouve = m; }); });
+        if (trouve) (draft.songs = draft.songs || []).push({title:trouve.title, artist:trouve.artist || ""});
+      }
+      refreshBody(); return;
+    }
     if (t.hasAttribute("data-zadd")){
       if (t.value) (draft.chain = draft.chain || []).push({fx:t.value, on:true, p:{}});
       refreshBody(); return;
@@ -7709,7 +7867,8 @@ window.__pb = {
   zoomBody: zoomBody, zoomEditor: zoomEditor, zCheckHtml: zCheckHtml, ajouteFiche: ajouteFiche,
   importerBanque: importerBanque, banqueDe: banqueDe, enveloppeBanque: enveloppeBanque, exportBank: exportBank,
   creerVariante: creerVariante, blank: blank, bassVue: bassVue, zoomBankSection: zoomBankSection,
-  apercuFiche: apercuFiche, compareRows: compareRows, zMsg: zMsg, fmtParam: fmtParam,
+  apercuFiche: apercuFiche, compareRows: compareRows, zMsg: zMsg,
+  morceauxDe: morceauxDe, clesMorceaux: clesMorceaux, couverture: couverture, zoomSongsEditor: zoomSongsEditor, fmtParam: fmtParam,
   chargerSauvegarde: chargerSauvegarde, doImport: doImport,
   depotActif: depotActif, depotFini: depotFini,
   openSets: openSets, openSetEditor: openSetEditor, setlists: setlists, setlistDe: setlistDe,

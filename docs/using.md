@@ -409,7 +409,9 @@ changing.
 
 ## The Zoom B2 FOUR
 
-A **Zoom** preset describes a patch of the bass multi-effects: its number (001 to 300), the effects in signal order
+A **Zoom** preset describes a patch of the bass multi-effects, thought of as a **sound family** (Clean Rock, Indie
+Drive, Punk Attack…) that serves several songs, not one patch per song: a few families play a whole set with few
+pedal changes. It holds its number (001 to 300), the list of songs it serves, the effects in signal order
 — five at most, a single amp, a single pedal —, each with its parameters under their exact name, the bass with its
 knobs, strings and playing style, and a **level to check** with the band: no setting tells the final volume, it is
 heard in rehearsal and written down.
@@ -417,10 +419,12 @@ heard in rehearsal and written down.
 The 104 effects and their ranges come from ZOOM's documents; nothing is made up. The cabinet is part of each amp
 model (the B2 FOUR offers none separately), and the **DI MODEL** is a setting of the unit, not of a patch: it is
 written on the **bank**, that is the setlist (*Setlists* → a setlist → *Zoom B2 FOUR bank*), from which it exports
-as one `.json` file.
+as one `.json` file. That screen also says which preset plays each song, how many patch changes the set needs,
+which songs have no preset yet, and flags duplicates: two presets with almost the same settings, a variant that
+changes nothing.
 
-*Variant* on the card creates a variant of the same song — verse and chorus, with or without drive — with its own
-patch number. A preset or a bank re-imports without loss, by dropping it on the page or through *Backup* → *Import
+*Variant* on the card creates an occasional variant — verse and chorus, with or without drive — with its own
+patch number, for the songs that need it only. A preset or a bank re-imports without loss, by dropping it on the page or through *Backup* → *Import
 a file*; what cannot fit the unit is refused, the rest is flagged in a report.
 
 This JSON is Presetbook's format, not a file the B2 FOUR can load: the settings are copied onto the unit. The full

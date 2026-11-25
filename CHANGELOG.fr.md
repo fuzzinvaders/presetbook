@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.14.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.15.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,29 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.15.0 — 25 novembre 2026
+
+### Modifié
+
+- **Un preset Zoom est une famille sonore, pas un morceau.** Une fiche porte sa famille — Clean Rock, Indie Drive,
+  Punk Attack… — et la liste des morceaux qu'elle sert. Six à huit familles jouent tout un set avec peu de patchs et
+  peu de changements au pédalier ; une variante reste possible, pour les seuls morceaux qui la demandent. Une fiche
+  écrite en 1.14, avec un seul morceau, est convertie à l'ouverture et à l'import : son morceau passe dans la liste.
+- Ranger par morceau montre une famille sous chacun des morceaux qu'elle sert, et ouvrir une setlist la garde dès
+  qu'un de ses morceaux y figure.
+- L'exemple REPTILIA représente la famille **Indie Drive** ; la variante « refrain » inventée a disparu de la
+  banque d'exemple.
+
+### Ajouté
+
+- **La banque dit comment le set se joue** : le preset de chaque morceau (le principal, puis ses variantes), le
+  nombre de changements de patch d'un bout à l'autre, et les morceaux qui n'ont encore aucun preset.
+- **Les doublons sont signalés**, jamais refusés : deux presets aux mêmes réglages, deux presets qui ne diffèrent
+  que de petits réglages (sous le dixième de la course, sous un quart d'octave), une variante qui ne change rien ou
+  presque, deux presets principaux pour un même morceau.
 
 ---
 
