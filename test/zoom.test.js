@@ -100,7 +100,7 @@ check("un autre catalogue est signalé", v(fiche([], { catalog: "B2FOUR-FX/AUTRE
 const exFiche = lireJson("indie-drive.presetbook.json");
 /* La fiche telle que la 1.15 l'écrivait : genre « zoom », nom REPTILIA. */
 const fiche115 = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "reptilia-1.15.presetbook.json"), "utf8"));
-const exBanque = lireJson("yaserock64-exemple.b2four-bank.json");
+const exBanque = lireJson("yaser-exemple.b2four-bank.json");
 const rEx = v(exFiche.preset);
 check("INDIE DRIVE est conforme, sans un avertissement", rEx.errors.length === 0 && rEx.warnings.length === 0,
   JSON.stringify(rEx));
@@ -396,7 +396,7 @@ const w6 = run(page, { search: "", ZB2F: Z });
 w6.FileReader = function () {
   this.readAsText = function (file) { this.result = file.__texte; if (this.onload) this.onload(); };
 };
-w6.__pb.deposerFichier({ name: "yaserock64.b2four-bank.json", __texte: JSON.stringify(exBanque) });
+w6.__pb.deposerFichier({ name: "yaser.b2four-bank.json", __texte: JSON.stringify(exBanque) });
 check("une banque déposée sur la page s'importe", !!w6.__pb.findPreset("u-reptilia"));
 
 /* une fiche écrite en 1.14 portait un seul morceau : il passe dans la liste */

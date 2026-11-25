@@ -20,8 +20,8 @@ vraiment autre chose. Presetbook signale les doublons et les différences artifi
 - Liste exhaustive des effets et paramètres : [zoom-b2four-effets.md](zoom-b2four-effets.md)
 - Schéma JSON complet : [zoom-b2four.schema.json](zoom-b2four.schema.json)
 - Exemple importable, une fiche : [exemples/indie-drive.presetbook.json](exemples/indie-drive.presetbook.json)
-- Exemple importable, une banque (INDIE DRIVE seul, point de départ de YASEROCK64) :
-  [exemples/yaserock64-exemple.b2four-bank.json](exemples/yaserock64-exemple.b2four-bank.json)
+- Exemple importable, une banque (INDIE DRIVE seul, point de départ de YASER) :
+  [exemples/yaser-exemple.b2four-bank.json](exemples/yaser-exemple.b2four-bank.json)
 
 ## D'où viennent les données
 
@@ -114,7 +114,7 @@ L'écran de la banque dit, morceau par morceau, quel preset le joue (le principa
 
 ```json
 { "v": 1, "presetbook": "bank", "device": "zoom-b2four", "catalog": "B2FOUR-FX/Z2I-4875-01",
-  "name": "YASEROCK64", "config": { "di": "TUBE 1" }, "presets": [ … ], "gear": {} }
+  "name": "YASER", "config": { "di": "TUBE 1" }, "presets": [ … ], "gear": {} }
 ```
 
 À l'import, les fiches entrent une par une et la banque redevient une setlist, avec son DI MODEL.
