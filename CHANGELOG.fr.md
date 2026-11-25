@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.17.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.18.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,25 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.18.0 — 25 novembre 2026
+
+### Ajouté
+
+- **Imprimer une seule fiche** : un bouton *Imprimer* sur chaque carte. Elle sort seule, sur toute la largeur, un peu
+  plus grande, et tient sur une page — une chaîne de cinq effets comprise. L'en-tête dit sa famille, son numéro de
+  patch pour le B2 FOUR, et la date.
+
+### Modifié
+
+- **L'impression est revue pour tenir sur moins de pages.** Trois fiches par rangée pour une basse, un ampli ou une
+  pédale ; les chaînes, pédaliers et multi-effets sur toute la largeur, leurs blocs sur deux colonnes et leurs
+  réglages alignés par trois au lieu d'un par ligne. Une fiche du B2 FOUR passe d'une page et demie à une demi-page ;
+  la bibliothèque livrée, de quinze pages à huit.
+- En thème sombre, les étiquettes de famille et le bloc ampli sortaient en pavés foncés : les couleurs de famille
+  repassent en clair sur le papier, comme le reste.
 
 ---
 

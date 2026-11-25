@@ -448,8 +448,9 @@ check("une chaîne annonce ses maillons",
   (fxCache.match(/class="hid">[^<]*</g) || []).slice(0, 3).join(" | "));
 check("la famille reste hors du bouton : elle ne se clique pas",
   liste.indexOf('</button><span class="kind ') > 0, liste.slice(0, 260));
+/* En flex, comme à l'écran : rouverte en bloc, la fiche perdait son espacement. */
 check("le papier rouvre les fiches repliées",
-  bloc.indexOf('.card[data-folded="1"] .card-b{display:block}') > 0, bloc.slice(0, 500));
+  src.indexOf('.card[data-folded="1"] .card-b{display:flex}') > src.indexOf("@media print{"), bloc.slice(0, 500));
 check("le corps garde l'espacement qu'avait la fiche",
   src.indexOf(".card-b{display:flex; flex-direction:column; gap:10px") > 0);
 /* Le raccourci d'une chaîne ne doit pas emporter la fiche elle-même. */
@@ -537,6 +538,51 @@ check("sans morceau retenu, tout repasse", pm.library().filter(pm.matches).lengt
 const viaUrl = run(page, { search: "?song=" + encodeURIComponent("Last Nite — The Strokes|Reptilia — The Strokes") }).__pb.ui();
 check("un morceau se met en favori : ?song=…, séparés par « | »",
   viaUrl.songs.join("|") === "Last Nite — The Strokes|Reptilia — The Strokes" && viaUrl.open === true);
+
+/* --- l'impression ---
+ * Une feuille A4 dense : trois petites fiches par rangée, les chaînes sur
+ * toute la largeur, aucune fiche coupée. Et une fiche seule, d'un bouton. */
+const srcP = fs.readFileSync(page, "utf8");
+const debut = srcP.indexOf("@media print{");
+const blocP = srcP.slice(debut, srcP.indexOf("\n}\n", debut));
+check("une seule règle de page, en A4", (srcP.match(/@page\{/g) || []).length === 1 && /@page\{ size:A4 portrait/.test(srcP));
+check("trois fiches par rangée sur le papier", /\.grid\{ grid-template-columns:repeat\(3, minmax\(0,1fr\)\)/.test(blocP));
+check("les chaînes et le pédalier prennent toute la largeur",
+  /\.card\.k-board, \.card\.k-reaper, \.card\.k-multi\{ grid-column:1 \/ -1; \}/.test(blocP));
+check("les blocs d'une chaîne sur deux colonnes, leurs réglages par trois",
+  /\.chain\{ display:grid !important; grid-template-columns:repeat\(2/.test(blocP) &&
+  /\.pgrid\{ grid-template-columns:repeat\(3, max-content minmax\(0,1fr\)\)/.test(blocP));
+check("une fiche n'est jamais coupée entre deux pages", /article, \.grp-h, \.printhead, \.slot\{ break-inside:avoid/.test(blocP));
+check("les couleurs de famille repassent en clair : pas de pavé d'encre en thème sombre",
+  /--zoom:#3B559C; --zoom-soft:#DFE5F3;/.test(blocP) && /--amp:#A62F26; --amp-soft:#F4DEDA;/.test(blocP));
+check("la carte se resserre par sa classe, que l'écran ne reprend pas", /\n  \.card\{\n    border:1px solid #B8B8B0/.test(blocP));
+check("une fiche seule cache tout le reste",
+  /body\.imprime-une \.grp:not\(\.a-imprimer\), body\.imprime-une article:not\(\.a-imprimer\)\{ display:none/.test(blocP));
+
+const wp = run(page, { search: "" });
+const pp = wp.__pb;
+const cartesP = wp.__nodes.get("list").innerHTML;
+check("chaque carte a son bouton Imprimer",
+  (cartesP.match(/data-act="print"/g) || []).length === (cartesP.match(/<article/g) || []).length);
+check("une fiche absente de l'écran ne lance rien", pp.imprimerFiche("n-existe-pas") === false);
+
+const cible = pp.library()[0];
+const art = wp.document.createElement("article"), grp = wp.document.createElement("section");
+art.setAttribute("data-id", cible.id);
+art.closest = (sel) => (sel === ".grp" ? grp : null);
+wp.document.querySelectorAll = (sel) => (sel === "#list article" ? [art] : []);
+let impressions = 0, apres = null;
+wp.print = () => { impressions++; };
+wp.addEventListener = (type, fn) => { if (type === "afterprint") apres = fn; };
+wp.removeEventListener = () => {};
+check("« Imprimer » sur une carte lance l'impression", pp.imprimerFiche(cible.id) === true && impressions === 1);
+check("la page passe en mode fiche seule, la carte et sa section marquées",
+  wp.document.body.classList.contains("imprime-une") && art.classList.contains("a-imprimer") && grp.classList.contains("a-imprimer"));
+check("l'en-tête dit la famille et la date, le nom reste sur la carte",
+  /<h2>Presetbook<\/h2><p>[^<]+·/.test(wp.__nodes.get("printhead").innerHTML), wp.__nodes.get("printhead").innerHTML);
+apres && apres();
+check("après l'impression, la liste revient", !wp.document.body.classList.contains("imprime-une") &&
+  !art.classList.contains("a-imprimer") && !grp.classList.contains("a-imprimer"));
 
 console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
 process.exit(failed ? 1 : 0);

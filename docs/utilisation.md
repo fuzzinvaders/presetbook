@@ -194,8 +194,14 @@ Deux détails qui comptent :
   l'interdit explicitement, donc pensez à laisser « graphiques d'arrière-plan » coché si votre
   navigateur pose la question.
 
-Une fiche n'est **jamais coupée entre deux pages**. Sur une A4, la mise en page tombe sur deux
-colonnes.
+Une fiche n'est **jamais coupée entre deux pages**. La feuille est une A4 dense : **trois fiches par
+rangée** pour une basse, un ampli ou une pédale ; les chaînes Reaper, les pédaliers et les
+multi-effets prennent **toute la largeur**, leurs blocs sur deux colonnes et leurs réglages alignés
+par trois. Une fiche du B2 FOUR tient ainsi sur une demi-page.
+
+**Une seule fiche** : le bouton **Imprimer** de sa carte. Elle sort seule, sur toute la largeur,
+un peu plus grande, et tient sur une page — y compris une chaîne de cinq effets. Pour une setlist,
+ouvrez-la puis **Imprimer** dans le menu : seules ses fiches partent sur le papier.
 
 ## Langue / Language
 

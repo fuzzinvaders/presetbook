@@ -185,7 +185,14 @@ Two details that matter:
   erase the markers — and a dial without its marker says nothing at all. The stylesheet forbids that
   explicitly, so leave "background graphics" ticked if your browser asks.
 
-A preset is **never cut across two pages**. On A4 the layout falls to two columns.
+A preset is **never cut across two pages**. The sheet is a dense A4: **three presets per row** for
+a bass, an amp or a pedal; Reaper chains, pedalboards and multi-effects take **the full width**,
+their blocks in two columns and their settings lined up three by three. A B2 FOUR preset fits on
+half a page.
+
+**A single preset**: the **Print** button on its card. It comes out alone, full width, a little
+larger, and fits on one page — a five-effect chain included. For a setlist, open it then **Print**
+in the menu: only its presets go to paper.
 
 ## Language
 

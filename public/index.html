@@ -613,52 +613,111 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
    ordre, débarrassées de tout ce sur quoi on ne peut pas cliquer sur une
    feuille. Le thème sombre est forcé en clair — imprimer un fond noir gâche
    l'encre et rend les cadrans illisibles. */
-@page{ margin:14mm 12mm; }
-
+/* ============================ impression ============================
+   Une feuille A4, dense mais lisible : le papier sert en répétition, posé
+   sur l'ampli. Les petites fiches vont par trois, les chaînes (Reaper,
+   multi-effet) prennent la largeur et rangent leurs blocs sur deux colonnes.
+   Une fiche ne se coupe jamais entre deux pages. « Imprimer » sur une carte
+   n'imprime qu'elle (body.imprime-une). */
+@page{ size:A4 portrait; margin:10mm 10mm 12mm; }
 @media print{
   :root, :root[data-theme="dark"], :root:not([data-theme="light"]){
     --bg:#FFFFFF; --panel:#FFFFFF; --panel-2:#F4F4F1; --sunk:#F0EFEA; --sunk-ink:#101010;
     --sunk-line:#B8B8B0; --ink:#101010; --ink-2:#333333; --ink-3:#5A5A55;
     --line:#CFCFC8; --line-2:#A8A8A0; --shadow:none;
+    /* Les couleurs de famille aussi : en thème sombre elles sont claires sur
+       fond foncé, et sortiraient en pavés d'encre. */
+    --bass:#9E5F19; --bass-soft:#F1E3CF; --amp:#A62F26; --amp-soft:#F4DEDA;
+    --reaper:#22654F; --reaper-soft:#D6E7E0; --pedal:#7A4FA8; --pedal-soft:#E8DEF3;
+    --board:#1F6470; --board-soft:#D6E8EB; --zoom:#3B559C; --zoom-soft:#DFE5F3;
+    --ok:#1F6B45; --warn:#8A5A11; --danger:#A62F26;
   }
   /* Les cadrans ne disent rien sans leurs aplats : le navigateur les supprime
      par défaut à l'impression, il faut le lui interdire. */
   *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
 
-  body{background:#fff}
+  body{background:#fff; font-size:10.5px}
   .wrap{max-width:none; padding:0}
   .grp[data-folded="1"] .grid{display:grid}
   .slot[data-folded="1"] .slot-b{display:block}
-  .card[data-folded="1"] .card-b{display:block}
+  .card[data-folded="1"] .card-b{display:flex}
   .card-t .chev, .card-t .hid{display:none}
   .grp-b .chev, .slot-h .chev, .slot-h .hid, .chain-h .fxall{display:none}
   header.top, .bar, .filters, .listbar, .foot, .veil, .gate, .toast,
   .card-f, [id^="kofi-"], iframe[class*="floatingchat"]{ display:none !important; }
+  a{ color:#101010; text-decoration:none; }
 
-  .printhead{
-    display:block; margin:0 0 10px; padding-bottom:6px; border-bottom:2px solid #101010;
-  }
-  .printhead h2{
-    font-family:"Archivo",sans-serif; font-size:17px; letter-spacing:.02em; margin:0;
-  }
-  .printhead p{
-    font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.05em;
-    color:#444; margin:3px 0 0;
-  }
+  .printhead{ display:block; margin:0 0 6px; padding-bottom:4px; border-bottom:2px solid #101010; }
+  .printhead h2{ font-family:"Archivo",sans-serif; font-size:15px; letter-spacing:.02em; margin:0; }
+  .printhead p{ font-family:"IBM Plex Mono",monospace; font-size:9px; letter-spacing:.05em; color:#444; margin:2px 0 0; }
 
   /* Une fiche ne se coupe jamais entre deux pages : coupée, elle ne sert plus. */
-  article, .grp-h, .printhead{ break-inside:avoid; page-break-inside:avoid; }
-  .grp{ margin-top:14px; break-before:auto; }
-  .grp-h{ border-bottom:1px solid #101010; }
-  article{
-    border:1px solid #B8B8B0 !important; box-shadow:none !important;
-    margin-bottom:8px; background:#fff !important;
+  article, .grp-h, .printhead, .slot{ break-inside:avoid; page-break-inside:avoid; }
+  .grp{ margin-top:8px; break-before:auto; }
+  .grp-h{ border-bottom:1px solid #101010; font-size:11px; }
+  .grp-h .grp-b{ padding:2px 0; }
+
+  .grid{ grid-template-columns:repeat(3, minmax(0,1fr)) !important; gap:6px; margin-top:6px; }
+  .card.k-board, .card.k-reaper, .card.k-multi{ grid-column:1 / -1; }
+  /* .card et non article : la règle d'écran porte sur la classe, et gagnerait. */
+  .card{
+    border:1px solid #B8B8B0 !important; border-left-width:3px !important; box-shadow:none !important;
+    background:#fff !important; padding:6px 8px 6px; gap:4px; margin:0;
   }
-  .strip{ background:#F4F4F1 !important; border:1px solid #CFCFC8 !important; }
-  .strip.amp, .strip.laney{ background:#EDEDE8 !important; }
-  .strip.amp .dl, .strip.laney .dl{ color:#4A4A46 !important; }
-  .strip.amp .dv, .strip.laney .dv{ color:#101010 !important; }
-  a{ color:#101010; text-decoration:none; }
+  .card-b{ gap:4px; }
+  .card-h h3{ font-size:12px; }
+  .card-t h3{ white-space:normal; overflow:visible; }
+  .kind{ font-size:7.5px; padding:1px 5px; }
+  .gearname{ font-size:8.5px; }
+  .tags{ gap:3px; }
+  .tag{ font-size:8px; padding:1px 4px; }
+  .song, .note{ font-size:9.5px; line-height:1.35; margin:0; }
+  .card .maj{ font-size:7.5px; }
+
+  .strip{ padding:4px 3px 3px; gap:4px; }
+  .dial{ min-width:36px; gap:1px; }
+  .knob{ width:26px; height:26px; }
+  .knob i::before{ top:3px; height:9px; width:2.5px; margin-left:-1.25px; }
+  .knob b{ inset:-4px; }
+  .dl{ font-size:7px; } .dv{ font-size:9px; }
+  .fdr{ height:26px; }
+  .art{ overflow:visible; }
+
+  /* Les chaînes : les blocs sur deux colonnes, les réglages par trois. */
+  .chain-h{ margin-bottom:3px; }
+  .chain-h .c{ font-size:8px; }
+  .chain{ display:grid !important; grid-template-columns:repeat(2, minmax(0,1fr)); gap:4px; }
+  .slot{ padding:3px 6px 4px; }
+  .slot-h{ margin-bottom:2px; gap:5px; }
+  .slot-h .p{ font-size:10px; } .slot-h .n, .slot-h .r{ font-size:8px; }
+  .slot-h .bp{ font-size:7.5px; padding:0 3px; }
+  .pgrid{ grid-template-columns:repeat(3, max-content minmax(0,1fr)); gap:0 6px; align-items:baseline; }
+  .pgrid .pk{ font-size:7.5px; } .pgrid .pv{ font-size:9px; margin:0; }
+  .sn{ font-size:8.5px; margin:2px 0 0; }
+  table.bands{ font-size:8.5px; } table.bands th{ font-size:7px; }
+
+  /* Le multi-effet : la chaîne du signal d'un coup d'œil, plus petite. */
+  .zpath{ gap:2px; }
+  .zpath .zb{ padding:1px 5px; }
+  .zpath .zb .zn{ font-size:9px; } .zpath .zb .zc{ font-size:6.5px; }
+  .zpath .zio, .zpath .zar{ font-size:8px; }
+  .zsongs{ font-size:9.5px; } .zsongs .k{ font-size:7.5px; }
+  .lvl{ font-size:9px; }
+  .zbass{ padding-top:4px; gap:3px; }
+
+  /* Une seule fiche : elle seule, sur toute la largeur, un peu plus grande. */
+  body.imprime-une .grp:not(.a-imprimer), body.imprime-une article:not(.a-imprimer){ display:none !important; }
+  body.imprime-une .grp-h{ display:none; }
+  body.imprime-une .grp{ margin-top:0; }
+  body.imprime-une .card.a-imprimer{ grid-column:1 / -1; padding:10px 12px; gap:7px; }
+  body.imprime-une .card-h h3{ font-size:17px; }
+  body.imprime-une .song, body.imprime-une .note{ font-size:11px; }
+  body.imprime-une .knob{ width:34px; height:34px; }
+  body.imprime-une .knob i::before{ top:4px; height:11px; width:3px; margin-left:-1.5px; }
+  body.imprime-une .dl{ font-size:8px; } body.imprime-une .dv{ font-size:11px; }
+  body.imprime-une .slot-h .p{ font-size:11.5px; }
+  body.imprime-une .pgrid .pk{ font-size:8px; } body.imprime-une .pgrid .pv{ font-size:10.5px; }
+  body.imprime-une .zpath .zb .zn{ font-size:10.5px; }
 }
 
 .toast{
@@ -4472,6 +4531,8 @@ function card(p){
        ' title="Écrit la fiche dans un fichier, façades comprises">Exporter</button>' +
        '<button class="btn small ghost" data-act="cmp"' +
        ' title="Met deux fiches côte à côte, écarts marqués">Comparer</button>' +
+       '<button class="btn small ghost" data-act="print"' +
+       ' title="Imprime cette fiche seule, sur une page">Imprimer</button>' +
        (session.user && !session.isDemo
          ? '<button class="btn small ghost" data-act="share"' +
            ' title="La propose aux autres comptes de ce serveur">Partager</button>' : "") +
@@ -7196,6 +7257,39 @@ function openRapport(titre, lignes){
   veil.classList.add("open");
 }
 
+/**
+ * Imprime une seule fiche : on marque la carte et sa section, la feuille
+ * d'impression cache tout le reste, l'en-tête porte son nom. Après
+ * l'impression, la page redevient la liste.
+ */
+function imprimerFiche(id){
+  var p = findPreset(id), arts = document.querySelectorAll("#list article"), art = null, i;
+  for (i = 0; i < arts.length; i++) if (arts[i].getAttribute("data-id") === id) { art = arts[i]; break; }
+  if (!p || !art) return false;
+  var grp = art.closest ? art.closest(".grp") : null;
+  document.body.classList.add("imprime-une");
+  art.classList.add("a-imprimer");
+  if (grp) grp.classList.add("a-imprimer");
+  var tete = [t(KINDS[p.kind].full)];
+  if (estB2(p) && p.patch) tete.push(tf("Patch {0}", pad3(p.patch)));
+  tete.push(printDate());
+  setHtml(document.getElementById("printhead"),
+    '<h2>Presetbook</h2><p>' + esc(tete.join(" · ")) + '</p>');   /* le nom est sur la carte */
+  var fini = false;
+  function retour(){
+    if (fini) return;
+    fini = true;
+    window.removeEventListener("afterprint", retour);
+    document.body.classList.remove("imprime-une");
+    art.classList.remove("a-imprimer");
+    if (grp) grp.classList.remove("a-imprimer");
+    render();
+  }
+  window.addEventListener("afterprint", retour);
+  try { window.print(); } catch (e) { retour(); toast("L'impression n'est pas disponible ici."); }
+  return true;
+}
+
 /* ============================ événements ============================ */
 var toastTimer = null;
 /**
@@ -7378,6 +7472,7 @@ document.getElementById("list").addEventListener("click", function(e){
   if (act === "edit"){ var p = findPreset(id); if (p) openEditor(p, false); }
   else if (act === "dup") duplicate(id);
   else if (act === "var") creerVariante(id);
+  else if (act === "print") imprimerFiche(id);
   else if (act === "rfx"){ var q = findPreset(id); if (q) exportRfx(q); }
   else if (act === "exp") exportPreset(id);
   else if (act === "share") sharePreset(id);
@@ -7971,7 +8066,7 @@ window.__pb = {
   apercuFiche: apercuFiche, compareRows: compareRows, zMsg: zMsg,
   morceauxDe: morceauxDe, clesMorceaux: clesMorceaux, couverture: couverture, zoomSongsEditor: zoomSongsEditor,
   estB2: estB2, morceauDeCle: morceauDeCle, morceauxEnregistres: morceauxEnregistres, KINDS: KINDS,
-  facetSongs: facetSongs, passeSong: passeSong,
+  facetSongs: facetSongs, passeSong: passeSong, imprimerFiche: imprimerFiche,
   card: card, rassembleIsoles: rassembleIsoles, fmtParam: fmtParam,
   chargerSauvegarde: chargerSauvegarde, doImport: doImport,
   depotActif: depotActif, depotFini: depotFini,

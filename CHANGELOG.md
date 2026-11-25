@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.17.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.18.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,25 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.18.0 — 25 November 2026
+
+### Added
+
+- **Print a single preset**: a *Print* button on every card. It comes out alone, full width, a little larger, and
+  fits on one page — a five-effect chain included. The header gives its kind, its patch number for the B2 FOUR, and
+  the date.
+
+### Changed
+
+- **Printing is reworked to fit on fewer pages.** Three presets per row for a bass, an amp or a pedal; chains,
+  pedalboards and multi-effects full width, their blocks in two columns and their settings lined up three by three
+  instead of one per line. A B2 FOUR preset goes from a page and a half to half a page; the shipped library, from
+  fifteen pages to eight.
+- In the dark theme, kind labels and the amp block came out as dark blocks: kind colours go back to light on paper,
+  like the rest.
 
 ---
 
