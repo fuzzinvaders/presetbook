@@ -10,7 +10,7 @@ Le catalogue livré est celui d'un bassiste, mais l'outil ne l'est pas : une fa�
 elle n'est pas codée. Guitare, clavier, synthé, boîte à rythmes — tout matériel à boutons se range
 ici, et la section [Le matériel](#le-matériel) explique comment le déclarer.
 
-## Les cinq sortes de fiches
+## Les six sortes de fiches
 
 | Sorte | Ce qu'elle porte |
 | --- | --- |
@@ -19,6 +19,7 @@ ici, et la section [Le matériel](#le-matériel) explique comment le déclarer.
 | **Pédale** | l'effet choisi et ses réglages, avec le dessin du boîtier |
 | **Pédalier** | des pédales dans l'ordre du signal, chacune avec ses réglages et son état |
 | **Chaîne** | le tempo, l'accordage, et les plugins dans l'ordre, avec leurs vrais paramètres |
+| **Zoom** | un patch du Zoom B2 FOUR : numéro, effets et ampli dans l'ordre, la basse et son jeu, le niveau à vérifier |
 
 Chaque fiche peut être rattachée à un **morceau** (titre et artiste). C'est ce qui permet de
 rassembler d'un côté la basse, l'ampli et la chaîne d'une même reprise.
@@ -431,6 +432,27 @@ Le **seuil de MCompressor** s'affiche comme dans le plugin : une chaîne dont le
 écrit était juste, seul le chiffre était faux. Les fiches d'avant sont converties à l'ouverture, sans
 que le son exporté change.
 
+## Le Zoom B2 FOUR
+
+Une fiche **Zoom** décrit un patch du multi-effets basse : son numéro (001 à 300), les effets dans l'ordre du
+signal — cinq au plus, un seul ampli, une seule pédale —, chacun avec ses paramètres sous leur nom exact, la basse
+avec ses boutons, ses cordes et le jeu, et un **niveau à vérifier** en groupe : aucun réglage ne donne le volume
+final, il se constate aux essais et se note.
+
+Les 104 effets et leurs plages viennent des documents de ZOOM ; rien n'y est inventé. Le baffle est compris dans
+chaque modèle d'ampli (le B2 FOUR n'en propose pas à part), et le **DI MODEL** est un réglage de l'appareil, pas
+d'un patch : il se note sur la **banque**, c'est-à-dire la setlist (*Setlists* → une setlist → *Banque Zoom B2
+FOUR*), d'où elle s'exporte en un fichier `.json`.
+
+*Variante* sur la carte crée une variante du même morceau — couplet et refrain, avec ou sans saturation — avec son
+propre numéro de patch. Une fiche ou une banque se réimporte sans perte, par dépôt sur la page ou par *Sauvegarde* →
+*Importer un fichier* ; ce qui ne tient pas dans l'appareil est refusé, le reste est signalé dans un compte-rendu.
+
+Ce JSON est le format de Presetbook, pas un fichier que le B2 FOUR sait charger : les réglages se recopient sur
+l'appareil. Tout le détail — format, contrôles, limites, liste des effets — est dans
+[zoom-b2four.md](zoom-b2four.md), avec un exemple importable :
+[exemples/reptilia.presetbook.json](exemples/reptilia.presetbook.json).
+
 ## Le catalogue et vos données
 
 Presetbook est livré avec un catalogue de réglages de départ. Il fait partie de l'application, donc
@@ -449,7 +471,7 @@ vous avez créées.
 ### Exporter une fiche seule
 
 Le bouton **Exporter** de chaque carte écrit un fichier `.presetbook.json` qui ne contient que cette
-fiche — pour l'archiver, la transmettre, ou la déplacer d'un serveur à l'autre. Il vaut pour les cinq
+fiche — pour l'archiver, la transmettre, ou la déplacer d'un serveur à l'autre. Il vaut pour les six
 genres, contrairement à l'export `.RfxChain` qui n'a de sens que pour une chaîne de plugins.
 
 Le fichier **emporte les façades dont la fiche a besoin**, si ce sont les vôtres : une pédale que

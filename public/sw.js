@@ -24,7 +24,7 @@
 const CACHE = "presetbook-v1";
 
 /* Le strict nécessaire pour ouvrir l'application hors ligne. */
-const SOCLE = ["./", "./rfxchain.js", "./manifest.webmanifest", "./icone.svg", "./icone-192.png"];
+const SOCLE = ["./", "./rfxchain.js", "./zoom-b2four.js", "./manifest.webmanifest", "./icone.svg", "./icone-192.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(

@@ -10,7 +10,7 @@ The shipped catalogue is a bass player's, but the tool is not: a front panel is 
 coded. Guitar, keys, a synth, a drum machine — any gear with knobs belongs here, and [Gear](#gear)
 explains how to declare it.
 
-## The five kinds of preset
+## The six kinds of preset
 
 | Kind | What it holds |
 | --- | --- |
@@ -19,6 +19,7 @@ explains how to declare it.
 | **Pedal** | the chosen effect and its settings, with the enclosure drawn |
 | **Pedalboard** | pedals in signal order, each with its settings and its state |
 | **Chain** | tempo, tuning, and the plugins in order, with their real parameters |
+| **Zoom** | a Zoom B2 FOUR patch: number, effects and amp in order, the bass and how it is played, the level to check |
 
 Any preset can be attached to a **song** (title and artist). That is what gathers the bass, the amp
 and the chain of one cover in a single place.
@@ -406,6 +407,26 @@ reads −20.6 dB here. Up to 1.12 it was shown at half (−10.3 dB) — the file
 the number was wrong. Older presets are converted when they open, without the exported sound
 changing.
 
+## The Zoom B2 FOUR
+
+A **Zoom** preset describes a patch of the bass multi-effects: its number (001 to 300), the effects in signal order
+— five at most, a single amp, a single pedal —, each with its parameters under their exact name, the bass with its
+knobs, strings and playing style, and a **level to check** with the band: no setting tells the final volume, it is
+heard in rehearsal and written down.
+
+The 104 effects and their ranges come from ZOOM's documents; nothing is made up. The cabinet is part of each amp
+model (the B2 FOUR offers none separately), and the **DI MODEL** is a setting of the unit, not of a patch: it is
+written on the **bank**, that is the setlist (*Setlists* → a setlist → *Zoom B2 FOUR bank*), from which it exports
+as one `.json` file.
+
+*Variant* on the card creates a variant of the same song — verse and chorus, with or without drive — with its own
+patch number. A preset or a bank re-imports without loss, by dropping it on the page or through *Backup* → *Import
+a file*; what cannot fit the unit is refused, the rest is flagged in a report.
+
+This JSON is Presetbook's format, not a file the B2 FOUR can load: the settings are copied onto the unit. The full
+detail — format, checks, limits, effect list — is in [zoom-b2four.md](zoom-b2four.md) (French), with an importable
+example: [exemples/reptilia.presetbook.json](exemples/reptilia.presetbook.json).
+
 ## The catalogue and your data
 
 Presetbook ships with a starting catalogue of settings. It is part of the application, so it grows
@@ -422,7 +443,7 @@ restores the original catalogue without touching the presets you created.
 ### Exporting a single preset
 
 The **Export** button on each card writes a `.presetbook.json` file holding that preset only — to
-archive it, pass it on, or move it from one server to another. It works for all five kinds, unlike
+archive it, pass it on, or move it from one server to another. It works for all six kinds, unlike
 the `.RfxChain` export which only makes sense for a plugin chain.
 
 The file **carries the front panels the preset needs**, if they are yours: a pedal you drew travels

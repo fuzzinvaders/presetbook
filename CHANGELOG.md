@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.13.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.14.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,37 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.14.0 — 25 November 2026
+
+### Added
+
+- **The Zoom B2 FOUR, a sixth kind of preset.** A patch is described whole: its number (001 to 300), the effects in
+  signal order with their parameters under their exact name, the amp models in the same chain, the bass with its
+  knobs, strings, gauge and playing style, and a level to check with the band. The card shows the chain from input
+  to output, block by block; the editor offers effects by category and tells at once whether the preset fits the
+  unit.
+- **A catalogue taken from ZOOM's documents, and from them only**: 104 effects, 522 parameters, their ranges and
+  value lists, the dependencies between settings. What ZOOM does not publish is not made up — no default value, no
+  unit that is not printed, no step for frequencies. The full list and the JSON schema are generated from the
+  catalogue (`node tools/zoom-docs.js`), and a test checks they are up to date.
+- **The unit's rules**: five effects at most, a single amp, a single pedal. A preset that would not fit is not
+  saved; a second amp or a sixth slot is not offered.
+- **Variants** of the same song (verse and chorus, with or without drive), each on its own patch.
+- **Banks**: a setlist becomes the bank for a gig. It holds the DI MODEL, a global setting of the unit, lists its
+  patches (duplicates flagged) and exports as one `.json` file.
+- **Checked import** of a preset or a bank, by dropping it or through *Import a file*: what cannot fit the unit is
+  refused, an unknown parameter or an out-of-range value is flagged without being lost, a newer format version is
+  refused. A report says, preset by preset, what came in and why. Exporting then re-importing gives the presets back
+  unchanged.
+- An importable example, **REPTILIA**, and an example bank, in `docs/exemples`.
+
+### Fixed
+
+- On a phone, the edit sheet of a Reaper chain overflowed the screen by a few pixels: a form frame would not shrink
+  below the width of the plugin list.
 
 ---
 

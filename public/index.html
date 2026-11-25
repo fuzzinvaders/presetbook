@@ -27,6 +27,7 @@
   --ink:#181917; --ink-2:#52564F; --ink-3:#84887F; --line:#CCCCC6; --line-2:#B6B6AF;
   --bass:#9E5F19; --bass-soft:#F1E3CF; --amp:#A62F26; --amp-soft:#F4DEDA; --reaper:#22654F; --reaper-soft:#D6E7E0;
   --pedal:#7A4FA8; --pedal-soft:#E8DEF3; --board:#1F6470; --board-soft:#D6E8EB;
+  --zoom:#3B559C; --zoom-soft:#DFE5F3;
   --ok:#1F6B45; --warn:#8A5A11; --danger:#A62F26;
   --shadow:0 1px 0 rgba(24,25,23,.05),0 8px 20px -14px rgba(24,25,23,.4);
 }
@@ -36,6 +37,7 @@
     --ink:#ECEEE9; --ink-2:#A8ADA3; --ink-3:#7C8178; --line:#2C302C; --line-2:#3C413B;
     --bass:#D79A4F; --bass-soft:#33260F; --amp:#E0705F; --amp-soft:#391B16; --reaper:#5FB893; --reaper-soft:#122C24;
     --pedal:#BE9AE0; --pedal-soft:#2A1E38; --board:#6FBAC6; --board-soft:#10292E;
+    --zoom:#93A8E6; --zoom-soft:#19213A;
     --ok:#67B98C; --warn:#D4A055; --danger:#E0705F;
     --shadow:0 1px 0 rgba(0,0,0,.5),0 10px 24px -16px #000;
   }
@@ -45,6 +47,7 @@
   --ink:#ECEEE9; --ink-2:#A8ADA3; --ink-3:#7C8178; --line:#2C302C; --line-2:#3C413B;
   --bass:#D79A4F; --bass-soft:#33260F; --amp:#E0705F; --amp-soft:#391B16; --reaper:#5FB893; --reaper-soft:#122C24;
   --pedal:#BE9AE0; --pedal-soft:#2A1E38; --board:#6FBAC6; --board-soft:#10292E;
+    --zoom:#93A8E6; --zoom-soft:#19213A;
   --ok:#67B98C; --warn:#D4A055; --danger:#E0705F;
   --shadow:0 1px 0 rgba(0,0,0,.5),0 10px 24px -16px #000;
 }
@@ -313,6 +316,35 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
 .kind.reaper{background:var(--reaper-soft); color:var(--reaper)}
 .kind.pedal{background:var(--pedal-soft); color:var(--pedal)}
 .kind.board{background:var(--board-soft); color:var(--board)}
+.card.k-zoom{border-left-color:var(--zoom)}
+.kind.zoom{background:var(--zoom-soft); color:var(--zoom)}
+/* La chaîne du signal d'un coup d'œil : des blocs qui passent à la ligne sur
+   un téléphone plutôt que de faire défiler la page de côté. */
+.zpath{display:flex; flex-wrap:wrap; align-items:stretch; gap:4px; min-width:0}
+.zpath .zb{display:flex; flex-direction:column; justify-content:center; gap:1px; min-width:0; max-width:100%;
+  padding:4px 7px; border:1px solid var(--line-2); border-radius:3px; background:var(--panel-2)}
+.zpath .zb .zn{font-size:11.5px; font-weight:600; overflow-wrap:anywhere}
+.zpath .zb .zc{font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3)}
+.zpath .zb.amp{border-color:var(--zoom); background:var(--zoom-soft)}
+.zpath .zb.off{opacity:.5} .zpath .zb.off .zn{text-decoration:line-through}
+.zpath .zb.vide{color:var(--ink-3); font-style:italic}
+.zpath .zio{align-self:center; font-size:10px; letter-spacing:.08em; color:var(--ink-3)}
+.zpath .zar{align-self:center; color:var(--ink-3); font-size:11px}
+.zbass{border-top:1px dashed var(--line); padding-top:8px; display:flex; flex-direction:column; gap:6px}
+.lvl{margin:0; font-size:12px; font-weight:600}
+.lvl.ok{color:var(--ok)} .lvl.warn{color:var(--warn)} .lvl.bad{color:var(--danger)}
+.zparams{display:grid; grid-template-columns:repeat(auto-fill,minmax(132px,1fr)); gap:8px 10px; margin-top:8px}
+.zfld{display:flex; flex-direction:column; gap:3px; font-size:11px; min-width:0}
+.zfld .k{font-weight:600; letter-spacing:.03em}
+.zfld .r{color:var(--ink-3); font-size:10px}
+.zfld input[type=number],.zfld input[type=text],.zfld select{width:100%; min-width:0}
+.zfld .ck{font-size:10.5px}
+.zfld.dim{opacity:.55}
+.zmsgs{margin:0 0 8px; padding-left:18px; font-size:12px; display:flex; flex-direction:column; gap:3px}
+.zmsgs .bad{color:var(--danger)} .zmsgs .warn{color:var(--warn)}
+.bands td.bad{color:var(--danger); font-weight:600}
+.rap{border-bottom:1px solid var(--line); padding:8px 0}
+.rap .rn{margin:0 0 4px; display:flex; flex-wrap:wrap; gap:8px; align-items:baseline}
 .tags{display:flex; flex-wrap:wrap; gap:5px}
 .tag{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.05em; color:var(--ink-2); border:1px solid var(--line); padding:2px 7px; border-radius:2px}
 .tag.on{background:var(--ink); color:var(--bg); border-color:var(--ink)}
@@ -415,7 +447,9 @@ table.bands tr.bx td{opacity:.5; text-decoration:line-through}
 .sheet-f{display:flex; gap:8px; padding:14px 18px; border-top:1px solid var(--line); background:var(--panel-2)}
 .sheet-f .spacer{margin-left:auto}
 .row{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
-fieldset{border:1px solid var(--line); border-radius:4px; padding:12px 14px 14px; margin:0}
+/* min-width:0 : un fieldset ne rétrécit pas sous la largeur de son contenu, et
+   une liste d'effets aux noms longs poussait la feuille hors de l'écran. */
+fieldset{border:1px solid var(--line); border-radius:4px; padding:12px 14px 14px; margin:0; min-width:0}
 legend{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3); padding:0 5px}
 .sl{display:grid; grid-template-columns:84px 1fr 98px; gap:10px; align-items:center; margin:7px 0}
 .sl .k{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-2)}
@@ -472,6 +506,8 @@ select[data-gear]{font-weight:600}
 .bandE{display:flex; flex-wrap:wrap; gap:6px 9px; align-items:center}
 .bandE select[data-sb="t"]{min-width:104px; font-size:12.5px; padding:4px 6px}
 .chain-acts{display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; align-items:center}
+.slot-e-h select[data-zfx]{font-weight:600; flex:1 1 160px; min-width:0; max-width:100%}
+.chain-acts select[data-zadd],select[data-zbgear]{max-width:100%; min-width:0}
 .preview{border:1px dashed var(--line-2); border-radius:5px; padding:10px 12px; display:flex;
   gap:12px; align-items:center; flex-wrap:wrap}
 .preview .art{padding:0}
@@ -683,6 +719,8 @@ input[type="color"]{width:100%; height:34px; padding:2px; background:var(--panel
 
 <!-- Codec .RfxChain : absent du miroir publié, l'interface s'adapte. -->
 <script src="rfxchain.js"></script>
+<!-- Catalogue du Zoom B2 FOUR : sans lui, les fiches Zoom restent lisibles mais non contrôlées. -->
+<script src="zoom-b2four.js"></script>
 
 <script>
 (function(){
@@ -1384,6 +1422,131 @@ var EN = {
   "Sauvegarde illisible.": "Unreadable backup.",
   "Ce bloc n'est pas un JSON valide.": "This block is not valid JSON.",
   "Ce fichier n'est pas un JSON valide.": "This file is not valid JSON.",
+  /* ---- Zoom B2 FOUR ---- */
+  "Multi-effets Zoom": "Zoom multi-effects",
+  "Zoom B2 FOUR multi-effets basse : la chaîne d'effets, les modèles d'ampli et leurs réglages se notent dans une fiche Zoom.":
+    "Zoom B2 FOUR bass multi-effects: the effect chain, amp models and their settings are written down in a Zoom preset.",
+  "Chaîne du signal": "Signal chain",
+  "coupé": "off",
+  "aucun effet": "no effect",
+  "Effet absent du catalogue : réglages conservés tels quels.": "Effect missing from the catalogue: settings kept as they are.",
+  "sans effet ici": "no effect here",
+  "Aucun réglage sur cet effet.": "No setting on this effect.",
+  "effets": "effects",
+  "effet": "effect",
+  "Niveau équilibré aux essais": "Level balanced in rehearsal",
+  "Niveau à vérifier aux essais": "Level to check in rehearsal",
+  "Jeu": "Playing",
+  "doigts": "fingers",
+  "médiator": "pick",
+  "Variante : {0}": "Variant: {0}",
+  "Variante de « {0} »": "Variant of “{0}”",
+  "déjà dans la chaîne": "already in the chain",
+  "sauf": "except",
+  "valeur de note": "note value",
+  "sans effet avec ce réglage": "no effect with this setting",
+  "suit le tempo du patch": "follows the patch tempo",
+  "Catalogue Zoom indisponible : la fiche n'est pas contrôlée.": "Zoom catalogue unavailable: the preset is not checked.",
+  "Catalogue Zoom indisponible : la fiche n'est pas modifiable ici.": "Zoom catalogue unavailable: the preset cannot be edited here.",
+  "Conforme au B2 FOUR : {0} effets sur {1}.": "Fits the B2 FOUR: {0} of {1} effects.",
+  "Choisis la basse : ses réglages accompagnent le patch.": "Choose the bass: its settings go with the patch.",
+  "Tirant": "Gauge",
+  "Rondes nickel, plats…": "Nickel rounds, flats…",
+  "Médiator, épaisseur, position de la main…": "Pick, thickness, hand position…",
+  "Patch du B2 FOUR": "B2 FOUR patch",
+  "Numéro (001 à 300)": "Number (001 to 300)",
+  "Nom sur l'appareil": "Name on the unit",
+  "Par défaut, le nom de la fiche": "By default, the preset name",
+  "Tempo (40 à 250 bpm)": "Tempo (40 to 250 bpm)",
+  "Les patchs d'usine occupent 001 à 250 : 251 à 300 restent libres sans rien écraser. Un nom ne prend que lettres, chiffres, espace et ! % & ' + , - . = _ ; ceux d'usine font 14 caractères au plus.":
+    "Factory patches take 001 to 250: 251 to 300 stay free without overwriting anything. A name only takes letters, digits, space and ! % & ' + , - . = _; factory names are 14 characters at most.",
+  "Variante": "Variant",
+  "Variante de": "Variant of",
+  "Couplet, refrain, sans saturation…": "Verse, chorus, without drive…",
+  "Chaîne d'effets": "Effect chain",
+  "Dans l'ordre du signal, 5 effets au plus, un seul ampli et une seule pédale. Le baffle est compris dans chaque modèle d'ampli : le B2 FOUR n'en propose pas à part.":
+    "In signal order, 5 effects at most, a single amp and a single pedal. The cabinet is part of each amp model: the B2 FOUR offers none separately.",
+  "Effet": "Effect",
+  "Conservés sans être reconnus : {0}": "Kept without being recognised: {0}",
+  "Ajouter un effet": "Add an effect",
+  "+ Ajouter un effet": "+ Add an effect",
+  "Cinq effets : la chaîne est pleine": "Five effects: the chain is full",
+  "Niveau": "Level",
+  "Le volume final dépend de toute la chaîne et du volume général de l'appareil : il ne se déduit d'aucun réglage. Il se vérifie en groupe, puis se note ici.":
+    "The final volume depends on the whole chain and on the unit's master volume: no setting tells it. It is checked with the band, then written down here.",
+  "À vérifier aux essais": "To check in rehearsal",
+  "Équilibré": "Balanced",
+  "Note de niveau": "Level note",
+  "Ex. un peu fort face au patch 252, VOL de l'ampli à 70": "E.g. a bit loud next to patch 252, amp VOL at 70",
+  "Toutes les fiches Zoom": "All Zoom presets",
+  "Le catalogue Zoom n'est pas chargé.": "The Zoom catalogue is not loaded.",
+  "Aucune fiche Zoom à exporter.": "No Zoom preset to export.",
+  "Banque exportée : {0} fiches.": "Bank exported: {0} presets.",
+  "Banque Zoom B2 FOUR": "Zoom B2 FOUR bank",
+  "Non défini": "Not set",
+  "Le DI MODEL se choisit sur le dessus du B2 FOUR et vaut pour tous les patchs : il appartient à la banque, pas à une fiche.":
+    "The DI MODEL is chosen on top of the B2 FOUR and applies to every patch: it belongs to the bank, not to a preset.",
+  "Aucune fiche Zoom pour les morceaux de cette setlist.": "No Zoom preset for the songs of this setlist.",
+  "Fiche": "Preset",
+  "en double": "duplicate",
+  "équilibré": "balanced",
+  "à vérifier": "to check",
+  "Exporter la banque (.json)": "Export the bank (.json)",
+  "Exporter toutes les fiches Zoom": "Export all Zoom presets",
+  "Basse inconnue ici : {0} — ses réglages sont conservés.": "Bass unknown here: {0} — its settings are kept.",
+  "Banque importée": "Imported bank",
+  "Banque refusée : {0}": "Bank refused: {0}",
+  "Banque importée : {0} fiches sur {1}.": "Bank imported: {0} of {1} presets.",
+  "Refusée": "Refused",
+  "Importée, à vérifier": "Imported, to check",
+  "Importée": "Imported",
+  "Compte-rendu d'import": "Import report",
+  "Fiche importée : {0} — {1} avertissement(s).": "Preset imported: {0} — {1} warning(s).",
+  "Crée une variante du même morceau, avec son propre numéro de patch": "Creates a variant of the same song, with its own patch number",
+  "Dynamique": "Dynamics",
+  "Filtres et égaliseurs": "Filters and EQ",
+  "Saturation": "Drive",
+  "Préamplis": "Preamps",
+  "Transposition": "Pitch shift",
+  "Synthé": "Synth",
+  "Réverbérations": "Reverbs",
+  "Effets spéciaux": "Special effects",
+  "Pédale d'expression": "Expression pedal",
+  "Amplis basse": "Bass amps",
+  "La fiche n'est pas un objet.": "The preset is not an object.",
+  "Genre inattendu : {0}": "Unexpected kind: {0}",
+  "Nom manquant.": "Name missing.",
+  "La chaîne d'effets manque.": "The effect chain is missing.",
+  "Catalogue {0}, celui-ci connaît {1} : à vérifier.": "Catalogue {0}, this one knows {1}: to check.",
+  "{0} effets : le B2 FOUR en accepte {1} au plus.": "{0} effects: the B2 FOUR accepts {1} at most.",
+  "Bloc {0} illisible.": "Block {0} unreadable.",
+  "Bloc {0} : effet inconnu « {1} ».": "Block {0}: unknown effect “{1}”.",
+  "Bloc {0} ({1}) : paramètre non reconnu « {2} », conservé.": "Block {0} ({1}): unrecognised parameter “{2}”, kept.",
+  "Bloc {0} ({1}) : {2} = {3} — {4}.": "Block {0} ({1}): {2} = {3} — {4}.",
+  "Un seul effet {0} par patch, il y en a {1}.": "Only one {0} effect per patch, there are {1}.",
+  "Patch {0} : le B2 FOUR va de 001 à 300.": "Patch {0}: the B2 FOUR goes from 001 to 300.",
+  "Tempo {0} : le B2 FOUR va de 40 à 250 bpm.": "Tempo {0}: the B2 FOUR goes from 40 to 250 bpm.",
+  "Le nom « {0} » contient des caractères que le B2 FOUR n'affiche pas.": "The name “{0}” has characters the B2 FOUR cannot show.",
+  "Le nom « {0} » dépasse 14 caractères, la longueur des noms d'usine.": "The name “{0}” is longer than 14 characters, the length of factory names.",
+  "Bloc basse illisible.": "Bass block unreadable.",
+  "État de niveau inconnu : {0}.": "Unknown level state: {0}.",
+  "Le fichier n'est pas un objet.": "The file is not an object.",
+  "Ce n'est pas une banque.": "This is not a bank.",
+  "Version du format manquante.": "Format version missing.",
+  "Format {0}, plus récent que celui de cette version ({1}) : mets Presetbook à jour.":
+    "Format {0}, newer than this version's ({1}): update Presetbook.",
+  "Appareil {0}, attendu {1}.": "Device {0}, expected {1}.",
+  "La liste des fiches manque.": "The preset list is missing.",
+  "DI MODEL inconnu : {0}.": "Unknown DI MODEL: {0}.",
+  "Patch {0} déjà pris par « {1} ».": "Patch {0} already taken by “{1}”.",
+  "attend du texte": "expects text",
+  "hors de {0}": "outside {0}",
+  "hors liste ({0})": "not in the list ({0})",
+  "n'est pas un nombre": "is not a number",
+  "{0} n'est pas une valeur permise": "{0} is not an allowed value",
+  "hors plage ({0} à {1})": "out of range ({0} to {1})",
+  "trop de décimales": "too many decimals",
+  "Fiche refusée : {0}": "Preset refused: {0}",
   "Importer un fichier": "Import a file",
   "Sauvegarde chargée dans le bloc : relis-la, puis « Restaurer ».":
     "Backup loaded into the block: read it over, then “Restore”.",
@@ -2334,7 +2497,8 @@ var KINDS = {
   amp:    {label:"Ampli",    full:"Amplis",            acc:"var(--amp)"},
   pedal:  {label:"Pédale",   full:"Pédales",           acc:"var(--pedal)"},
   board:  {label:"Pédalier", full:"Pédaliers",         acc:"var(--board)"},
-  reaper: {label:"Reaper",   full:"Chaîne de plugins", acc:"var(--reaper)"}
+  reaper: {label:"Reaper",   full:"Chaîne de plugins", acc:"var(--reaper)"},
+  zoom:   {label:"Zoom",     full:"Multi-effets Zoom", acc:"var(--zoom)"}
 };
 
 /* ============================ matériel ============================
@@ -2348,6 +2512,14 @@ var KINDS = {
    que si une autre est active.
    face : dark (bouton noir), ivory (bouton crème), plain (neutre).        */
 var GEAR = {
+  /* Le multi-effets ne se décrit pas en boutons : sa chaîne vient du catalogue
+     zoom-b2four.js. Cette entrée lui donne une marque et un modèle, pour les
+     filtres et les regroupements comme pour le reste du matériel. */
+  "b2four": {
+    kind:"zoom", brand:"Zoom", model:"B2 FOUR", face:"plain",
+    note:"Zoom B2 FOUR multi-effets basse : la chaîne d'effets, les modèles d'ampli et leurs réglages se notent dans une fiche Zoom.",
+    controls:[]
+  },
   "bb734a": {
     kind:"bass", brand:"Yamaha", model:"BB734A", face:"bass", dim:"passif",
     note:"Micros P/J. En passif l'EQ sort du circuit et le bouton treble devient une tonalité.",
@@ -2808,7 +2980,7 @@ var PEDALS = {
   }
 })();
 
-var DEFAULT_GEAR = { bass:"bb734a", amp:"rumble40", pedal:"pd-od" };
+var DEFAULT_GEAR = { bass:"bb734a", amp:"rumble40", pedal:"pd-od", zoom:"b2four" };
 
 /** Le matériel d'une fiche ; les fiches d'avant gardent le matériel d'origine. */
 function gearOf(p){
@@ -4163,6 +4335,7 @@ function chainView(p){
 
 /** Ce qu'une fiche repliée garde derrière elle, en une mention. */
 function apercuFiche(p){
+  if (p.kind === "zoom") return apercuZoom(p);
   if (p.kind === "reaper"){
     var nb = (p.chain || []).length;
     return nb ? nb + " " + t(nb > 1 ? "maillons" : "maillon") : "";
@@ -4200,6 +4373,8 @@ function card(p){
     h += '<p class="gearname">' + (p.slots || []).length + ' ' +
          t("pédales dans l’ordre du signal") + '</p>';
     h += boardArt(p);
+  } else if (p.kind === "zoom"){
+    h += zoomBody(p);
   } else {
     var meta = [];
     if (p.tempo) meta.push(p.tempo + " bpm");
@@ -4220,6 +4395,9 @@ function card(p){
 
   h += '<div class="card-f"><button class="btn small" data-act="edit">Modifier</button>' +
        '<button class="btn small ghost" data-act="dup">Dupliquer</button>' +
+       (p.kind === "zoom"
+         ? '<button class="btn small ghost" data-act="var"' +
+           ' title="Crée une variante du même morceau, avec son propre numéro de patch">Variante</button>' : "") +
        '<button class="btn small ghost" data-act="exp"' +
        ' title="Écrit la fiche dans un fichier, façades comprises">Exporter</button>' +
        '<button class="btn small ghost" data-act="cmp"' +
@@ -4240,6 +4418,9 @@ function card(p){
 function gearsOf(p){
   if (p.kind === "board") return (p.slots || []).map(function(x){ return x.gear; });
   if (p.kind === "reaper") return [];
+  /* Le multi-effets, et la basse dont la fiche donne les réglages : filtrer sur
+     la BB734A doit ramener aussi les patchs pensés pour elle. */
+  if (p.kind === "zoom") return ["b2four"].concat(p.bass && p.bass.gear ? [p.bass.gear] : []);
   return [gearId(p)];
 }
 
@@ -4308,7 +4489,10 @@ function passeQ(p){
              (p.kind === "reaper" || p.kind === "board" ? "" : gearName(gearOf(p))),
              (p.slots||[]).map(function(x){ var g = allGear()[x.gear]; return g ? g.model : ""; }).join(" "),
              p.song ? (p.song.title + " " + p.song.artist) : "",
-             (p.chain||[]).map(function(s){ return s.plugin + " " + s.role + " " + s.settings; }).join(" ")].join(" ");
+             (p.chain||[]).map(function(s){
+               return (s.plugin || s.fx || "") + " " + (s.role || "") + " " + (s.settings || "");
+             }).join(" "),
+             p.bass && p.bass.gear ? gearName(gearOf(bassVue(p))) : "", p.variant || ""].join(" ");
   return plat(hay).indexOf(plat(ui.q)) >= 0;
 }
 
@@ -4765,6 +4949,7 @@ function blank(kind, gear){
   if (kind === "board"){
     return {id:id, kind:"board", name:"", tags:[], slots:[], notes:"", song:{title:"",artist:""}};
   }
+  if (kind === "zoom") return blankZoom(id);
   if (kind === "reaper"){
     return {id:id, kind:"reaper", name:"", tags:[], tempo:"", tuning:"", chain:[],
             notes:"", song:{title:"",artist:""}};
@@ -5062,7 +5247,10 @@ function openSets(){
       'L\'ouvrir ne montre que ses morceaux, dans cet ordre — et c\'est ce que l\'impression met sur papier.</p>' +
       (lignes || '<p class="hint">Aucune setlist pour l\'instant.</p>') +
       '<div class="acts" style="margin-top:9px">' +
-      '<button class="btn small" data-setnew>+ Nouvelle setlist</button></div>' +
+      '<button class="btn small" data-setnew>+ Nouvelle setlist</button>' +
+      (zoomCatalogue() && library().some(function(p){ return p.kind === "zoom"; })
+        ? '<button class="btn small ghost" data-setbank="*">Exporter toutes les fiches Zoom</button>' : "") +
+      '</div>' +
     '</div></div>');
   veil.classList.add("open");
 }
@@ -5103,6 +5291,7 @@ function openSetEditor(id){
           dispo.map(function(c){ return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join("") +
           '</select></label>'
         : '<p class="hint">Tous les morceaux de la bibliothèque sont déjà dans cette setlist.</p>') +
+      zoomBankSection(set) +
       '<div class="acts" style="margin-top:9px">' +
       '<button class="btn small" data-setopen="' + esc(set.id) + '">Ouvrir cette setlist</button></div>' +
     '</div></div>');
@@ -5469,6 +5658,8 @@ function editorBody(){
     h += gearEditor(p);
   } else if (p.kind === "board"){
     h += boardEditor(p);
+  } else if (p.kind === "zoom"){
+    h += zoomEditor(p);
   } else {
     h += '<fieldset style="--acc:var(--reaper)"><legend>Chaîne Reaper</legend>';
     h += '<div class="row">' +
@@ -5647,6 +5838,12 @@ function setPath(o, path, val){
 
 function commit(){
   if (!draft.name){ toast("Donne un nom au preset."); return; }
+  /* Une fiche Zoom qui ne tiendrait pas dans l'appareil ne s'enregistre pas :
+     plus de cinq effets, deux amplis… Les avertissements, eux, n'empêchent rien. */
+  if (draft.kind === "zoom" && zoomCatalogue()){
+    var zr = zoomCatalogue().validatePreset(draft);
+    if (zr.errors.length){ toast(zMsg(zr.errors[0])); return; }
+  }
   draft.maj = new Date().toISOString();
   var target = draft.id;
   if (isSeed(target)) S.overrides[target] = clone(draft);
@@ -5684,6 +5881,7 @@ function removePreset(id){
 function gearsNeeded(p){
   var ids = p.kind === "board" ? (p.slots || []).map(function(x){ return x.gear; })
                                : (p.gear ? [p.gear] : []);
+  if (p.kind === "zoom" && p.bass && p.bass.gear) ids.push(p.bass.gear);
   var out = {};
   ids.forEach(function(k){ if ((S.gear || {})[k]) out[k] = clone(S.gear[k]); });
   return out;
@@ -5744,6 +5942,27 @@ function compareRows(a, b){
   var ga = gearOf(a), gb = gearOf(b);
   if (gearId(a) !== gearId(b)) ligne("Matériel", gearName(ga), gearName(gb));
 
+  if (a.kind === "zoom"){
+    /* Bloc par bloc : l'ordre fait le son. Quand les deux fiches ont le même
+       effet au même rang, on descend jusqu'aux réglages qui diffèrent. */
+    ligne("Patch", a.patch ? pad3(a.patch) : "—", b.patch ? pad3(b.patch) : "—");
+    if (a.tempo || b.tempo) ligne("Tempo", a.tempo || "—", b.tempo || "—");
+    var za = a.chain || [], zb = b.chain || [], zm = Math.max(za.length, zb.length), zj;
+    var nomBloc = function(x){ return x ? x.fx + (x.on === false ? " (" + t("hors circuit") + ")" : "") : "—"; };
+    for (zj = 0; zj < zm; zj++){
+      out.push({l: String(zj + 1) + ".", a: nomBloc(za[zj]), b: nomBloc(zb[zj]),
+                diff: nomBloc(za[zj]) !== nomBloc(zb[zj]), note:""});
+      var dfx = za[zj] && zb[zj] && za[zj].fx === zb[zj].fx ? zDef(za[zj].fx) : null;
+      if (dfx) dfx.params.forEach(function(def){
+        var Z = zoomCatalogue();
+        var va = Z.fmtValue(def, (za[zj].p || {})[def.k]) || "—", vb = Z.fmtValue(def, (zb[zj].p || {})[def.k]) || "—";
+        if (va !== vb) out.push({l: String(zj + 1) + ". " + def.k, a: va, b: vb, diff: true, note:""});
+      });
+    }
+    var bga = a.bass ? gearName(gearOf(bassVue(a))) : "—", bgb = b.bass ? gearName(gearOf(bassVue(b))) : "—";
+    ligne("Basse", bga, bgb);
+    return out;
+  }
   if (a.kind === "board"){
     /* Un pédalier se compare emplacement par emplacement : c'est l'ordre du
        signal qui fait le pédalier, pas seulement les réglages. */
@@ -6090,6 +6309,7 @@ function importerJson(texte, bloc){
     toast(bloc ? "Ce bloc n'est pas un JSON valide." : "Ce fichier n'est pas un JSON valide.");
     return;
   }
+  if (j && j.presetbook === "bank"){ importerBanque(j); return; }
   if (j && j.presetbook === "preset" && j.preset){ addPreset(j); return; }
   if (!bloc){
     if (!estSauvegarde(j)){ toast("Ce fichier ne contient pas de fiche."); return; }
@@ -6158,6 +6378,7 @@ function presetFile(p){
   var need = {}, ids = [], i;
   if (p.kind === "board") (p.slots || []).forEach(function(x){ ids.push(x.gear); });
   else if (p.gear) ids.push(p.gear);
+  if (p.kind === "zoom" && p.bass && p.bass.gear) ids.push(p.bass.gear);
   for (i=0;i<ids.length;i++){
     var g = (S.gear || {})[ids[i]];             /* seules les façades créées ici voyagent */
     if (g) need[ids[i]] = g;
@@ -6174,20 +6395,577 @@ function exportPreset(id){
 /* Une fiche exportée revient ici. Elle s'ajoute — jamais elle n'écrase — et
    reçoit un nouvel identifiant si le sien est déjà pris. */
 function addPreset(env){
-  var p = migreFiche(clone(env.preset));     /* un fichier ou une étagère d'avant */
-  if (!p || !p.kind || !KINDS[p.kind]){ toast("Ce fichier ne contient pas de fiche."); return; }
+  var res = ajouteFiche(env);
+  var nom = env && env.preset && env.preset.name ? env.preset.name : "?";
+  if (!res.ok){
+    /* Une fiche Zoom refusée dit pourquoi, règle par règle ; les autres genres
+       gardent leur message court. */
+    if (env && env.preset && env.preset.kind === "zoom") openRapport(tf("Fiche refusée : {0}", nom),
+      [{nom:nom, errors:res.errors, warnings:res.warnings}]);
+    else toast(zMsg(res.errors[0]));
+    return;
+  }
+  var p = res.preset;
+  closeEditor(); render();
+  save().then(function(ok){
+    if (!ok) return;
+    if (!res.warnings.length){ toast(tf("Fiche importée : {0}", p.name)); return; }
+    toast(tf("Fiche importée : {0} — {1} avertissement(s).", p.name, res.warnings.length), {
+      label: "Voir",
+      run: function(){ openRapport(tf("Fiche importée : {0}", p.name), [{nom:p.name, errors:[], warnings:res.warnings}]); }
+    });
+  });
+}
+
+/* ============================ Zoom B2 FOUR ============================
+   Le catalogue et les règles viennent de zoom-b2four.js (window.ZB2F), tirés
+   des documents de Zoom. Cette partie-ci ne fait que montrer, éditer, importer
+   et exporter : elle n'invente ni effet ni paramètre. Sans le catalogue (miroir
+   publié, bac à sable), une fiche Zoom reste lisible mais n'est pas contrôlée. */
+
+function zoomCatalogue(){ return window.ZB2F || null; }
+function zDef(nom){ var Z = zoomCatalogue(); return Z ? Z.FX[nom] || null : null; }
+function zCat(nom){ var d = zDef(nom); return d ? d.cat : ""; }
+function zCatLabel(cat){
+  var Z = zoomCatalogue(), c = Z ? Z.catDef(cat) : null;
+  return c ? c.l : (cat || "?");
+}
+/** Un message du catalogue : un motif et ses trous, éventuellement imbriqués. */
+function zMsg(o){
+  if (!o) return "";
+  if (typeof o === "string") return t(o);
+  return tf.apply(null, [o.m].concat((o.a || []).map(function(x){
+    return x && typeof x === "object" ? zMsg(x) : x;
+  })));
+}
+function pad3(n){
+  var s = String(n == null ? "" : n);
+  return /^\d+$/.test(s) && s.length < 3 ? ("00" + s).slice(-3) : s;
+}
+
+/**
+ * La basse d'une fiche Zoom, vue comme une fiche basse : les mêmes fonctions
+ * dessinent ses boutons, donc elle se lit exactement comme sa fiche à part.
+ */
+function bassVue(p){
+  var b = p && p.bass, o = {kind:"bass"}, k;
+  if (!b) return null;
+  for (k in b) if (Object.prototype.hasOwnProperty.call(b, k)) o[k] = b[k];
+  o.kind = "bass";
+  return o;
+}
+/** Une basse neuve pour la fiche : la façade choisie, ses valeurs de départ. */
+function bassNeuve(gear, ancienne){
+  var a = ancienne || {};
+  var b = {kind:"bass", gear:gear, strings:a.strings || "", gauge:a.gauge || "",
+           tech:a.tech || "", jeu:a.jeu || ""};
+  applyGearDefaults(b);
+  delete b.kind;
+  return b;
+}
+
+/* ------------------------------------------------------------ la carte */
+
+/** La chaîne du signal d'un coup d'œil : l'entrée, les blocs dans l'ordre, la sortie. */
+function zoomPath(p){
+  var rows = p.chain || [];
+  var h = '<div class="zpath" role="list" aria-label="' + esc("Chaîne du signal") + '">' +
+          '<span class="zio">IN</span>';
+  rows.forEach(function(s, i){
+    var cat = zCat(s.fx);
+    h += '<span class="zar" aria-hidden="true">→</span>' +
+      '<span role="listitem" class="zb' + (cat === "BASS AMP" ? " amp" : "") + (s.on === false ? " off" : "") + '">' +
+      '<span class="zc">' + (i + 1) + ' · ' + esc(zCatLabel(cat)) + '</span>' +
+      '<span class="zn">' + esc(s.fx || "?") + '</span>' +
+      (s.on === false ? '<span class="zc">' + esc("coupé") + '</span>' : "") + '</span>';
+  });
+  if (!rows.length) h += '<span class="zar" aria-hidden="true">→</span><span class="zb vide">' + esc("aucun effet") + '</span>';
+  return h + '<span class="zar" aria-hidden="true">→</span><span class="zio">OUT</span></div>';
+}
+
+/** Les réglages d'un bloc, dans l'ordre de l'appareil. */
+function zoomParamGrid(s){
+  var Z = zoomCatalogue(), d = zDef(s.fx), vals = s.p || {}, out = [];
+  if (!d) return '<p class="sn">' + esc("Effet absent du catalogue : réglages conservés tels quels.") + '</p>';
+  d.params.forEach(function(def){
+    var v = vals[def.k], txt;
+    if (Z.isInactive(def, vals)) txt = t("sans effet ici");
+    else txt = Z.fmtValue(def, v);
+    out.push('<span class="pk">' + esc(def.k) + (def.pedal ? " · P" : "") + '</span>' +
+             '<span class="pv">' + esc(txt === null ? t("à régler") : txt) + '</span>');
+  });
+  Object.keys(vals).forEach(function(k){
+    if (Z.paramDef(s.fx, k)) return;
+    out.push('<span class="pk">' + esc(k) + ' ?</span><span class="pv">' + esc(String(vals[k])) + '</span>');
+  });
+  if (!d.params.length) return '<p class="sn">' + esc("Aucun réglage sur cet effet.") + '</p>';
+  return '<div class="pgrid">' + out.join("") + '</div>';
+}
+
+function zoomChainView(p){
+  var rows = p.chain || [];
+  if (!rows.length || !zoomCatalogue()) return "";
+  var corps = "", plies = 0;
+  rows.forEach(function(s, i){
+    var off = s.on === false, cle = foldFx(p.id, i), plie = isFolded(cle);
+    if (plie) plies++;
+    var nb = (zDef(s.fx) || {params:[]}).params.length;
+    corps += '<li class="slot' + (off ? " bx" : "") + '" data-folded="' + (plie ? 1 : 0) + '">' +
+      '<button class="slot-h" data-fold="' + esc(cle) + '" aria-expanded="' + (!plie) + '">' +
+      '<span class="chev" aria-hidden="true"></span>' +
+      '<span class="n">' + (i + 1) + '</span><span class="p">' + esc(s.fx) + '</span>' +
+      '<span class="r">' + esc(zCatLabel(zCat(s.fx))) + '</span>' +
+      '<span class="hid">' + (nb ? nb + " " + t(nb > 1 ? "réglages" : "réglage") : "") + '</span>' +
+      (off ? '<span class="bp">hors circuit</span>' : "") + '</button>' +
+      '<div class="slot-b">' + zoomParamGrid(s) + '</div></li>';
+  });
+  var tete = rows.length > 1
+    ? '<div class="chain-h"><span class="c">' + rows.length + ' ' + t(rows.length > 1 ? "effets" : "effet") + '</span>' +
+      '<button class="fxall" data-foldfx="' + (plies >= rows.length ? "open" : "close") + '">' +
+      (plies >= rows.length ? "Tout déplier" : "Tout replier") + '</button></div>'
+    : "";
+  return tete + '<ol class="chain">' + corps + '</ol>';
+}
+
+/** Le niveau ne se calcule pas : il se vérifie en groupe, puis se note. */
+function zoomLevel(p){
+  var lv = p.level || {}, ok = lv.state === "equilibre";
+  return '<p class="lvl ' + (ok ? "ok" : "warn") + '">' +
+    esc(ok ? "Niveau équilibré aux essais" : "Niveau à vérifier aux essais") +
+    (lv.note ? ' — ' + esc(lv.note) : "") + '</p>';
+}
+
+function zoomBassView(p){
+  var b = bassVue(p);
+  if (!b || !b.gear) return "";
+  var g = gearOf(b), lignes = [];
+  var cordes = [b.strings, b.gauge].filter(Boolean).join(" · ");
+  if (cordes) lignes.push('<p class="song"><b>' + esc("Cordes") + '</b> · ' + esc(cordes) + '</p>');
+  var jeu = [b.jeu ? t(b.jeu) : "", b.tech].filter(Boolean).join(" · ");
+  if (jeu) lignes.push('<p class="song"><b>' + esc("Jeu") + '</b> · ' + esc(jeu) + '</p>');
+  return '<div class="zbass"><p class="gearname">' + esc(gearName(g)) + '</p>' +
+         gearTags(b) + gearStrip(b) + lignes.join("") + '</div>';
+}
+
+function zoomBody(p){
+  var meta = [], h = "";
+  if (p.patch) meta.push(tf("Patch {0}", pad3(p.patch)));
+  if (p.patchName && p.patchName !== p.name) meta.push(p.patchName);
+  if (p.tempo) meta.push(p.tempo + " bpm");
+  if (p.variant) meta.push(tf("Variante : {0}", p.variant));
+  h += '<p class="gearname">Zoom B2 FOUR</p>';
+  if (meta.length) h += '<div class="tags">' + meta.map(function(m){
+    return '<span class="tag">' + esc(m) + '</span>';
+  }).join("") + '</div>';
+  if (p.variantOf){
+    var src = findPreset(p.variantOf);
+    if (src) h += '<p class="song">' + esc(tf("Variante de « {0} »", src.name)) + '</p>';
+  }
+  h += zoomLevel(p);
+  h += zoomPath(p);
+  h += zoomChainView(p);
+  h += zoomBassView(p);
+  return h;
+}
+
+/** Ce qu'une fiche Zoom repliée garde derrière elle. */
+function apercuZoom(p){
+  var rows = p.chain || [], ampli = "";
+  rows.forEach(function(s){ if (zCat(s.fx) === "BASS AMP") ampli = s.fx; });
+  var bouts = [];
+  if (p.patch) bouts.push(pad3(p.patch));
+  bouts.push(rows.length + " " + t(rows.length > 1 ? "effets" : "effet"));
+  if (ampli) bouts.push(ampli);
+  return bouts.join(" · ");
+}
+
+/* ------------------------------------------------------------ l'éditeur */
+
+function zFxOptions(courant, pourAjout, chain){
+  var Z = zoomCatalogue();
+  if (!Z) return "";
+  var pris = {};
+  (chain || []).forEach(function(s){ var c = zCat(s.fx); pris[c] = (pris[c] || 0) + 1; });
+  return Z.CATEGORIES.map(function(c){
+    var plein = pourAjout && Z.LIMITS.uniqueCats.indexOf(c.id) >= 0 && pris[c.id];
+    return '<optgroup label="' + esc(c.l) + (plein ? " — " + esc("déjà dans la chaîne") : "") + '">' +
+      Z.ORDER.filter(function(n){ return Z.FX[n].cat === c.id; }).map(function(n){
+        return '<option value="' + esc(n) + '"' + (n === courant ? " selected" : "") +
+               (plein ? " disabled" : "") + '>' + esc(n) + '</option>';
+      }).join("") + '</optgroup>';
+  }).join("");
+}
+
+/** La plage d'un paramètre, écrite comme dans le document de Zoom. */
+function zPlage(def){
+  var Z = zoomCatalogue();
+  if (def.opts) return def.opts.join(", ");
+  if (def.t === "text") return def.doc || "";
+  var s = Z.fmtValue(def, def.min) + " – " + Z.fmtValue(def, def.max);
+  if (def.off) s = "OFF, " + s;
+  if (def.extra) s += ", " + def.extra.join(", ");
+  if (def.skip) s += " (" + t("sauf") + " " + def.skip.join(", ") + ")";
+  return s;
+}
+
+function zParamField(def, s){
+  var Z = zoomCatalogue(), vals = s.p || {}, v = vals[def.k];
+  var inactif = Z.isInactive(def, vals);
+  var synchro = def.sync && vals[def.sync.k] === def.sync.v;
+  var ctl;
+  if (def.opts){
+    ctl = '<select data-zp="' + esc(def.k) + '"' + (inactif ? " disabled" : "") + '>' +
+      '<option value="">' + esc("à régler") + '</option>' +
+      def.opts.map(function(o){
+        return '<option value="' + esc(o) + '"' + (String(v) === o ? " selected" : "") + '>' + esc(o) + '</option>';
+      }).join("") + '</select>';
+  } else if (def.t === "text" || synchro){
+    ctl = '<input type="text" data-zp="' + esc(def.k) + '" value="' + esc(v == null ? "" : v) + '"' +
+          (synchro ? ' placeholder="' + esc("valeur de note") + '"' : "") + '>';
+  } else {
+    var estOff = v === "OFF";
+    ctl = '<input type="number" data-zp="' + esc(def.k) + '" min="' + def.min + '" max="' + def.max + '"' +
+          ' step="' + (def.step || "any") + '" value="' + esc(v == null || estOff ? "" : v) + '"' +
+          (inactif || estOff ? " disabled" : "") + '>';
+    if (def.off) ctl += '<label class="ck"><input type="checkbox" data-zoff="' + esc(def.k) + '"' +
+                        (estOff ? " checked" : "") + '> OFF</label>';
+  }
+  var titre = def.k + (def.u ? " (" + def.u + ")" : "") + (def.pedal ? " · P" : "");
+  return '<label class="zfld' + (inactif ? " dim" : "") + '"><span class="k">' + esc(titre) + '</span>' + ctl +
+    '<span class="r">' + esc(inactif ? t("sans effet avec ce réglage") : synchro ? t("suit le tempo du patch") : zPlage(def)) +
+    '</span></label>';
+}
+
+/** Ce que les règles du B2 FOUR disent de la fiche, recalculé à chaque saisie. */
+function zCheckHtml(p){
+  var Z = zoomCatalogue();
+  if (!Z) return '<p class="hint">' + esc("Catalogue Zoom indisponible : la fiche n'est pas contrôlée.") + '</p>';
+  var r = Z.validatePreset(p);
+  var errs = r.errors.filter(function(e){ return e.m !== "Nom manquant."; });   /* le nom se demande à l'enregistrement */
+  if (!errs.length && !r.warnings.length){
+    return '<p class="lvl ok">' + esc(tf("Conforme au B2 FOUR : {0} effets sur {1}.", (p.chain || []).length, Z.LIMITS.maxFx)) + '</p>';
+  }
+  return '<ul class="zmsgs">' +
+    errs.map(function(e){ return '<li class="bad">' + esc(zMsg(e)) + '</li>'; }).join("") +
+    r.warnings.map(function(w){ return '<li class="warn">' + esc(zMsg(w)) + '</li>'; }).join("") + '</ul>';
+}
+function refreshZCheck(){
+  var z = document.getElementById("zcheck");
+  if (z && draft && draft.kind === "zoom") z.innerHTML = tHtml(zCheckHtml(draft));
+}
+
+function zoomBassEditor(p){
+  var b = bassVue(p), h = '<fieldset style="--acc:var(--bass)"><legend>Basse</legend>';
+  h += '<label class="fld">Instrument<select data-zbgear><option value="">—</option>' +
+    gearList("bass").map(function(x){
+      return '<option value="' + esc(x.id) + '"' + (b && b.gear === x.id ? " selected" : "") + '>' +
+             esc(gearName(x.g)) + '</option>';
+    }).join("") + '</select></label>';
+  if (!b || !b.gear) return h + '<p class="hint">Choisis la basse : ses réglages accompagnent le patch.</p></fieldset>';
+  var g = gearOf(b), i, c, v, off;
+  if (g.modes){
+    h += '<div class="seg" data-seg="bass.mode" role="tablist">' + g.modes.options.map(function(o){
+      return '<button role="tab" data-v="' + esc(o) + '" aria-selected="' + (b.mode === o) + '">' + esc(cap(o)) + '</button>';
+    }).join("") + '</div>';
+  }
+  var toggles = [];
+  for (i=0;i<g.controls.length;i++){
+    c = g.controls[i];
+    if (c.t === "switch") toggles.push('<button class="tg" data-tg="bass.' + esc(c.k) + '" aria-pressed="' +
+                                       !!getPath(b, c.k) + '">' + esc(c.l) + '</button>');
+  }
+  if (toggles.length) h += '<div class="toggles">' + toggles.join("") + '</div>';
+  for (i=0;i<g.controls.length;i++){
+    c = g.controls[i];
+    if (c.t === "switch") continue;
+    v = ctrlValue(b, c); off = ctrlOff(g, b, c);
+    if (c.t === "select"){
+      h += '<label class="fld sel-c">' + esc(ctrlLabel(g, b, c)) + '<select data-sel="bass.' + esc(c.k) + '"' +
+        (off ? " disabled" : "") + '>' + selOpts(c).map(function(o){
+          return '<option value="' + esc(o) + '"' + (selValue(c, v) === o ? " selected" : "") + '>' + esc(o) + '</option>';
+        }).join("") + '</select></label>';
+    } else if (c.t === "clock"){
+      h += sl("bass." + c.k, ctrlLabel(g, b, c), v, -5, 5, c.u === "pct" ? 0.1 : 0.25,
+              off ? "hors circuit" : ctrlText(c, v), off);
+    } else if (c.t === "balance"){
+      h += sl("bass." + c.k, c.l + " " + (c.a || "1") + " ⇄ " + (c.b || "2"), v,
+              c.min || 0, c.max || 100, c.step || 2, balLabel(v, c), off);
+    } else {
+      h += sl("bass." + c.k, c.l, v, c.min, c.max, c.step, ctrlText(c, v), off);
+    }
+  }
+  h += '<div class="row">' +
+    '<label class="fld">Cordes<input type="text" data-f="bass.strings" value="' + esc(b.strings || "") +
+      '" placeholder="' + esc("Rondes nickel, plats…") + '"></label>' +
+    '<label class="fld">Tirant<input type="text" data-f="bass.gauge" value="' + esc(b.gauge || "") +
+      '" placeholder="45-105"></label></div>' +
+    '<div class="row">' +
+    '<label class="fld">Jeu<select data-sel="bass.jeu"><option value="">—</option>' +
+      ["doigts", "médiator"].map(function(o){
+        return '<option value="' + esc(o) + '"' + (b.jeu === o ? " selected" : "") + '>' + esc(o) + '</option>';
+      }).join("") + '</select></label>' +
+    '<label class="fld">Technique<input type="text" data-f="bass.tech" value="' + esc(b.tech || "") +
+      '" placeholder="' + esc("Médiator, épaisseur, position de la main…") + '"></label></div>';
+  return h + '</fieldset>';
+}
+
+function zoomEditor(p){
+  var Z = zoomCatalogue(), h = "";
+  if (!Z) return '<p class="hint">' + esc("Catalogue Zoom indisponible : la fiche n'est pas modifiable ici.") + '</p>';
+  var chain = p.chain || [];
+  h += '<fieldset style="--acc:var(--zoom)"><legend>Patch du B2 FOUR</legend>';
+  h += '<div class="row">' +
+    '<label class="fld">Numéro (001 à 300)<input type="number" min="1" max="300" step="1" data-fn="patch" value="' +
+      esc(p.patch == null ? "" : p.patch) + '"></label>' +
+    '<label class="fld">Nom sur l\'appareil<input type="text" data-f="patchName" value="' + esc(p.patchName || "") +
+      '" placeholder="' + esc("Par défaut, le nom de la fiche") + '"></label>' +
+    '<label class="fld">Tempo (40 à 250 bpm)<input type="number" min="40" max="250" step="1" data-fn="tempo" value="' +
+      esc(p.tempo == null ? "" : p.tempo) + '"></label></div>';
+  h += '<p class="hint">Les patchs d\'usine occupent 001 à 250 : 251 à 300 restent libres sans rien écraser. ' +
+       'Un nom ne prend que lettres, chiffres, espace et ! % & \' + , - . = _ ; ceux d\'usine font 14 caractères au plus.</p>';
+  var autres = library().filter(function(x){ return x.kind === "zoom" && x.id !== p.id; });
+  h += '<div class="row">' +
+    '<label class="fld">Variante<input type="text" data-f="variant" value="' + esc(p.variant || "") +
+      '" placeholder="' + esc("Couplet, refrain, sans saturation…") + '"></label>' +
+    '<label class="fld">Variante de<select data-sel="variantOf"><option value="">—</option>' +
+      autres.map(function(x){
+        return '<option value="' + esc(x.id) + '"' + (p.variantOf === x.id ? " selected" : "") + '>' +
+               esc((x.patch ? pad3(x.patch) + " · " : "") + x.name) + '</option>';
+      }).join("") + '</select></label></div>';
+  h += '</fieldset>';
+
+  h += zoomBassEditor(p);
+
+  h += '<fieldset style="--acc:var(--zoom)"><legend>Chaîne d\'effets</legend>';
+  h += '<p class="hint">Dans l\'ordre du signal, ' + Z.LIMITS.maxFx + ' effets au plus, un seul ampli et une seule pédale. ' +
+       'Le baffle est compris dans chaque modèle d\'ampli : le B2 FOUR n\'en propose pas à part.</p>';
+  h += '<div id="zcheck">' + zCheckHtml(p) + '</div>';
+  h += '<div class="slots">';
+  chain.forEach(function(s, i){
+    var d = zDef(s.fx);
+    h += '<div class="slot-e" data-zi="' + i + '"><div class="slot-e-h">' +
+      '<span class="n">' + (i + 1) + '</span>' +
+      '<select data-zfx aria-label="' + esc("Effet") + '">' + zFxOptions(s.fx, false, chain) + '</select>' +
+      '<label class="ck"><input type="checkbox" data-zon' + (s.on === false ? "" : " checked") + '> en circuit</label>' +
+      '<span class="tools">' +
+        '<button class="btn small ghost" data-zact="up" aria-label="Monter"' + (i === 0 ? " disabled" : "") + '>↑</button>' +
+        '<button class="btn small ghost" data-zact="down" aria-label="Descendre"' +
+          (i === chain.length - 1 ? " disabled" : "") + '>↓</button>' +
+        '<button class="btn small ghost" data-zact="rm" aria-label="Retirer">✕</button>' +
+      '</span></div>';
+    if (d && d.params.length) h += '<div class="zparams">' + d.params.map(function(def){ return zParamField(def, s); }).join("") + '</div>';
+    else if (d) h += '<p class="hint">Aucun réglage sur cet effet.</p>';
+    var inconnus = Object.keys(s.p || {}).filter(function(k){ return !Z.paramDef(s.fx, k); });
+    if (inconnus.length) h += '<p class="hint">' + esc(tf("Conservés sans être reconnus : {0}", inconnus.join(", "))) + '</p>';
+    h += '</div>';
+  });
+  h += '</div>';
+  var plein = chain.length >= Z.LIMITS.maxFx;
+  h += '<div class="chain-acts"><select data-zadd' + (plein ? " disabled" : "") + ' aria-label="' + esc("Ajouter un effet") + '">' +
+    '<option value="">' + esc(plein ? "Cinq effets : la chaîne est pleine" : "+ Ajouter un effet") + '</option>' +
+    zFxOptions(null, true, chain) + '</select></div>';
+  h += '</fieldset>';
+
+  var lv = p.level || {};
+  h += '<fieldset style="--acc:var(--zoom)"><legend>Niveau</legend>' +
+    '<p class="hint">Le volume final dépend de toute la chaîne et du volume général de l\'appareil : ' +
+    'il ne se déduit d\'aucun réglage. Il se vérifie en groupe, puis se note ici.</p>' +
+    '<div class="seg" data-seg="level.state" role="tablist">' +
+      [["a-verifier", "À vérifier aux essais"], ["equilibre", "Équilibré"]].map(function(o){
+        return '<button role="tab" data-v="' + o[0] + '" aria-selected="' + ((lv.state || "a-verifier") === o[0]) + '">' +
+               esc(o[1]) + '</button>';
+      }).join("") + '</div>' +
+    '<label class="fld">Note de niveau<input type="text" data-f="level.note" value="' + esc(lv.note || "") +
+      '" placeholder="' + esc("Ex. un peu fort face au patch 252, VOL de l'ampli à 70") + '"></label></fieldset>';
+  return h;
+}
+
+/** Une fiche Zoom vierge, la basse en façade par défaut. */
+function blankZoom(id){
+  var Z = zoomCatalogue();
+  var p = Z ? Z.blankPreset(id) : {id:id, kind:"zoom", gear:"b2four", name:"", tags:[], chain:[],
+                                    level:{state:"a-verifier", note:""}, notes:""};
+  p.song = {title:"", artist:""};
+  p.bass = bassNeuve(DEFAULT_GEAR.bass);
+  return p;
+}
+
+/** Une variante : même morceau, même point de départ, son propre numéro de patch. */
+function creerVariante(id){
+  var p = findPreset(id); if (!p) return;
+  var c = clone(p);
+  c.id = "u-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36);
+  c.variantOf = p.variantOf || p.id;
+  c.variant = "";
+  c.patch = null;
+  c.level = {state:"a-verifier", note:""};
+  c.maj = new Date().toISOString();
+  openEditor(c, true);
+}
+
+/* ------------------------------------------------------------ la banque */
+
+/** Les fiches Zoom d'une setlist, dans l'ordre des morceaux puis des numéros de patch. */
+function banqueDe(set){
+  var out = [];
+  var tri = function(a, b){
+    var pa = Number(a.patch) || 9999, pb2 = Number(b.patch) || 9999;
+    return pa - pb2 || String(a.name).localeCompare(String(b.name));
+  };
+  if (!set){
+    return library().filter(function(p){ return p.kind === "zoom"; }).sort(tri);
+  }
+  set.songs.forEach(function(cle){
+    library().filter(function(p){ return p.kind === "zoom" && cleMorceau(p) === cle; })
+      .sort(tri).forEach(function(p){ out.push(p); });
+  });
+  return out;
+}
+
+/** L'enveloppe d'une banque : la configuration de l'appareil, puis les fiches. */
+function enveloppeBanque(set){
+  var Z = zoomCatalogue();
+  var fiches = banqueDe(set).map(clone), gear = {};
+  fiches.forEach(function(p){
+    [p.gear, p.bass && p.bass.gear].forEach(function(k){ if (k && (S.gear || {})[k]) gear[k] = clone(S.gear[k]); });
+  });
+  return Z.bankEnvelope(set ? set.name : t("Toutes les fiches Zoom"), {di: set ? set.di || null : null}, fiches, gear);
+}
+
+function exportBank(id){
+  if (!zoomCatalogue()){ toast("Le catalogue Zoom n'est pas chargé."); return; }
+  var set = id === "*" ? null : setlistDe(id);
+  if (id !== "*" && !set) return;
+  var env = enveloppeBanque(set);
+  if (!env.presets.length){ toast("Aucune fiche Zoom à exporter."); return; }
+  saveFile(fileName(env.name, ".b2four-bank.json"), JSON.stringify(env, null, 1),
+           "application/json", tf("Banque exportée : {0} fiches.", env.presets.length));
+}
+
+function zoomBankSection(set){
+  var Z = zoomCatalogue();
+  if (!Z) return "";
+  var L = banqueDe(set), vus = {};
+  var h = '<fieldset style="--acc:var(--zoom)"><legend>Banque Zoom B2 FOUR</legend>';
+  h += '<label class="fld">DI MODEL<select data-setdi="' + esc(set.id) + '"><option value="">' + esc("Non défini") + '</option>' +
+    Z.DI_MODELS.map(function(d){
+      return '<option value="' + esc(d) + '"' + (set.di === d ? " selected" : "") + '>' + esc(d) + '</option>';
+    }).join("") + '</select></label>';
+  h += '<p class="hint">Le DI MODEL se choisit sur le dessus du B2 FOUR et vaut pour tous les patchs : ' +
+       'il appartient à la banque, pas à une fiche.</p>';
+  if (!L.length){
+    h += '<p class="hint">Aucune fiche Zoom pour les morceaux de cette setlist.</p>';
+  } else {
+    h += '<div class="bwrap"><table class="bands"><thead><tr><th>Patch</th><th>Fiche</th><th>Variante</th>' +
+         '<th>Ampli</th><th>Niveau</th></tr></thead><tbody>';
+    L.forEach(function(p){
+      var ampli = "";
+      (p.chain || []).forEach(function(s){ if (zCat(s.fx) === "BASS AMP") ampli = s.fx; });
+      var double = p.patch && vus[p.patch];
+      if (p.patch) vus[p.patch] = 1;
+      h += '<tr><td' + (double ? ' class="bad"' : "") + '>' + esc(p.patch ? pad3(p.patch) : "—") +
+           (double ? " " + esc("en double") : "") + '</td>' +
+           '<td>' + esc(p.name) + '</td><td>' + esc(p.variant || "—") + '</td><td>' + esc(ampli || "—") + '</td>' +
+           '<td>' + esc((p.level || {}).state === "equilibre" ? "équilibré" : "à vérifier") + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+  h += '<div class="acts" style="margin-top:9px"><button class="btn small" data-setbank="' + esc(set.id) + '"' +
+       (L.length ? "" : " disabled") + '>Exporter la banque (.json)</button></div>';
+  return h + '</fieldset>';
+}
+
+/* ------------------------------------------------------------ l'import */
+
+/**
+ * Ajoute une fiche venue d'un fichier, sans rien afficher : le compte-rendu
+ * appartient à l'appelant (une fiche seule, ou toute une banque).
+ */
+function ajouteFiche(env){
+  var p = migreFiche(clone(env.preset)), warnings = [];
+  if (!p || !p.kind || !KINDS[p.kind]) return {ok:false, errors:[{m:"Ce fichier ne contient pas de fiche."}], warnings:[]};
+  if (p.kind === "zoom"){
+    var Z = zoomCatalogue();
+    if (!Z) return {ok:false, errors:[{m:"Le catalogue Zoom n'est pas chargé."}], warnings:[]};
+    var r = Z.validatePreset(p);
+    if (r.errors.length) return {ok:false, errors:r.errors, warnings:r.warnings};
+    warnings = r.warnings.slice();
+  }
   var g = env.gear && typeof env.gear === "object" ? env.gear : {};
   Object.keys(g).forEach(function(k){ if (!allGear()[k]) S.gear[k] = g[k]; });
-  if (findPreset(p.id)){
+  var ancien = p.id;
+  if (!p.id || findPreset(p.id)){
     p.id = "u-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36);
-    p.name = tf("{0} (importée)", p.name);
+    if (ancien) p.name = tf("{0} (importée)", p.name);
   }
   var manque = (p.kind === "board" ? (p.slots || []).map(function(x){ return x.gear; })
                                    : (p.gear ? [p.gear] : [])).filter(function(k){ return !allGear()[k]; });
-  if (manque.length){ toast(tf("Façade absente : {0}", manque.join(", "))); return; }
+  if (manque.length) return {ok:false, errors:[{m:"Façade absente : {0}", a:[manque.join(", ")]}], warnings:warnings};
+  if (p.kind === "zoom" && p.bass && p.bass.gear && !allGear()[p.bass.gear]){
+    warnings.push({m:"Basse inconnue ici : {0} — ses réglages sont conservés.", a:[p.bass.gear]});
+  }
   S.custom.push(p);
+  return {ok:true, preset:p, ancien:ancien, errors:[], warnings:warnings};
+}
+
+/** Une banque : chaque fiche entre seule, et la configuration devient une setlist. */
+function importerBanque(env){
+  var Z = zoomCatalogue();
+  if (!Z){ toast("Le catalogue Zoom n'est pas chargé."); return; }
+  var r = Z.validateBank(env), nom = env && env.name ? String(env.name) : t("Banque importée");
+  if (r.errors.length){
+    openRapport(tf("Banque refusée : {0}", nom), [{nom:nom, errors:r.errors, warnings:r.warnings}]);
+    return;
+  }
+  var g = env.gear && typeof env.gear === "object" ? env.gear : {};
+  Object.keys(g).forEach(function(k){ if (!allGear()[k]) S.gear[k] = g[k]; });
+  var lignes = r.warnings.length ? [{nom:nom, errors:[], warnings:r.warnings}] : [];
+  var entrees = [], renomme = {}, morceaux = [];
+  r.presets.forEach(function(x){
+    var res = x.errors.length ? {ok:false, errors:x.errors, warnings:x.warnings}
+                              : ajouteFiche({preset:x.preset, gear:{}});
+    if (res.ok && x.warnings.length) res.warnings = x.warnings.concat(res.warnings.filter(function(w){
+      return x.warnings.map(zMsg).indexOf(zMsg(w)) < 0;
+    }));
+    lignes.push({nom:(x.preset && x.preset.name) || "?", errors:res.errors, warnings:res.warnings, ok:res.ok});
+    if (!res.ok) return;
+    entrees.push(res.preset);
+    if (res.ancien && res.ancien !== res.preset.id) renomme[res.ancien] = res.preset.id;
+    var cle = cleMorceau(res.preset);
+    if (cle && morceaux.indexOf(cle) < 0) morceaux.push(cle);
+  });
+  /* Une variante pointe vers sa fiche d'origine : si celle-ci a changé
+     d'identifiant en entrant, le lien suit. */
+  entrees.forEach(function(p){ if (p.variantOf && renomme[p.variantOf]) p.variantOf = renomme[p.variantOf]; });
+  setlists().push({id:"s-" + Date.now().toString(36) + "-" + Math.floor(Math.random()*1e4).toString(36),
+                   name:nom, songs:morceaux, di:(env.config && env.config.di) || null});
   closeEditor(); render();
-  save().then(function(ok){ if (ok) toast(tf("Fiche importée : {0}", p.name)); });
+  var total = r.presets.length, faites = entrees.length;
+  save().then(function(ok){
+    if (!ok) return;
+    var probleme = lignes.some(function(x){ return x.errors.length || x.warnings.length; });
+    if (probleme) openRapport(tf("Banque importée : {0} fiches sur {1}.", faites, total), lignes);
+    else toast(tf("Banque importée : {0} fiches sur {1}.", faites, total));
+  });
+}
+
+/** Le compte-rendu d'un import : fiche par fiche, ce qui est entré et pourquoi. */
+function openRapport(titre, lignes){
+  var veil = document.getElementById("veil");
+  var corps = lignes.map(function(x){
+    var refus = x.errors && x.errors.length, avert = x.warnings && x.warnings.length;
+    var etat = refus ? "Refusée" : avert ? "Importée, à vérifier" : "Importée";
+    return '<div class="rap"><p class="rn"><b>' + esc(x.nom) + '</b> <span class="lvl ' +
+      (refus ? "bad" : avert ? "warn" : "ok") + '">' + esc(etat) + '</span></p>' +
+      ((refus || avert) ? '<ul class="zmsgs">' +
+        (x.errors || []).map(function(e){ return '<li class="bad">' + esc(zMsg(e)) + '</li>'; }).join("") +
+        (x.warnings || []).map(function(w){ return '<li class="warn">' + esc(zMsg(w)) + '</li>'; }).join("") +
+      '</ul>' : "") + '</div>';
+  }).join("");
+  veil.innerHTML = tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc("Compte-rendu d'import") + '">' +
+    '<div class="sheet-h"><h2>' + esc(titre) + '</h2><button class="btn small ghost" data-close>Fermer</button></div>' +
+    '<div class="sheet-b">' + corps + '</div></div>');
+  veil.classList.add("open");
 }
 
 /* ============================ événements ============================ */
@@ -6370,6 +7148,7 @@ document.getElementById("list").addEventListener("click", function(e){
   var act = btn.getAttribute("data-act");
   if (act === "edit"){ var p = findPreset(id); if (p) openEditor(p, false); }
   else if (act === "dup") duplicate(id);
+  else if (act === "var") creerVariante(id);
   else if (act === "rfx"){ var q = findPreset(id); if (q) exportRfx(q); }
   else if (act === "exp") exportPreset(id);
   else if (act === "share") sharePreset(id);
@@ -6398,6 +7177,7 @@ function openNewSheet(){
         '<button class="btn" data-newkind="pedal">Pédale</button>' +
         '<button class="btn" data-newkind="board">Pédalier</button>' +
         '<button class="btn" data-newkind="reaper">Chaîne Reaper</button>' +
+        '<button class="btn" data-newkind="zoom">Zoom B2 FOUR</button>' +
       '</div></div></div>');
   veil.classList.add("open");
 }
@@ -6414,6 +7194,8 @@ document.getElementById("veil").addEventListener("click", function(e){
   if (e.target === this){ closeEditor(); return; }
   var t = e.target;
 
+  var sBank = t.closest && t.closest("[data-setbank]");
+  if (sBank){ exportBank(sBank.getAttribute("data-setbank")); return; }
   var sOpen = t.closest && t.closest("[data-setopen]");
   if (sOpen){ setlistOuvre(sOpen.getAttribute("data-setopen")); return; }
   var sEdit = t.closest && t.closest("[data-setedit]");
@@ -6568,7 +7350,20 @@ document.getElementById("veil").addEventListener("click", function(e){
   if (!draft) return;
 
   var seg = t.closest("[data-seg] [data-v]");
-  if (seg){ draft.mode = seg.getAttribute("data-v"); refreshBody(); return; }
+  if (seg){
+    /* « mode » pour une façade ; « bass.mode » ou « level.state » ailleurs. */
+    setPath(draft, seg.closest("[data-seg]").getAttribute("data-seg") || "mode", seg.getAttribute("data-v"));
+    refreshBody(); return;
+  }
+  var za = t.closest("[data-zact]");
+  if (za && draft.kind === "zoom"){
+    var zi = parseInt(za.closest("[data-zi]").getAttribute("data-zi"), 10), zc = draft.chain;
+    var zq = za.getAttribute("data-zact");
+    if (zq === "rm") zc.splice(zi, 1);
+    else if (zq === "up" && zi > 0) zc.splice(zi - 1, 0, zc.splice(zi, 1)[0]);
+    else if (zq === "down" && zi < zc.length - 1) zc.splice(zi + 1, 0, zc.splice(zi, 1)[0]);
+    refreshBody(); return;
+  }
   var tg = t.closest("[data-tg]");
   if (tg){
     var key = tg.getAttribute("data-tg");
@@ -6632,6 +7427,11 @@ document.getElementById("veil").addEventListener("submit", function(e){
 });
 document.getElementById("veil").addEventListener("change", function(e){
   var f = e.target;
+  if (f && f.hasAttribute && f.hasAttribute("data-setdi")){
+    var jeuDi = setlistDe(f.getAttribute("data-setdi"));
+    if (jeuDi){ jeuDi.di = f.value || null; save(); }
+    return;
+  }
   if (f && f.hasAttribute && f.hasAttribute("data-setadd")){
     var id2 = f.getAttribute("data-setadd"), jeu3 = setlistDe(id2);
     if (jeu3 && f.value){ jeu3.songs.push(f.value); save(); render(); openSetEditor(id2); }
@@ -6733,6 +7533,13 @@ document.getElementById("veil").addEventListener("input", function(e){
   }
 
   if (!draft) return;
+  var fn = t.getAttribute("data-fn");                       /* un nombre, ou rien */
+  if (fn){
+    var nv = t.value === "" ? null : Number(t.value);
+    setPath(draft, fn, nv === null || !isFinite(nv) ? null : nv);
+    refreshZCheck();
+    return;
+  }
   var f = t.getAttribute("data-f");
   if (f){
     if (f === "tags") draft.tags = t.value.split(",").map(function(s){ return s.trim(); }).filter(Boolean);
@@ -6748,7 +7555,8 @@ document.getElementById("veil").addEventListener("input", function(e){
     setPath(draft, key, v);
     var out = document.querySelector('[data-out="' + key + '"]');
     if (out){
-      var c = findCtrl(draft, key);
+      /* La basse d'une fiche Zoom se lit sur sa propre façade. */
+      var c = key.indexOf("bass.") === 0 && draft.bass ? findCtrl(bassVue(draft), key.slice(5)) : findCtrl(draft, key);
       out.textContent = c ? ctrlText(c, v) : String(v).replace(".", ",");
     }
     return;
@@ -6782,6 +7590,39 @@ document.getElementById("veil").addEventListener("input", function(e){
       var o2 = document.querySelector('[data-out="b' + bi2 + '-' + bv + '"]');
       if (o2 && c2) o2.textContent = ctrlText(c2, val);
       return;
+    }
+  }
+
+  if (draft.kind === "zoom"){
+    if (t.hasAttribute("data-zbgear")){
+      draft.bass = t.value ? bassNeuve(t.value, draft.bass) : null;
+      refreshBody(); return;
+    }
+    if (t.hasAttribute("data-zadd")){
+      if (t.value) (draft.chain = draft.chain || []).push({fx:t.value, on:true, p:{}});
+      refreshBody(); return;
+    }
+    var zrow = t.closest && t.closest("[data-zi]");
+    if (zrow){
+      var bloc = draft.chain[parseInt(zrow.getAttribute("data-zi"), 10)];
+      bloc.p = bloc.p || {};
+      if (t.hasAttribute("data-zfx")){ bloc.fx = t.value; bloc.p = {}; refreshBody(); return; }
+      if (t.hasAttribute("data-zon")){ bloc.on = t.checked; refreshZCheck(); return; }
+      var zo = t.getAttribute("data-zoff");
+      if (zo !== null){
+        if (t.checked) bloc.p[zo] = "OFF"; else delete bloc.p[zo];
+        refreshBody(); return;
+      }
+      var zk = t.getAttribute("data-zp");
+      if (zk !== null){
+        var zd = zoomCatalogue() ? zoomCatalogue().paramDef(bloc.fx, zk) : null;
+        var texte = !zd || zd.opts || zd.t === "text" || (zd.sync && bloc.p[zd.sync.k] === zd.sync.v);
+        if (t.value === "") delete bloc.p[zk];
+        else bloc.p[zk] = texte ? t.value : Number(t.value);
+        /* Un choix dans une liste peut rendre un autre réglage sans effet. */
+        if (t.tagName === "SELECT") refreshBody(); else refreshZCheck();
+        return;
+      }
     }
   }
 
@@ -6864,7 +7705,11 @@ window.__pb = {
   chainView: chainView, parClef: parClef, trier: trier, render: render, commit: commit,
   deposerFichier: deposerFichier, montreDepot: montreDepot, titreDeFichier: titreDeFichier,
   deposerJson: deposerJson, importerJson: importerJson, estSauvegarde: estSauvegarde,
-  migreFiche: migreFiche, pluginDef: pluginDef, fmtParam: fmtParam,
+  migreFiche: migreFiche, pluginDef: pluginDef,
+  zoomBody: zoomBody, zoomEditor: zoomEditor, zCheckHtml: zCheckHtml, ajouteFiche: ajouteFiche,
+  importerBanque: importerBanque, banqueDe: banqueDe, enveloppeBanque: enveloppeBanque, exportBank: exportBank,
+  creerVariante: creerVariante, blank: blank, bassVue: bassVue, zoomBankSection: zoomBankSection,
+  apercuFiche: apercuFiche, compareRows: compareRows, zMsg: zMsg, fmtParam: fmtParam,
   chargerSauvegarde: chargerSauvegarde, doImport: doImport,
   depotActif: depotActif, depotFini: depotFini,
   openSets: openSets, openSetEditor: openSetEditor, setlists: setlists, setlistDe: setlistDe,

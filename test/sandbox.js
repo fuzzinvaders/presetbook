@@ -86,6 +86,7 @@ function run(file, options = {}) {
   sandbox.window = sandbox;
   sandbox.globalThis = sandbox;
   if (options.RFX) sandbox.RFX = options.RFX;
+  if (options.ZB2F) sandbox.ZB2F = options.ZB2F;
 
   vm.createContext(sandbox);
   vm.runInContext(m[1], sandbox, { filename: path.basename(file) + " (script)" });

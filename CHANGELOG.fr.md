@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.13.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.14.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,37 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.14.0 — 25 novembre 2026
+
+### Ajouté
+
+- **Le Zoom B2 FOUR, sixième sorte de fiche.** Un patch se décrit entier : son numéro (001 à 300), les effets dans
+  l'ordre du signal avec leurs paramètres sous leur nom exact, les modèles d'ampli dans la même chaîne, la basse avec
+  ses boutons, ses cordes, son tirant et le jeu, et un niveau à vérifier en groupe. La carte montre la chaîne de
+  l'entrée à la sortie, bloc par bloc ; l'éditeur propose les effets par catégorie et dit tout de suite si la fiche
+  tient dans l'appareil.
+- **Un catalogue tiré des documents de ZOOM, et d'eux seuls** : 104 effets, 522 paramètres, leurs plages et leurs
+  listes de valeurs, les dépendances entre réglages. Ce que ZOOM ne publie pas n'est pas inventé — pas de valeur par
+  défaut, pas d'unité non imprimée, pas de pas pour les fréquences. La liste complète et le schéma JSON se génèrent
+  depuis le catalogue (`node tools/zoom-docs.js`), et un test vérifie qu'ils sont à jour.
+- **Les règles de l'appareil** : cinq effets au plus, un seul ampli, une seule pédale. Une fiche qui ne tiendrait
+  pas ne s'enregistre pas ; un second ampli ou une sixième place ne se proposent pas.
+- **Des variantes** d'un même morceau (couplet et refrain, avec ou sans saturation), chacune sur son patch.
+- **Des banques** : une setlist devient la banque d'un concert. Elle porte le DI MODEL, réglage global de
+  l'appareil, montre ses patchs (doublons signalés) et s'exporte en un fichier `.json`.
+- **L'import contrôlé** d'une fiche ou d'une banque, par dépôt ou par *Importer un fichier* : ce qui ne tient pas
+  dans l'appareil est refusé, un paramètre inconnu ou une valeur hors plage est signalé sans être perdu, une version
+  de format plus récente est refusée. Un compte-rendu dit, fiche par fiche, ce qui est entré et pourquoi. Exporter
+  puis réimporter rend les fiches à l'identique.
+- Un exemple importable, **REPTILIA**, et une banque d'exemple, dans `docs/exemples`.
+
+### Corrigé
+
+- Sur un téléphone, la feuille d'édition d'une chaîne Reaper débordait de l'écran de quelques pixels : un cadre de
+  formulaire ne rétrécissait pas sous la largeur de la liste des plugins.
 
 ---
 

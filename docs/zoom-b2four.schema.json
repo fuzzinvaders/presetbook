@@ -1,0 +1,5160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/fuzzinvaders/presetbook/docs/zoom-b2four.schema.json",
+  "title": "Presetbook — fiche ou banque Zoom B2 FOUR",
+  "description": "Format d'échange de Presetbook décrivant des patchs du Zoom B2 FOUR. Ce n'est pas un fichier que l'appareil peut charger. Généré par tools/zoom-docs.js depuis public/zoom-b2four.js (catalogue B2FOUR-FX/Z2I-4875-01). Le schéma décrit un fichier conforme ; l'import de Presetbook est plus tolérant : il refuse les erreurs de structure et signale le reste (paramètre inconnu, valeur hors plage) sans perdre la valeur.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/enveloppeFiche"
+    },
+    {
+      "$ref": "#/$defs/enveloppeBanque"
+    }
+  ],
+  "$defs": {
+    "enveloppeFiche": {
+      "type": "object",
+      "required": [
+        "v",
+        "presetbook",
+        "preset"
+      ],
+      "properties": {
+        "v": {
+          "const": 1
+        },
+        "presetbook": {
+          "const": "preset"
+        },
+        "preset": {
+          "$ref": "#/$defs/fiche"
+        },
+        "gear": {
+          "type": "object",
+          "description": "Façades personnelles dont la fiche a besoin (une basse dessinée dans Presetbook)."
+        }
+      }
+    },
+    "enveloppeBanque": {
+      "type": "object",
+      "required": [
+        "v",
+        "presetbook",
+        "device",
+        "presets"
+      ],
+      "properties": {
+        "v": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1,
+          "description": "Version du format. Plus récente que celle connue : refusée."
+        },
+        "presetbook": {
+          "const": "bank"
+        },
+        "device": {
+          "const": "zoom-b2four"
+        },
+        "catalog": {
+          "type": "string",
+          "description": "Catalogue d'effets utilisé. Différent de B2FOUR-FX/Z2I-4875-01 : avertissement."
+        },
+        "name": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object",
+          "properties": {
+            "di": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "OFF",
+                    "TUBE 1",
+                    "TUBE 2",
+                    "TUBE 3",
+                    "SOLID STATE 1",
+                    "SOLID STATE 2",
+                    "SOLID STATE 3"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "DI MODEL : réglage global de l'appareil, pas d'un patch."
+            }
+          }
+        },
+        "presets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fiche"
+          }
+        },
+        "gear": {
+          "type": "object"
+        }
+      }
+    },
+    "fiche": {
+      "type": "object",
+      "required": [
+        "kind",
+        "name",
+        "chain"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "const": "zoom"
+        },
+        "gear": {
+          "const": "b2four"
+        },
+        "catalog": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "patchName": {
+          "type": "string",
+          "pattern": "^[!%&'+,\\-.=_ A-Za-z0-9]*$",
+          "description": "Nom sur l'appareil. Aucune longueur publiée ; les noms d'usine font 14 caractères au plus."
+        },
+        "patch": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Numéro de mémoire, 1 à 300 (affiché 001 à 300). Les patchs d'usine occupent 001 à 250."
+        },
+        "tempo": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 40,
+              "maximum": 250
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "song": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "artist": {
+              "type": "string"
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Styles."
+        },
+        "bass": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/basse"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "chain": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "$ref": "#/$defs/bloc"
+          },
+          "allOf": [
+            {
+              "contains": {
+                "properties": {
+                  "fx": {
+                    "enum": [
+                      "FLIPTOP",
+                      "AMPG SVT",
+                      "AG 750",
+                      "SMR400",
+                      "EBH360",
+                      "MINI MARK-B",
+                      "TE400SMX",
+                      "B-MAN100",
+                      "AC 370",
+                      "SUN CB",
+                      "MONOTONE"
+                    ]
+                  }
+                }
+              },
+              "minContains": 0,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "properties": {
+                  "fx": {
+                    "enum": [
+                      "OUTPUT VOLUME PEDAL",
+                      "PEDAL VOLUME",
+                      "BASS WAH",
+                      "BASS PEDAL PITCH",
+                      "BASS PEDAL MONO PITCH",
+                      "PEDAL RESONANCE"
+                    ]
+                  }
+                }
+              },
+              "minContains": 0,
+              "maxContains": 1
+            }
+          ]
+        },
+        "level": {
+          "type": "object",
+          "properties": {
+            "state": {
+              "enum": [
+                "a-verifier",
+                "equilibre"
+              ]
+            },
+            "note": {
+              "type": "string"
+            }
+          },
+          "description": "Niveau vérifié aux essais : il ne se calcule pas à partir des réglages."
+        },
+        "variant": {
+          "type": "string",
+          "description": "Couplet, refrain, avec ou sans saturation…"
+        },
+        "variantOf": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Identifiant de la fiche dont celle-ci est une variante."
+        },
+        "notes": {
+          "type": "string"
+        },
+        "maj": {
+          "type": "string",
+          "description": "Date de dernière modification (ISO 8601)."
+        }
+      }
+    },
+    "basse": {
+      "type": "object",
+      "required": [
+        "gear"
+      ],
+      "description": "La basse et ses réglages, avec les clés de sa façade dans Presetbook (pour la BB734A : mode, balance, eq.b, eq.m, eq.t).",
+      "properties": {
+        "gear": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "strings": {
+          "type": "string"
+        },
+        "gauge": {
+          "type": "string"
+        },
+        "jeu": {
+          "enum": [
+            "doigts",
+            "médiator",
+            ""
+          ]
+        },
+        "tech": {
+          "type": "string"
+        }
+      }
+    },
+    "bloc": {
+      "type": "object",
+      "required": [
+        "fx"
+      ],
+      "properties": {
+        "fx": {
+          "enum": [
+            "DYNAMIC COMPRESSOR",
+            "BLACK OPTICAL COMPRESSOR",
+            "OPTICAL COMPRESSOR",
+            "DUAL COMPRESSOR",
+            "MULTIBAND COMPRESSOR",
+            "GLAM COMPRESSOR",
+            "160 COMPRESSOR",
+            "1176 LIMITER",
+            "ZOOM NOISE REDUCTION",
+            "SLOW ATTACK",
+            "BASS AUTO WAH",
+            "ENVELOPE FILTER",
+            "AUTO FILTER",
+            "ZTRON FILTER",
+            "BASS CRY FILTER",
+            "ENVELOPE GENERATOR FILTER",
+            "SEQUENCE FILTER",
+            "BASS GRAPHIC EQ",
+            "STEREO BASS GRAPHIC EQ",
+            "BASS PARAMETRIC EQ",
+            "LOW EQ",
+            "HIGH EQ",
+            "SPLITTER",
+            "EXCITER",
+            "EP DRIVE",
+            "RC DRIVE",
+            "BASS TS DRIVE",
+            "BASS OVER DRIVE",
+            "BLUEBERRY DRIVE",
+            "DARK OVERDRIVE",
+            "SQUEAK DISTORTION",
+            "VOODOO-B DISTORTION",
+            "BASS OCTAVE FUZZ",
+            "NEW YORK MUFF FUZZ",
+            "BASS FUZZ SMILE",
+            "BASS METAL DRIVE",
+            "TS+BOOST DRIVE",
+            "BASS DRIVER PREAMP",
+            "D.I PLUS PREAMP",
+            "DARK PREAMP",
+            "CLEAR DRIVER PREAMP",
+            "1073 PREAMP",
+            "SOLID PREAMP",
+            "DI-5 PREAMP",
+            "SB PREAMP 1",
+            "BBB PREAMP",
+            "SUPER LOW PREAMP",
+            "DJENT PREAMP",
+            "CLONE CHORUS",
+            "CHORUS ONE",
+            "TRI CHORUS",
+            "BASS STEREO CHORUS",
+            "BASS VINTAGE FLANGER",
+            "KICK FLANGER",
+            "BASS DETUNE",
+            "TREMOLO",
+            "PHASER",
+            "BASS PHASER",
+            "THE VIBE",
+            "BASS OCTAVER",
+            "BASS ANALOG OCTAVER",
+            "PITCHSHIFT",
+            "BASS MONO PITCH SHIFTER",
+            "HARMONY PITCH SHIFTER",
+            "BASS POLYPHONIC PITCH SHIFTER",
+            "BASS SYNTHESIZER",
+            "Z-SYNTHESIZER",
+            "BASS TALK SYNTHESIZER",
+            "DELAY",
+            "ANALOG DELAY",
+            "TAPE ECHO",
+            "DUAL DELAY",
+            "REVERSE DELAY",
+            "MODULATION DELAY",
+            "HOLD DELAY",
+            "ROOM REVERB",
+            "BRGHT ROOM REVERB",
+            "SPRING REVERB",
+            "PLATE REVERB",
+            "HALL REVERB",
+            "BRGHT HALL REVERB",
+            "HD HALL REVERB",
+            "AIR REVERB",
+            "LOOP ROLL",
+            "PHASER+DISTORTION",
+            "FRETLESS SIMULATOR",
+            "BOMBER",
+            "OUTPUT VOLUME PEDAL",
+            "PEDAL VOLUME",
+            "BASS WAH",
+            "BASS PEDAL PITCH",
+            "BASS PEDAL MONO PITCH",
+            "PEDAL RESONANCE",
+            "FLIPTOP",
+            "AMPG SVT",
+            "AG 750",
+            "SMR400",
+            "EBH360",
+            "MINI MARK-B",
+            "TE400SMX",
+            "B-MAN100",
+            "AC 370",
+            "SUN CB",
+            "MONOTONE"
+          ]
+        },
+        "on": {
+          "type": "boolean"
+        },
+        "p": {
+          "type": "object"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "DYNAMIC COMPRESSOR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SENSE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "ATTACK": {
+                    "enum": [
+                      "SLOW",
+                      "FAST"
+                    ]
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BLACK OPTICAL COMPRESSOR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "COMP": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "LO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HI": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "OPTICAL COMPRESSOR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "DRIVE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "LO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HI": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "DUAL COMPRESSOR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "FREQ": {
+                    "type": "number",
+                    "minimum": 300,
+                    "maximum": 1500
+                  },
+                  "LOCOMP": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 50
+                  },
+                  "HICOMP": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 50
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "MULTIBAND COMPRESSOR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "COMP": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "LOTHR": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HITHR": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "GLAM COMPRESSOR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "COMP": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "SHAPE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "160 COMPRESSOR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "THRSHLD": {
+                    "type": "number",
+                    "minimum": -60,
+                    "maximum": 0
+                  },
+                  "RATIO": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 10
+                  },
+                  "KNEE": {
+                    "enum": [
+                      "SOFT",
+                      "HARD"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "1176 LIMITER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "INPUT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 80
+                  },
+                  "RATIO": {
+                    "enum": [
+                      "4:1",
+                      "8:1",
+                      "12:1",
+                      "20:1"
+                    ]
+                  },
+                  "RELEASE": {
+                    "type": "number",
+                    "minimum": 10,
+                    "maximum": 70
+                  },
+                  "OUTPUT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 80
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "ZOOM NOISE REDUCTION"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "DETECT": {
+                    "enum": [
+                      "GTRIN",
+                      "EFXIN"
+                    ]
+                  },
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "THRSHLD": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SLOW ATTACK"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TIME": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50
+                  },
+                  "CURVE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS AUTO WAH"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SENSE": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "not": {
+                      "enum": [
+                        0
+                      ]
+                    }
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "ENVELOPE FILTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "THRSHLD": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ATTACK": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MODE": {
+                    "enum": [
+                      "UP",
+                      "DOWN"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "AUTO FILTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "MODE": {
+                    "enum": [
+                      "UP",
+                      "DOWN"
+                    ]
+                  },
+                  "SENSE": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 10
+                  },
+                  "PEAK": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "ZTRON FILTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SENSE": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "not": {
+                      "enum": [
+                        0
+                      ]
+                    }
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS CRY FILTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "RANGE": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 10
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "SENSE": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10,
+                    "not": {
+                      "enum": [
+                        0
+                      ]
+                    }
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "ENVELOPE GENERATOR FILTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "FREQ1": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "FREQ2": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TYPE": {
+                    "type": "string"
+                  },
+                  "SPEED": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SEQUENCE FILTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "STEP": {
+                    "type": "number",
+                    "minimum": 2,
+                    "maximum": 8
+                  },
+                  "PATTERN": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 8
+                  },
+                  "SPEED": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS GRAPHIC EQ"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "50Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "120Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "400Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "500Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "800Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "4.5kHz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "10kHz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "STEREO BASS GRAPHIC EQ"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "50Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "120Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "400Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "500Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "800Hz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "4.5kHz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "10kHz": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS PARAMETRIC EQ"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "FREQ": {
+                    "type": "number",
+                    "minimum": 20,
+                    "maximum": 20000
+                  },
+                  "Q": {
+                    "type": "number",
+                    "minimum": 0.5,
+                    "maximum": 16
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": -20,
+                    "maximum": 20
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "LOW EQ"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TYPE": {
+                    "enum": [
+                      "SHELF",
+                      "HPF"
+                    ]
+                  },
+                  "FREQ": {
+                    "type": "number",
+                    "minimum": 20,
+                    "maximum": 640
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "HIGH EQ"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TYPE": {
+                    "enum": [
+                      "SHELF",
+                      "LPF"
+                    ]
+                  },
+                  "FREQ": {
+                    "type": "number",
+                    "minimum": 500,
+                    "maximum": 20000
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": -12,
+                    "maximum": 12
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SPLITTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "FREQ": {
+                    "type": "number",
+                    "minimum": 80,
+                    "maximum": 2500
+                  },
+                  "LO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HI": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "EXCITER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ON/OFF": {
+                    "enum": [
+                      "LATCH",
+                      "UNLATCH"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "EP DRIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BASS": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "RC DRIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS TS DRIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS OVER DRIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BLUEBERRY DRIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "DARK OVERDRIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ATTACK": {
+                    "enum": [
+                      "CUT",
+                      "FLAT",
+                      "BOOST"
+                    ]
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SQUEAK DISTORTION"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "FILTER": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "VOODOO-B DISTORTION"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS OCTAVE FUZZ"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BOOST": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "FUZZ": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "NEW YORK MUFF FUZZ"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SUSTAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS FUZZ SMILE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS METAL DRIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "TS+BOOST DRIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "COMP": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "BOOST": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ORDER": {
+                    "enum": [
+                      "BOOST-OD",
+                      "OD-BOOST"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS DRIVER PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "PRESENC": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MID-FREQ": {
+                    "enum": [
+                      "500 Hz",
+                      "1.0 kHz"
+                    ]
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "D.I PLUS PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "COLOR": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "CHANNEL": {
+                    "enum": [
+                      "CLEAN",
+                      "DIST"
+                    ]
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "DARK PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "LO-MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HI-MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BOOST": {
+                    "enum": [
+                      "OFF",
+                      "LO",
+                      "HI",
+                      "LO+HI"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "CLEAR DRIVER PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MID-FREQ": {
+                    "type": "number",
+                    "minimum": 100,
+                    "maximum": 1000
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "PRESENC": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "1073 PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 20,
+                    "maximum": 50
+                  },
+                  "BASS-F": {
+                    "enum": [
+                      "55 Hz",
+                      "220 Hz"
+                    ]
+                  },
+                  "BASS": {
+                    "type": "number",
+                    "minimum": -50,
+                    "maximum": 50
+                  },
+                  "MID-F": {
+                    "type": "number",
+                    "minimum": 350,
+                    "maximum": 3200
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": -50,
+                    "maximum": 50
+                  },
+                  "TRBL-F": {
+                    "enum": [
+                      "10 kHz",
+                      "16 kHz"
+                    ]
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": -50,
+                    "maximum": 50
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SOLID PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HARMNIC": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "LOTYPE": {
+                    "enum": [
+                      "SHELF",
+                      "PEQ"
+                    ]
+                  },
+                  "LO-FREQ": {
+                    "type": "number",
+                    "minimum": 40,
+                    "maximum": 600
+                  },
+                  "LO": {
+                    "type": "number",
+                    "minimum": -50,
+                    "maximum": 50
+                  },
+                  "HI-FREQ": {
+                    "type": "number",
+                    "minimum": 1500,
+                    "maximum": 22000
+                  },
+                  "HI": {
+                    "type": "number",
+                    "minimum": -50,
+                    "maximum": 50
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "DI-5 PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 6
+                      },
+                      {
+                        "const": "OFF"
+                      }
+                    ]
+                  },
+                  "HICUT": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SB PREAMP 1"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BBB PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BASS": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SUPER LOW PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ENHANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "SUB": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "LO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HI": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "DJENT PREAMP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "LO-MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HI-MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HIBOOST": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "LOCUT": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 20,
+                        "maximum": 120
+                      },
+                      {
+                        "const": "OFF"
+                      }
+                    ]
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "CLONE CHORUS"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "DEPTH": {
+                    "enum": [
+                      "1",
+                      "2"
+                    ]
+                  },
+                  "RATE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "CHORUS ONE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RATE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "TRI CHORUS"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "SPEED": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS STEREO CHORUS"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RATE": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50
+                  },
+                  "LOCUT": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 60,
+                        "maximum": 800
+                      },
+                      {
+                        "const": "OFF"
+                      }
+                    ]
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS VINTAGE FLANGER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RATE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 50
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10
+                  },
+                  "LOCUT": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 60,
+                        "maximum": 800
+                      },
+                      {
+                        "const": "OFF"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "KICK FLANGER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "PRE DLY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RATE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RESET-F": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ON/OFF": {
+                    "enum": [
+                      "LATCH",
+                      "UNLATCH"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS DETUNE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "CENT": {
+                    "type": "number",
+                    "minimum": -50,
+                    "maximum": 50
+                  },
+                  "PRE DLY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 50
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "TREMOLO"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "WAVE": {
+                    "enum": [
+                      "TRIANGLE",
+                      "TUBE",
+                      "SQUARE"
+                    ]
+                  },
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RATE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "PHASER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "COLOR": {
+                    "enum": [
+                      "4 STG",
+                      "8 STG",
+                      "INV 4",
+                      "INV 8"
+                    ]
+                  },
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RATE": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS PHASER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "COLOR": {
+                    "enum": [
+                      "1",
+                      "2"
+                    ]
+                  },
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RATE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "THE VIBE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SPEED": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 50
+                  },
+                  "DEPTH": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MODE": {
+                    "enum": [
+                      "VIBRT",
+                      "CHORS"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS OCTAVER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "OCT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "LO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "HI": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS ANALOG OCTAVER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "OCT1": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "OCT2": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MOD": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "PITCHSHIFT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SHIFT": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": -12,
+                        "maximum": 12
+                      },
+                      {
+                        "enum": [
+                          24
+                        ]
+                      }
+                    ]
+                  },
+                  "FINE": {
+                    "type": "number",
+                    "minimum": -25,
+                    "maximum": 25
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS MONO PITCH SHIFTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SHIFT": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": -12,
+                        "maximum": 12
+                      },
+                      {
+                        "enum": [
+                          24
+                        ]
+                      }
+                    ]
+                  },
+                  "FINE": {
+                    "type": "number",
+                    "minimum": -25,
+                    "maximum": 25
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "HARMONY PITCH SHIFTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SCALE": {
+                    "enum": [
+                      "-6",
+                      "-5",
+                      "-4",
+                      "-3",
+                      "-m",
+                      "m",
+                      "3",
+                      "4",
+                      "5",
+                      "6"
+                    ]
+                  },
+                  "KEY": {
+                    "enum": [
+                      "C",
+                      "C#",
+                      "D",
+                      "D#",
+                      "E",
+                      "F",
+                      "F#",
+                      "G",
+                      "G#",
+                      "A",
+                      "A#",
+                      "B"
+                    ]
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS POLYPHONIC PITCH SHIFTER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SHIFT": {
+                    "type": "number",
+                    "minimum": -24,
+                    "maximum": 12
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "WET": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS SYNTHESIZER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "MODE": {
+                    "enum": [
+                      "UP",
+                      "DOWN"
+                    ]
+                  },
+                  "SENSE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ATTACK": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RANGE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "OCT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "Z-SYNTHESIZER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "FREQ": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "RANGE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 20
+                  },
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 20
+                  },
+                  "WAVE": {
+                    "enum": [
+                      "SAW",
+                      "SQUARE"
+                    ]
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS TALK SYNTHESIZER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TYPE": {
+                    "enum": [
+                      "IA",
+                      "UE",
+                      "UA",
+                      "OA"
+                    ]
+                  },
+                  "SENSE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ATTACK": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "OCT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "DELAY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TIME": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 4000
+                      },
+                      {
+                        "type": "string",
+                        "description": "valeur de note quand MODE = METRONOME"
+                      }
+                    ]
+                  },
+                  "MODE": {
+                    "enum": [
+                      "SHORT",
+                      "LONG",
+                      "METRONOME"
+                    ]
+                  },
+                  "REPEAT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "ANALOG DELAY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TIME": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 4000
+                      },
+                      {
+                        "type": "string",
+                        "description": "valeur de note quand MODE = METRONOME"
+                      }
+                    ]
+                  },
+                  "MODE": {
+                    "enum": [
+                      "SHORT",
+                      "LONG",
+                      "METRONOME"
+                    ]
+                  },
+                  "REPEAT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "TAPE ECHO"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TIME": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 2000
+                      },
+                      {
+                        "type": "string",
+                        "description": "valeur de note quand MODE = METRONOME"
+                      }
+                    ]
+                  },
+                  "MODE": {
+                    "enum": [
+                      "SHORT",
+                      "LONG",
+                      "METRONOME"
+                    ]
+                  },
+                  "REPEAT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "DUAL DELAY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TIMEA": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1490
+                      },
+                      {
+                        "type": "string",
+                        "description": "valeur de note quand MODE = METRONOME"
+                      }
+                    ]
+                  },
+                  "TIMEB": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1490
+                      },
+                      {
+                        "type": "string",
+                        "description": "valeur de note quand MODE = METRONOME"
+                      }
+                    ]
+                  },
+                  "MODE": {
+                    "enum": [
+                      "TIME",
+                      "METRONOME"
+                    ]
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "REP A": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 110
+                  },
+                  "REP B": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 110
+                  },
+                  "DLYMX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DEPTH": {
+                    "type": "string",
+                    "pattern": "^(MN|ST)-([0-9]|[1-4][0-9]|50)$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "REVERSE DELAY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TIME": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 10,
+                        "maximum": 2000
+                      },
+                      {
+                        "type": "string",
+                        "description": "valeur de note quand MODE = METRONOME"
+                      }
+                    ]
+                  },
+                  "MODE": {
+                    "enum": [
+                      "SHORT",
+                      "LONG",
+                      "METRONOME"
+                    ]
+                  },
+                  "REPEAT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "MODULATION DELAY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TIME": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 2000
+                      },
+                      {
+                        "type": "string",
+                        "description": "valeur de note quand MODE = METRONOME"
+                      }
+                    ]
+                  },
+                  "MODE": {
+                    "enum": [
+                      "SHORT",
+                      "LONG",
+                      "METRONOME"
+                    ]
+                  },
+                  "REPEAT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "HOLD DELAY"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TIME": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 1,
+                        "maximum": 4000
+                      },
+                      {
+                        "type": "string",
+                        "description": "valeur de note quand MODE = METRONOME"
+                      }
+                    ]
+                  },
+                  "MODE": {
+                    "enum": [
+                      "SHORT",
+                      "LONG",
+                      "METRONOME"
+                    ]
+                  },
+                  "REPEAT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "HI-DMP": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "P-P": {
+                    "enum": [
+                      "MONO",
+                      "P-P"
+                    ]
+                  },
+                  "TAIL": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "ROOM REVERB"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "PRE DLY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 30
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TAIL": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BRGHT ROOM REVERB"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "PRE DLY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 30
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SPRING REVERB"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "PRE DLY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 30
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TAIL": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "PLATE REVERB"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "PRE DLY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 200
+                  },
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TAIL": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "HALL REVERB"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "PRE DLY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 30
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TAIL": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BRGHT HALL REVERB"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "PRE DLY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 30
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "HD HALL REVERB"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "PRE DLY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 200
+                  },
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TAIL": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "AIR REVERB"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SIZE": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "REFLECT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TAIL": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "LOOP ROLL"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "TIME": {
+                    "type": "number",
+                    "minimum": 10,
+                    "maximum": 4000
+                  },
+                  "DUTY": {
+                    "type": "number",
+                    "minimum": 25,
+                    "maximum": 100
+                  },
+                  "BALANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ON/OFF": {
+                    "enum": [
+                      "LATCH",
+                      "UNLATCH"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "PHASER+DISTORTION"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "MODE": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 4
+                  },
+                  "RATE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 50
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "FRETLESS SIMULATOR"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "SENSE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 30
+                  },
+                  "COLOR": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 10
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BOMBER"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "DECAY": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "MIX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ON/OFF": {
+                    "enum": [
+                      "LATCH",
+                      "TRIGGER"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "OUTPUT VOLUME PEDAL"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "PEDAL VOLUME"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MAX": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "CURVE": {
+                    "enum": [
+                      "A",
+                      "B"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS WAH"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "FREQ": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "RANGE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS PEDAL PITCH"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "COLOR": {
+                    "enum": [
+                      "+1 OCT",
+                      "+2 OCT",
+                      "-1 SEMI",
+                      "-2 OCT",
+                      "DOWN",
+                      "-/+ OCT",
+                      "-5/+4TH",
+                      "DETUNE",
+                      "DWN/OCT"
+                    ]
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "MODE": {
+                    "enum": [
+                      "UP",
+                      "DOWN"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "BASS PEDAL MONO PITCH"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "COLOR": {
+                    "enum": [
+                      "+1 OCT",
+                      "+2 OCT",
+                      "-1 SEMI",
+                      "-2 OCT",
+                      "DOWN",
+                      "-/+ OCT",
+                      "-5/+4TH",
+                      "DETUNE",
+                      "DWN/OCT"
+                    ]
+                  },
+                  "TONE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "MODE": {
+                    "enum": [
+                      "UP",
+                      "DOWN"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "PEDAL RESONANCE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "FREQ": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 50
+                  },
+                  "RESO": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "DRY": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "FLIPTOP"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BRIGHT": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": -20,
+                    "maximum": 20
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": -20,
+                    "maximum": 20
+                  },
+                  "BASS": {
+                    "type": "number",
+                    "minimum": -20,
+                    "maximum": 20
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ULTRA": {
+                    "enum": [
+                      "OFF",
+                      "HI",
+                      "LOW",
+                      "BOTH"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "AMPG SVT"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": -20,
+                    "maximum": 20
+                  },
+                  "MID-FREQ": {
+                    "type": "number",
+                    "minimum": 32,
+                    "maximum": 6300
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": -20,
+                    "maximum": 20
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": -20,
+                    "maximum": 20
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ULTRA": {
+                    "enum": [
+                      "OFF",
+                      "LOW",
+                      "HI",
+                      "BOTH",
+                      "CUT"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "AG 750"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BRIGHT": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "DEEP": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SMR400"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": -15,
+                    "maximum": 15
+                  },
+                  "MID-FREQ": {
+                    "type": "number",
+                    "minimum": 32,
+                    "maximum": 6300
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": -15,
+                    "maximum": 15
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": -15,
+                    "maximum": 15
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "ENHANCE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "EBH360"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": -10,
+                    "maximum": 10
+                  },
+                  "BRIGHT": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DRIVE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "CHARA": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "MINI MARK-B"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VINTAGE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "SHAPE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "TE400SMX"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "STYLE": {
+                    "enum": [
+                      "PICK",
+                      "SLAP",
+                      "FINGER"
+                    ]
+                  },
+                  "BASS": {
+                    "type": "number",
+                    "minimum": -15,
+                    "maximum": 15
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": -15,
+                    "maximum": 15
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": -15,
+                    "maximum": 15
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "SHAPE": {
+                    "enum": [
+                      "OFF",
+                      "1",
+                      "2"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "B-MAN100"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 10,
+                    "maximum": 100
+                  },
+                  "MID-FREQ": {
+                    "type": "number",
+                    "minimum": 32,
+                    "maximum": 6300
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": 10,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 10,
+                    "maximum": 100
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 10,
+                    "maximum": 100
+                  },
+                  "DEEP": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 10,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "AC 370"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MID-FREQ": {
+                    "type": "number",
+                    "minimum": 32,
+                    "maximum": 6300
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "GAIN": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BRIGHT": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "SUN CB"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "INPUT": {
+                    "enum": [
+                      "NORMAL",
+                      "BRIGHT"
+                    ]
+                  },
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "DIST": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                      },
+                      {
+                        "const": "OFF"
+                      }
+                    ]
+                  },
+                  "HIBOOST": {
+                    "enum": [
+                      "OFF",
+                      "ON"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fx": {
+                "const": "MONOTONE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "p": {
+                "type": "object",
+                "properties": {
+                  "BASS": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MID": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "TREBLE": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "PRESENC": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "MODE": {
+                    "enum": [
+                      "DARK",
+                      "NORMAL",
+                      "BRIGHT"
+                    ]
+                  },
+                  "VOL": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "BLEND": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
