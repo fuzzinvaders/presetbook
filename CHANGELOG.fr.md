@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.16.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.17.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,17 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.17.0 — 25 novembre 2026
+
+### Ajouté
+
+- **Un filtre Morceau**, à côté de Marque, Matériel et Style : il ramène toutes les fiches qui servent le morceau
+  choisi — la basse, la chaîne, et le preset du multi-effet, y compris une famille sonore qui sert plusieurs morceaux.
+  La liste est par ordre alphabétique, chaque morceau avec le nombre de fiches qui le servent ; plusieurs morceaux
+  s'additionnent. Le filtre se met en favori : `?song=Reptilia — The Strokes`, plusieurs séparés par `|`.
 
 ---
 

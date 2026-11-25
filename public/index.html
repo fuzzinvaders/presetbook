@@ -1259,6 +1259,7 @@ var EN = {
   "Toutes les marques": "All brands",
   "Tout le matériel": "All gear",
   "Tous les styles": "All styles",
+  "Tous les morceaux": "All songs",
   "Autres": "Others",
   "Tout replier": "Collapse all",
   "Tout déplier": "Expand all",
@@ -3091,7 +3092,7 @@ var S = {v:1, custom:[], overrides:{}, gear:{}, hidden:[], sets:[]};
 var store = {mode:"memory", api:false, writer:null, downloads:null};
 var GROUPES = ["kind", "brand", "song", "artist", "tag"];
 var TRIS = ["", "nom", "maj"];
-var ui = {kind:"all", q:"", group:"kind", sort:"", set:null, gear:[], brands:[], tags:[], open:false};
+var ui = {kind:"all", q:"", group:"kind", sort:"", set:null, gear:[], brands:[], tags:[], songs:[], open:false};
 
 function clone(o){ return JSON.parse(JSON.stringify(o)); }
 function library(){
@@ -3211,7 +3212,8 @@ function readUrlFilter(){
     ui.gear = liste(qp.get("gear"));
     ui.brands = liste(qp.get("brand"));
     ui.tags = liste(qp.get("tag"));
-    if (ui.gear.length || ui.brands.length || ui.tags.length) ui.open = true;
+    ui.songs = (qp.get("song") || "").split("|").map(function(x){ return x.trim(); }).filter(Boolean);
+    if (ui.gear.length || ui.brands.length || ui.tags.length || ui.songs.length) ui.open = true;
     if (q) ui.q = q;
     if (kind === "zoom") kind = "multi";                 /* l'adresse d'avant la catégorie */
     if (kind === "all" || KINDS[kind]) ui.kind = kind;   /* toute famille connue */
@@ -4524,6 +4526,12 @@ function passeSet(p){
   if (!set) return true;
   return clesMorceaux(p).some(function(k){ return set.songs.indexOf(k) >= 0; });
 }
+/** Un morceau retenu suffit : une famille sonore passe dès qu'elle en sert un. */
+function passeSong(p){
+  if (!ui.songs.length) return true;
+  var ks = clesMorceaux(p);
+  return ui.songs.some(function(k){ return ks.indexOf(k) >= 0; });
+}
 function passeTags(p){
   if (!ui.tags.length) return true;
   var t = p.tags || [];
@@ -4534,7 +4542,7 @@ function passeTags(p){
    tous doivent passer. C'est la convention attendue, et elle évite les
    sélections qui ne ramènent jamais rien. */
 function matches(p){
-  return passeSet(p) && passeKind(p) && passeBrand(p) && passeGear(p) && passeTags(p) && passeQ(p);
+  return passeSet(p) && passeKind(p) && passeBrand(p) && passeGear(p) && passeTags(p) && passeSong(p) && passeQ(p);
 }
 
 /** Minuscules et sans accents : « pedalier » doit trouver « pédalier ».
@@ -4575,7 +4583,7 @@ function passeQ(p){
 function facetBrand(){
   var out = {};
   library().forEach(function(p){
-    if (!passeSet(p) || !passeKind(p) || !passeGear(p) || !passeTags(p) || !passeQ(p)) return;
+    if (!passeSet(p) || !passeKind(p) || !passeGear(p) || !passeTags(p) || !passeSong(p) || !passeQ(p)) return;
     brandsOf(p).forEach(function(b){ out[b] = (out[b] || 0) + 1; });
   });
   return Object.keys(out).map(function(b){ return {id:b, n:out[b], l:b}; })
@@ -4589,7 +4597,7 @@ function facetBrand(){
 function facetGear(){
   var out = {}, reg = allGear();
   library().forEach(function(p){
-    if (!passeSet(p) || !passeKind(p) || !passeBrand(p) || !passeTags(p) || !passeQ(p)) return;
+    if (!passeSet(p) || !passeKind(p) || !passeBrand(p) || !passeTags(p) || !passeSong(p) || !passeQ(p)) return;
     gearsOf(p).forEach(function(id){ if (reg[id]) out[id] = (out[id] || 0) + 1; });
   });
   return Object.keys(out).map(function(id){ return {id:id, n:out[id], l:gearName(reg[id])}; })
@@ -4599,14 +4607,25 @@ function facetGear(){
 function facetTags(){
   var out = {};
   library().forEach(function(p){
-    if (!passeSet(p) || !passeKind(p) || !passeBrand(p) || !passeGear(p) || !passeQ(p)) return;
+    if (!passeSet(p) || !passeKind(p) || !passeBrand(p) || !passeGear(p) || !passeSong(p) || !passeQ(p)) return;
     (p.tags || []).forEach(function(t){ out[t] = (out[t] || 0) + 1; });
   });
   return Object.keys(out).map(function(t){ return {id:t, n:out[t], l:t}; })
     .sort(function(a, b){ return b.n - a.n || a.l.localeCompare(b.l, "fr"); });
 }
 
-function activeFilters(){ return ui.brands.length + ui.gear.length + ui.tags.length; }
+/** Les morceaux de la vue : chacun une fois, avec le nombre de fiches qui le servent. */
+function facetSongs(){
+  var out = {};
+  library().forEach(function(p){
+    if (!passeSet(p) || !passeKind(p) || !passeBrand(p) || !passeGear(p) || !passeTags(p) || !passeQ(p)) return;
+    clesMorceaux(p).forEach(function(k){ out[k] = (out[k] || 0) + 1; });
+  });
+  return Object.keys(out).map(function(k){ return {id:k, n:out[k], l:k}; })
+    .sort(function(a, b){ return a.l.localeCompare(b.l, "fr"); });
+}
+
+function activeFilters(){ return ui.brands.length + ui.gear.length + ui.tags.length + ui.songs.length; }
 
 function chip(type, x, on){
   return '<button class="chip" data-f' + type + '="' + esc(x.id) + '" aria-pressed="' + on + '">' +
@@ -4684,6 +4703,8 @@ function renderFilters(){
   }
   listes += pickFacet("gear", "Matériel", "Tout le matériel", mat, ui.gear);
   listes += pickFacet("tag", "Style", "Tous les styles", sty, ui.tags);
+  /* Par ordre alphabétique : un morceau se cherche par son titre. */
+  listes += pickFacet("song", "Morceau", "Tous les morceaux", facetSongs(), ui.songs);
 
   var h = "";
   if (listes) h += '<div class="picks">' + listes +
@@ -4693,6 +4714,7 @@ function renderFilters(){
       pickedChips("brand", ui.brands, function(b){ return b; }) +
       pickedChips("gear", ui.gear, function(id){ return reg[id] ? gearName(reg[id]) : id; }) +
       pickedChips("tag", ui.tags, function(x){ return x; }) +
+      pickedChips("song", ui.songs, function(x){ return "♪ " + x; }) +
       '</div>';
   }
   if (!h) h = '<p class="hint">Rien à filtrer dans cette vue.</p>';
@@ -4708,6 +4730,7 @@ function filterLabel(){
   var jeu = setlistCourante();
   if (jeu) bouts.push(tf("Setlist : {0}", jeu.name));
   if (ui.tags.length) bouts.push(ui.tags.map(function(x){ return t(x); }).join(", "));
+  if (ui.songs.length) bouts.push(ui.songs.join(", "));
   if (ui.q) bouts.push("« " + ui.q + " »");
   return bouts.join(" · ");
 }
@@ -7308,17 +7331,18 @@ document.getElementById("filters").addEventListener("change", function(e){
   var type = sel.getAttribute("data-fadd"), val = sel.value;
   sel.value = "";                       /* la liste choisit, elle n'affiche pas l'état */
   if (!val) return;
-  var liste = type === "brand" ? ui.brands : type === "gear" ? ui.gear : ui.tags;
+  var liste = type === "brand" ? ui.brands : type === "gear" ? ui.gear : type === "song" ? ui.songs : ui.tags;
   if (liste.indexOf(val) < 0) liste.push(val);
   render();
 });
 document.getElementById("filters").addEventListener("click", function(e){
   var t2 = e.target;
-  if (t2.closest("[data-fclear]")){ ui.brands = []; ui.gear = []; ui.tags = []; render(); return; }
+  if (t2.closest("[data-fclear]")){ ui.brands = []; ui.gear = []; ui.tags = []; ui.songs = []; render(); return; }
   var m2 = t2.closest("[data-fbrand]"), g = t2.closest("[data-fgear]"), x = t2.closest("[data-ftag]");
-  var liste = m2 ? ui.brands : g ? ui.gear : x ? ui.tags : null;
+  var so = t2.closest("[data-fsong]");
+  var liste = m2 ? ui.brands : g ? ui.gear : x ? ui.tags : so ? ui.songs : null;
   if (!liste) return;
-  var val = (m2 || g || x).getAttribute(m2 ? "data-fbrand" : g ? "data-fgear" : "data-ftag");
+  var val = (m2 || g || x || so).getAttribute(m2 ? "data-fbrand" : g ? "data-fgear" : x ? "data-ftag" : "data-fsong");
   var i = liste.indexOf(val);
   if (i >= 0) liste.splice(i, 1); else liste.push(val);
   render();
@@ -7947,6 +7971,7 @@ window.__pb = {
   apercuFiche: apercuFiche, compareRows: compareRows, zMsg: zMsg,
   morceauxDe: morceauxDe, clesMorceaux: clesMorceaux, couverture: couverture, zoomSongsEditor: zoomSongsEditor,
   estB2: estB2, morceauDeCle: morceauDeCle, morceauxEnregistres: morceauxEnregistres, KINDS: KINDS,
+  facetSongs: facetSongs, passeSong: passeSong,
   card: card, rassembleIsoles: rassembleIsoles, fmtParam: fmtParam,
   chargerSauvegarde: chargerSauvegarde, doImport: doImport,
   depotActif: depotActif, depotFini: depotFini,

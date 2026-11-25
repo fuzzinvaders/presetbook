@@ -121,7 +121,7 @@ Le compte de démonstration ne publie pas : ses identifiants étant publics, ce 
 
 ## Filtrer
 
-Le bouton **Filtres** ouvre trois listes de pastilles : **Marque**, **Matériel** et **Styles**.
+Le bouton **Filtres** ouvre quatre listes : **Marque**, **Matériel**, **Styles** et **Morceau**.
 Cliquer une pastille l'active, recliquer la retire, et le bouton affiche le nombre de filtres en
 cours.
 
@@ -137,6 +137,11 @@ pastille tiennent compte des autres filtres déjà posés, sans se compter eux-m
 Filtrer sur une **pédale** ramène aussi les **pédaliers** qui l'emploient : c'est le bon moyen de
 retrouver où sert un effet donné.
 
+Filtrer sur un **morceau** ramène toutes les fiches qui le servent : la basse, la chaîne, et le preset
+du multi-effet — y compris une famille sonore qui sert plusieurs morceaux, présente sous chacun d'eux.
+La liste est par ordre alphabétique, chaque morceau avec le nombre de fiches qui le servent. Le champ
+de recherche trouve aussi un titre ou un artiste tapé en partie.
+
 Le tri du haut de page suit la même idée : **Par matériel**, **Par marque**, **Par morceau**,
 **Par artiste** ou **Par style**. Un pédalier mêle les marques de ses pédales et une chaîne Reaper
 n'en a aucune — ce sont des plugins : les uns et les autres sont rangés sous leur famille plutôt
@@ -146,10 +151,11 @@ Par style, une fiche portant deux styles paraît sous les deux : c'est ce qu'on 
 La barre de liste l'annonce — « 2 fiches · 6 apparitions » — plutôt que de laisser croire à une
 erreur de compte.
 
-Six paramètres d'URL sont lus au chargement, ce qui permet de mettre une vue en favori ou de
+Sept paramètres d'URL sont lus au chargement, ce qui permet de mettre une vue en favori ou de
 l'envoyer à quelqu'un : `?q=motown`, `?kind=bass`, `?group=kind|brand|song|artist|tag`,
-`?gear=lionheart20,rumble40`, `?brand=Ampeg,Vox` et `?tag=blues,rock` — les trois derniers en
-listes séparées par des virgules. Un septième, `?edit=<identifiant>`, ouvre directement une fiche.
+`?gear=lionheart20,rumble40`, `?brand=Ampeg,Vox` et `?tag=blues,rock` — ces trois-là en
+listes séparées par des virgules —, et `?song=Reptilia — The Strokes`, plusieurs morceaux séparés
+par `|` puisqu'un titre peut contenir une virgule. Un huitième, `?edit=<identifiant>`, ouvre directement une fiche.
 
 ## Les setlists
 

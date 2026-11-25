@@ -120,7 +120,7 @@ whole internet.
 
 ## Filtering
 
-The **Filters** button opens three lists of chips: **Brand**, **Gear** and **Styles**. Clicking a
+The **Filters** button opens four lists: **Brand**, **Gear**, **Styles** and **Song**. Clicking a
 chip activates it, clicking again removes it, and the button shows how many filters are in play.
 
 Brand comes first because it paints with a broad brush: it gathers every model from the same maker,
@@ -142,10 +142,16 @@ those are plugins: both are filed under their family rather than split apart.
 By style, a preset carrying two styles appears under both: that is what a style is for. The list
 bar says so — "2 presets · 6 appearances" — rather than letting the count look wrong.
 
-Six URL parameters are read at load time, so a view can be bookmarked or sent to someone:
+Seven URL parameters are read at load time, so a view can be bookmarked or sent to someone:
 `?q=motown`, `?kind=bass`, `?group=kind|brand|song|artist|tag`, `?gear=lionheart20,rumble40`,
-`?brand=Ampeg,Vox` and `?tag=blues,rock` — the last three as comma-separated lists. A seventh,
-`?edit=<id>`, opens one preset directly.
+`?brand=Ampeg,Vox` and `?tag=blues,rock` — those three as comma-separated lists —, and
+`?song=Reptilia — The Strokes`, several songs separated by `|` since a title can hold a comma.
+An eighth, `?edit=<id>`, opens one preset directly.
+
+Filtering on a **song** brings back every preset that serves it: the bass, the chain, and the
+multi-effect preset — including a sound family that serves several songs, shown under each of them.
+The list is alphabetical, each song with the number of presets that serve it. The search box also
+finds a title or an artist typed in part.
 
 ## Setlists
 

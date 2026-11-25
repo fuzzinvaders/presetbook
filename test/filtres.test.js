@@ -493,5 +493,50 @@ check("sans doublon, elle ne parle que des fiches",
 check("un regroupement inconnu laisse celui par défaut",
   run(page, { search: "?group=nawak" }).__pb.ui().group === "kind");
 
+/* --- filtrer par morceau ---
+ * Une famille sonore sert plusieurs morceaux : elle doit remonter pour
+ * chacun d'eux, et un morceau doit se retrouver sans se souvenir du preset. */
+const wm = run(page, { search: "" });
+const pm = wm.__pb, um = pm.ui();
+um.songs = []; um.gear = []; um.brands = []; um.tags = []; um.kind = "all"; um.q = "";
+pm.getState().custom.push(
+  { id: "u-fam", kind: "multi", gear: "b2four", name: "INDIE DRIVE", tags: [], chain: [], song: null,
+    songs: [{ title: "Reptilia", artist: "The Strokes" }, { title: "Last Nite", artist: "The Strokes" }] },
+  { id: "u-autre", kind: "multi", gear: "b2four", name: "PUNK ATTACK", tags: [], chain: [], song: null,
+    songs: [{ title: "Basket Case", artist: "Green Day" }] },
+  { id: "u-basse", kind: "bass", name: "Basse pour Last Nite", tags: [], song: { title: "Last Nite", artist: "The Strokes" } });
+const morceaux = pm.facetSongs();
+const ln = morceaux.find((x) => x.id === "Last Nite — The Strokes");
+check("le filtre Morceau liste chaque morceau une fois", !!ln && morceaux.filter((x) => x.id === ln.id).length === 1);
+check("avec le nombre de fiches qui le servent", ln && ln.n === 2, ln && String(ln.n));
+check("par ordre alphabétique",
+  morceaux.map((x) => x.l).join("|") === morceaux.map((x) => x.l).sort((a, b) => a.localeCompare(b, "fr")).join("|"));
+um.songs = ["Last Nite — The Strokes"];
+const vus = pm.library().filter(pm.matches).map((p) => p.id).sort();
+check("un morceau ramène toutes les fiches qui le servent",
+  vus.join(",") === "u-basse,u-fam", vus.join(","));
+check("une famille remonte pour chacun de ses morceaux", (() => {
+  um.songs = ["Reptilia — The Strokes"];
+  return pm.library().filter(pm.matches).map((p) => p.id).join() === "u-fam";
+})());
+um.songs = ["Reptilia — The Strokes", "Basket Case — Green Day"];
+check("deux morceaux s'additionnent", pm.library().filter(pm.matches).length === 2);
+check("il compte parmi les filtres actifs", pm.activeFilters() === 2, String(pm.activeFilters()));
+check("les autres listes suivent le filtre",
+  pm.facetGear().length === 1 && pm.facetGear()[0].id === "b2four" && pm.facetGear()[0].n === 2,
+  JSON.stringify(pm.facetGear()));
+um.open = true;
+pm.renderFilters();
+const zone = wm.__nodes.get("filters").innerHTML;
+check("la liste des morceaux est dans les filtres", /data-fadd="song"/.test(zone));
+check("et chaque morceau retenu en pastille", /data-fsong="Reptilia — The Strokes"/.test(zone) &&
+  /data-fsong="Basket Case — Green Day"/.test(zone));
+check("l'en-tête imprimé le nomme", /Basket Case — Green Day/.test(pm.filterLabel()));
+um.songs = [];
+check("sans morceau retenu, tout repasse", pm.library().filter(pm.matches).length === pm.library().length);
+const viaUrl = run(page, { search: "?song=" + encodeURIComponent("Last Nite — The Strokes|Reptilia — The Strokes") }).__pb.ui();
+check("un morceau se met en favori : ?song=…, séparés par « | »",
+  viaUrl.songs.join("|") === "Last Nite — The Strokes|Reptilia — The Strokes" && viaUrl.open === true);
+
 console.log("\n" + (failed ? failed + " échec(s)" : "tout est vert"));
 process.exit(failed ? 1 : 0);
