@@ -19,7 +19,7 @@ explains how to declare it.
 | **Pedal** | the chosen effect and its settings, with the enclosure drawn |
 | **Pedalboard** | pedals in signal order, each with its settings and its state |
 | **Chain** | tempo, tuning, and the plugins in order, with their real parameters |
-| **Zoom** | a Zoom B2 FOUR patch: number, effects and amp in order, the bass and how it is played, the level to check |
+| **Multi-effect** | a unit that holds several effects. For the Zoom B2 FOUR: a patch, with its number, its effects and amp in order, the bass and how it is played, the level to check |
 
 Any preset can be attached to a **song** (title and artist). That is what gathers the bass, the amp
 and the chain of one cover in a single place.
@@ -409,7 +409,11 @@ changing.
 
 ## The Zoom B2 FOUR
 
-A **Zoom** preset describes a patch of the bass multi-effects, thought of as a **sound family** (Clean Rock, Indie
+The B2 FOUR sits under **Multi-effect**, a category apart from the pedalboard: a pedalboard chains separate pedals, a
+multi-effect gathers them in one unit. Another model is added from *Gear*, described by its knobs; the tools below
+are the B2 FOUR's own.
+
+A B2 FOUR preset describes a patch of the bass multi-effects, thought of as a **sound family** (Clean Rock, Indie
 Drive, Punk Attack…) that serves several songs, not one patch per song: a few families play a whole set with few
 pedal changes. It holds its number (001 to 300), the list of songs it serves, the effects in signal order
 — five at most, a single amp, a single pedal —, each with its parameters under their exact name, the bass with its
@@ -429,7 +433,7 @@ a file*; what cannot fit the unit is refused, the rest is flagged in a report.
 
 This JSON is Presetbook's format, not a file the B2 FOUR can load: the settings are copied onto the unit. The full
 detail — format, checks, limits, effect list — is in [zoom-b2four.md](zoom-b2four.md) (French), with an importable
-example: [exemples/reptilia.presetbook.json](exemples/reptilia.presetbook.json).
+example: [exemples/indie-drive.presetbook.json](exemples/indie-drive.presetbook.json).
 
 ## The catalogue and your data
 

@@ -9,7 +9,7 @@ update has ever required touching your data: it lives in a volume the image know
 To stay on a given version rather than following the tip:
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.15.0   # instead of :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.16.0   # instead of :latest
 ```
 
 And to find out which one is running on your machine, without digging through the container:
@@ -18,6 +18,30 @@ And to find out which one is running on your machine, without digging through th
 curl -s https://your-domain/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.16.0 — 25 November 2026
+
+### Added
+
+- **A Multi-effect category**, apart from the pedalboard: a pedalboard chains separate pedals, a multi-effect gathers
+  them in one unit. It has its tab, its section in *Gear* and its entry in *New preset*. The Zoom B2 FOUR sits there
+  with all its tools — catalogue, chain, patches, bank. Another model (Zoom B6, HX Stomp…) is added from *Gear* and
+  described by its knobs, like an amp, without inheriting the B2 FOUR's structure.
+- A preset's sound family is **picked from a list** of the families already created; *New family…* names one. The
+  preset name and the name on the unit take it up when they are empty.
+- *Songs served* also offers the songs of the **setlists**, not only those of presets.
+
+### Changed
+
+- **"zoom" presets from 1.14 and 1.15 become multi-effects** when they open and on import: same id, same unit, same
+  settings, same songs, same banks. The old `?kind=zoom` address opens the Multi-effect tab. A preset exported from
+  now on carries `kind: "multi"`.
+- Alone in its section, a multi-effect keeps its heading under "By gear" instead of getting lost among "Others".
+- The REPTILIA example becomes **INDIE DRIVE** (`docs/exemples/indie-drive.presetbook.json`): only the name, the name
+  on the unit and the category change; chain, parameters and bass settings are identical, and it still serves only
+  Reptilia — The Strokes.
 
 ---
 

@@ -316,8 +316,8 @@ label.fld input,label.fld textarea,label.fld select{font-family:"IBM Plex Sans",
 .kind.reaper{background:var(--reaper-soft); color:var(--reaper)}
 .kind.pedal{background:var(--pedal-soft); color:var(--pedal)}
 .kind.board{background:var(--board-soft); color:var(--board)}
-.card.k-zoom{border-left-color:var(--zoom)}
-.kind.zoom{background:var(--zoom-soft); color:var(--zoom)}
+.card.k-multi{border-left-color:var(--zoom)}
+.kind.multi{background:var(--zoom-soft); color:var(--zoom)}
 /* La chaîne du signal d'un coup d'œil : des blocs qui passent à la ligne sur
    un téléphone plutôt que de faire défiler la page de côté. */
 .zpath{display:flex; flex-wrap:wrap; align-items:stretch; gap:4px; min-width:0}
@@ -1433,9 +1433,13 @@ var EN = {
   "Ce bloc n'est pas un JSON valide.": "This block is not valid JSON.",
   "Ce fichier n'est pas un JSON valide.": "This file is not valid JSON.",
   /* ---- Zoom B2 FOUR ---- */
-  "Multi-effets Zoom": "Zoom multi-effects",
-  "Zoom B2 FOUR multi-effets basse : la chaîne d'effets, les modèles d'ampli et leurs réglages se notent dans une fiche Zoom.":
-    "Zoom B2 FOUR bass multi-effects: the effect chain, amp models and their settings are written down in a Zoom preset.",
+  "Multi-effet": "Multi-effect",
+  "Multi-effets": "Multi-effects",
+  "Zoom B2 FOUR, multi-effet basse : sa chaîne d'effets, ses modèles d'ampli et leurs réglages se notent dans une fiche Multi-effet.":
+    "Zoom B2 FOUR, bass multi-effect: its effect chain, amp models and their settings are written down in a Multi-effect preset.",
+  "Appareil": "Unit",
+  "Nouvelle famille…": "New family…",
+  "Nom de la nouvelle famille": "Name of the new family",
   "Chaîne du signal": "Signal chain",
   "coupé": "off",
   "aucun effet": "no effect",
@@ -1525,6 +1529,7 @@ var EN = {
   "Amplis basse": "Bass amps",
   "La fiche n'est pas un objet.": "The preset is not an object.",
   "Genre inattendu : {0}": "Unexpected kind: {0}",
+  "Appareil {0} : cette fiche n'est pas un patch du B2 FOUR.": "Unit {0}: this preset is not a B2 FOUR patch.",
   "Nom manquant.": "Name missing.",
   "La chaîne d'effets manque.": "The effect chain is missing.",
   "Catalogue {0}, celui-ci connaît {1} : à vérifier.": "Catalogue {0}, this one knows {1}: to check.",
@@ -1570,8 +1575,14 @@ var EN = {
   "+ Ajouter un morceau": "+ Add a song",
   "Morceau déjà saisi": "Song already entered",
   "Morceau déjà saisi…": "Song already entered…",
-  "{0} presets pour {1} morceaux · {2} changements de patch sur le set": "{0} presets for {1} songs · {2} patch changes over the set",
-  "{0} morceau(x) sans preset": "{0} song(s) without a preset",
+  "{0} presets": "{0} presets",
+  "{0} preset": "{0} preset",
+  "pour {0} morceaux": "for {0} songs",
+  "pour {0} morceau": "for {0} song",
+  "{0} changements de patch sur le set": "{0} patch changes over the set",
+  "{0} changement de patch sur le set": "{0} patch change over the set",
+  "{0} morceaux sans preset": "{0} songs without a preset",
+  "{0} morceau sans preset": "{0} song without a preset",
   "aucun preset": "no preset",
   "Preset": "Preset",
   "Variantes": "Variants",
@@ -2538,7 +2549,11 @@ var KINDS = {
   pedal:  {label:"Pédale",   full:"Pédales",           acc:"var(--pedal)"},
   board:  {label:"Pédalier", full:"Pédaliers",         acc:"var(--board)"},
   reaper: {label:"Reaper",   full:"Chaîne de plugins", acc:"var(--reaper)"},
-  zoom:   {label:"Zoom",     full:"Multi-effets Zoom", acc:"var(--zoom)"}
+  /* Un appareil qui réunit plusieurs effets : distinct du pédalier, qui
+     enchaîne des pédales séparées. Le B2 FOUR y a ses outils propres
+     (catalogue, chaîne, patchs, banque) ; un autre modèle s'y décrit par
+     ses boutons, comme un ampli. Les fiches « zoom » d'avant y migrent. */
+  multi:  {label:"Multi-effet", full:"Multi-effets", acc:"var(--zoom)"}
 };
 
 /* ============================ matériel ============================
@@ -2556,8 +2571,8 @@ var GEAR = {
      zoom-b2four.js. Cette entrée lui donne une marque et un modèle, pour les
      filtres et les regroupements comme pour le reste du matériel. */
   "b2four": {
-    kind:"zoom", brand:"Zoom", model:"B2 FOUR", face:"plain",
-    note:"Zoom B2 FOUR multi-effets basse : la chaîne d'effets, les modèles d'ampli et leurs réglages se notent dans une fiche Zoom.",
+    kind:"multi", brand:"Zoom", model:"B2 FOUR", face:"plain",
+    note:"Zoom B2 FOUR, multi-effet basse : sa chaîne d'effets, ses modèles d'ampli et leurs réglages se notent dans une fiche Multi-effet.",
     controls:[]
   },
   "bb734a": {
@@ -3020,7 +3035,7 @@ var PEDALS = {
   }
 })();
 
-var DEFAULT_GEAR = { bass:"bb734a", amp:"rumble40", pedal:"pd-od", zoom:"b2four" };
+var DEFAULT_GEAR = { bass:"bb734a", amp:"rumble40", pedal:"pd-od", multi:"b2four" };
 
 /** Le matériel d'une fiche ; les fiches d'avant gardent le matériel d'origine. */
 function gearOf(p){
@@ -3198,6 +3213,7 @@ function readUrlFilter(){
     ui.tags = liste(qp.get("tag"));
     if (ui.gear.length || ui.brands.length || ui.tags.length) ui.open = true;
     if (q) ui.q = q;
+    if (kind === "zoom") kind = "multi";                 /* l'adresse d'avant la catégorie */
     if (kind === "all" || KINDS[kind]) ui.kind = kind;   /* toute famille connue */
     if (GROUPES.indexOf(group) >= 0) ui.group = group;
     var tri = qp.get("sort");
@@ -3972,7 +3988,13 @@ function boot(){
 function migreFiche(p){
   /* 1.14 rangeait un seul morceau dans « song » ; une fiche Zoom en sert
      désormais plusieurs. Le morceau passe dans la liste, rien ne se perd. */
-  if (p && p.kind === "zoom" && !Array.isArray(p.songs)){
+  /* 1.14 et 1.15 rangeaient le B2 FOUR sous le genre « zoom ». Il devient un
+     multi-effet : même identifiant, même appareil, mêmes réglages. */
+  if (p && p.kind === "zoom"){
+    p.kind = "multi";
+    if (!p.gear) p.gear = "b2four";
+  }
+  if (estB2(p) && !Array.isArray(p.songs)){
     p.songs = p.song && p.song.title ? [{title:p.song.title, artist:p.song.artist || ""}] : [];
     p.song = null;
   }
@@ -4381,7 +4403,7 @@ function chainView(p){
 
 /** Ce qu'une fiche repliée garde derrière elle, en une mention. */
 function apercuFiche(p){
-  if (p.kind === "zoom") return apercuZoom(p);
+  if (estB2(p)) return apercuZoom(p);
   if (p.kind === "reaper"){
     var nb = (p.chain || []).length;
     return nb ? nb + " " + t(nb > 1 ? "maillons" : "maillon") : "";
@@ -4406,7 +4428,7 @@ function card(p){
        '<span class="kind ' + p.kind + '">' + esc(k.label) + '</span></div>';
   h += '<div class="card-b">';
 
-  if (p.kind === "bass" || p.kind === "amp"){
+  if (p.kind === "bass" || p.kind === "amp" || (p.kind === "multi" && !estB2(p))){
     h += '<p class="gearname">' + esc(gearName(gearOf(p))) + '</p>';
     h += gearTags(p);
     h += gearStrip(p);
@@ -4419,7 +4441,7 @@ function card(p){
     h += '<p class="gearname">' + (p.slots || []).length + ' ' +
          t("pédales dans l’ordre du signal") + '</p>';
     h += boardArt(p);
-  } else if (p.kind === "zoom"){
+  } else if (estB2(p)){
     h += zoomBody(p);
   } else {
     var meta = [];
@@ -4441,7 +4463,7 @@ function card(p){
 
   h += '<div class="card-f"><button class="btn small" data-act="edit">Modifier</button>' +
        '<button class="btn small ghost" data-act="dup">Dupliquer</button>' +
-       (p.kind === "zoom"
+       (estB2(p)
          ? '<button class="btn small ghost" data-act="var"' +
            ' title="Crée une variante du même morceau, avec son propre numéro de patch">Variante</button>' : "") +
        '<button class="btn small ghost" data-act="exp"' +
@@ -4466,7 +4488,7 @@ function gearsOf(p){
   if (p.kind === "reaper") return [];
   /* Le multi-effets, et la basse dont la fiche donne les réglages : filtrer sur
      la BB734A doit ramener aussi les patchs pensés pour elle. */
-  if (p.kind === "zoom") return ["b2four"].concat(p.bass && p.bass.gear ? [p.bass.gear] : []);
+  if (estB2(p)) return ["b2four"].concat(p.bass && p.bass.gear ? [p.bass.gear] : []);
   return [gearId(p)];
 }
 
@@ -4728,7 +4750,7 @@ function render(){
   var counts = {all:dansPortee.length, bass:0, amp:0, reaper:0};
   dansPortee.forEach(function(p){ counts[p.kind] = (counts[p.kind] || 0) + 1; });
   var tabs = [["all","Tout"],["bass","Basse"],["amp","Ampli"],["pedal","Pédale"],
-              ["board","Pédalier"],["reaper","Reaper"]];
+              ["board","Pédalier"],["multi","Multi-effet"],["reaper","Reaper"]];
   document.getElementById("tabs").innerHTML = tHtml(tabs.map(function(t){
     return '<button class="tab" role="tab" data-k="' + t[0] + '" aria-selected="' + (ui.kind === t[0]) + '">' +
            t[1] + '<span class="n">' + (counts[t[0]] || 0) + '</span></button>';
@@ -4923,7 +4945,12 @@ function ordreSetlist(groups){
 /** Les groupes d'une seule fiche se rangent ensemble, à la fin. */
 function rassembleIsoles(groups){
   var gros = [], seuls = [];
-  groups.forEach(function(g){ (g[1].length > 1 ? gros : seuls).push(g); });
+  /* Un multi-effet est souvent seul de son espèce : il garde sa section, au
+     lieu de se perdre parmi les « Autres ». */
+  groups.forEach(function(g){
+    var garde = g[1].length > 1 || g[1].every(function(p){ return p.kind === "multi"; });
+    (garde ? gros : seuls).push(g);
+  });
   /* Un seul isolé garde son nom : le renommer « Autres » ne gagnerait rien
      et perdrait une information. */
   if (seuls.length < 2) return groups;
@@ -5001,7 +5028,7 @@ function blank(kind, gear){
   if (kind === "board"){
     return {id:id, kind:"board", name:"", tags:[], slots:[], notes:"", song:{title:"",artist:""}};
   }
-  if (kind === "zoom") return blankZoom(id);
+  if (kind === "multi" || kind === "zoom") return blankZoom(id);
   if (kind === "reaper"){
     return {id:id, kind:"reaper", name:"", tags:[], tempo:"", tuning:"", chain:[],
             notes:"", song:{title:"",artist:""}};
@@ -5272,6 +5299,7 @@ function openGearList(){
         '<p class="hint">Une façade décrit les commandes d\'un instrument ou d\'un ampli. ' +
         'Les façades livrées se dupliquent pour servir de point de départ.</p>' +
         section("bass", "Instruments") + section("amp", "Amplis") + section("pedal", "Pédales") +
+        section("multi", "Multi-effets") +
       '</div></div>');
   veil.classList.add("open");
 }
@@ -5300,7 +5328,7 @@ function openSets(){
       (lignes || '<p class="hint">Aucune setlist pour l\'instant.</p>') +
       '<div class="acts" style="margin-top:9px">' +
       '<button class="btn small" data-setnew>+ Nouvelle setlist</button>' +
-      (zoomCatalogue() && library().some(function(p){ return p.kind === "zoom"; })
+      (zoomCatalogue() && library().some(estB2)
         ? '<button class="btn small ghost" data-setbank="*">Exporter toutes les fiches Zoom</button>' : "") +
       '</div>' +
     '</div></div>');
@@ -5700,17 +5728,17 @@ function editorBody(){
     '<label class="fld">Styles (séparés par des virgules)<input type="text" data-f="tags" value="' + esc((p.tags||[]).join(", ")) + '"></label>' +
     '</div>' +
     '<div class="sug" id="sug-name" data-sug="name"></div>';
-  if (p.kind !== "zoom") h += '<div class="row">' +
+  if (!estB2(p)) h += '<div class="row">' +
     '<label class="fld">Morceau<input type="text" id="f-song-title" data-f="song.title" value="' + esc(p.song ? p.song.title : "") + '" placeholder="Titre de la cover"></label>' +
     '<label class="fld">Artiste<input type="text" id="f-song-artist" data-f="song.artist" value="' + esc(p.song ? p.song.artist : "") + '"></label>' +
     '</div>' +
     '<div class="sug" id="sug-song" data-sug="song.title"></div>';
 
-  if (p.kind === "bass" || p.kind === "amp" || p.kind === "pedal"){
+  if (p.kind === "bass" || p.kind === "amp" || p.kind === "pedal" || (p.kind === "multi" && !estB2(p))){
     h += gearEditor(p);
   } else if (p.kind === "board"){
     h += boardEditor(p);
-  } else if (p.kind === "zoom"){
+  } else if (estB2(p)){
     h += zoomEditor(p);
   } else {
     h += '<fieldset style="--acc:var(--reaper)"><legend>Chaîne Reaper</legend>';
@@ -5843,8 +5871,9 @@ function openSuggestion(id){
   });
 }
 
+var zFamNouvelle = false;
 function openEditor(p, fresh){
-  draft = clone(p); isNew = !!fresh; armDelete = false;
+  draft = clone(p); isNew = !!fresh; armDelete = false; zFamNouvelle = false;
   var veil = document.getElementById("veil");
   veil.innerHTML =
     tHtml('<div class="sheet" role="dialog" aria-modal="true" aria-label="Éditer un preset">' +
@@ -5893,7 +5922,7 @@ function commit(){
   if (!draft.name){ toast("Donne un nom au preset."); return; }
   /* Une fiche Zoom qui ne tiendrait pas dans l'appareil ne s'enregistre pas :
      plus de cinq effets, deux amplis… Les avertissements, eux, n'empêchent rien. */
-  if (draft.kind === "zoom" && zoomCatalogue()){
+  if (estB2(draft) && zoomCatalogue()){
     var zr = zoomCatalogue().validatePreset(draft);
     if (zr.errors.length){ toast(zMsg(zr.errors[0])); return; }
   }
@@ -5934,7 +5963,7 @@ function removePreset(id){
 function gearsNeeded(p){
   var ids = p.kind === "board" ? (p.slots || []).map(function(x){ return x.gear; })
                                : (p.gear ? [p.gear] : []);
-  if (p.kind === "zoom" && p.bass && p.bass.gear) ids.push(p.bass.gear);
+  if (estB2(p) && p.bass && p.bass.gear) ids.push(p.bass.gear);
   var out = {};
   ids.forEach(function(k){ if ((S.gear || {})[k]) out[k] = clone(S.gear[k]); });
   return out;
@@ -5995,7 +6024,7 @@ function compareRows(a, b){
   var ga = gearOf(a), gb = gearOf(b);
   if (gearId(a) !== gearId(b)) ligne("Matériel", gearName(ga), gearName(gb));
 
-  if (a.kind === "zoom"){
+  if (estB2(a) && estB2(b)){
     /* Bloc par bloc : l'ordre fait le son. Quand les deux fiches ont le même
        effet au même rang, on descend jusqu'aux réglages qui diffèrent. */
     ligne("Patch", a.patch ? pad3(a.patch) : "—", b.patch ? pad3(b.patch) : "—");
@@ -6433,7 +6462,7 @@ function presetFile(p){
   var need = {}, ids = [], i;
   if (p.kind === "board") (p.slots || []).forEach(function(x){ ids.push(x.gear); });
   else if (p.gear) ids.push(p.gear);
-  if (p.kind === "zoom" && p.bass && p.bass.gear) ids.push(p.bass.gear);
+  if (estB2(p) && p.bass && p.bass.gear) ids.push(p.bass.gear);
   for (i=0;i<ids.length;i++){
     var g = (S.gear || {})[ids[i]];             /* seules les façades créées ici voyagent */
     if (g) need[ids[i]] = g;
@@ -6455,7 +6484,7 @@ function addPreset(env){
   if (!res.ok){
     /* Une fiche Zoom refusée dit pourquoi, règle par règle ; les autres genres
        gardent leur message court. */
-    if (env && env.preset && env.preset.kind === "zoom") openRapport(tf("Fiche refusée : {0}", nom),
+    if (env && env.preset && (env.preset.kind === "zoom" || estB2(env.preset))) openRapport(tf("Fiche refusée : {0}", nom),
       [{nom:nom, errors:res.errors, warnings:res.warnings}]);
     else toast(zMsg(res.errors[0]));
     return;
@@ -6479,6 +6508,14 @@ function addPreset(env){
    publié, bac à sable), une fiche Zoom reste lisible mais n'est pas contrôlée. */
 
 function zoomCatalogue(){ return window.ZB2F || null; }
+/**
+ * Une fiche du B2 FOUR : un multi-effet dont l'appareil est le B2 FOUR. Les
+ * outils propres à cet appareil — catalogue, chaîne, patchs, banque — ne
+ * valent que pour lui ; un autre multi-effet se lit comme un ampli.
+ */
+function estB2(p){
+  return !!p && (p.kind === "multi" || p.kind === "zoom") && (p.gear || "b2four") === "b2four";
+}
 function zDef(nom){ var Z = zoomCatalogue(); return Z ? Z.FX[nom] || null : null; }
 function zCat(nom){ var d = zDef(nom); return d ? d.cat : ""; }
 function zCatLabel(cat){
@@ -6714,7 +6751,7 @@ function zCheckHtml(p){
 }
 function refreshZCheck(){
   var z = document.getElementById("zcheck");
-  if (z && draft && draft.kind === "zoom") z.innerHTML = tHtml(zCheckHtml(draft));
+  if (z && draft && estB2(draft)) z.innerHTML = tHtml(zCheckHtml(draft));
 }
 
 function zoomBassEditor(p){
@@ -6776,6 +6813,11 @@ function zoomEditor(p){
   var Z = zoomCatalogue(), h = "";
   if (!Z) return '<p class="hint">' + esc("Catalogue Zoom indisponible : la fiche n'est pas modifiable ici.") + '</p>';
   var chain = p.chain || [];
+  /* Un autre multi-effet se choisit ici ; ses boutons prennent alors la place
+     des outils du B2 FOUR, et la chaîne reste gardée dans la fiche. */
+  h += '<label class="fld">Appareil<select data-gear>' + gearList("multi").map(function(x){
+    return '<option value="' + esc(x.id) + '"' + (x.id === gearId(p) ? " selected" : "") + '>' + esc(gearName(x.g)) + '</option>';
+  }).join("") + '</select></label>';
   h += '<fieldset style="--acc:var(--zoom)"><legend>Patch du B2 FOUR</legend>';
   h += '<div class="row">' +
     '<label class="fld">Numéro (001 à 300)<input type="number" min="1" max="300" step="1" data-fn="patch" value="' +
@@ -6787,13 +6829,20 @@ function zoomEditor(p){
   h += '<p class="hint">Les patchs d\'usine occupent 001 à 250 : 251 à 300 restent libres sans rien écraser. ' +
        'Un nom ne prend que lettres, chiffres, espace et ! % & \' + , - . = _ ; ceux d\'usine font 14 caractères au plus.</p>';
   var familles = [];
-  library().forEach(function(x){ if (x.kind === "zoom" && x.family && familles.indexOf(x.family) < 0) familles.push(x.family); });
-  h += '<label class="fld">Famille sonore<input type="text" data-f="family" list="zfamilles" value="' + esc(p.family || "") +
-    '" placeholder="' + esc("Clean Rock, Indie Drive, Punk Attack…") + '"></label>' +
-    '<datalist id="zfamilles">' + familles.map(function(f){ return '<option value="' + esc(f) + '">'; }).join("") + '</datalist>';
+  library().forEach(function(x){ if (estB2(x) && x.family && familles.indexOf(x.family) < 0) familles.push(x.family); });
+  /* Choisie parmi celles déjà créées ; une nouvelle se nomme à part. */
+  var famNeuve = zFamNouvelle || (!!p.family && familles.indexOf(p.family) < 0);
+  h += '<label class="fld">Famille sonore<select data-zfam>' +
+    '<option value="">—</option>' +
+    familles.map(function(f){
+      return '<option value="' + esc(f) + '"' + (!famNeuve && p.family === f ? " selected" : "") + '>' + esc(f) + '</option>';
+    }).join("") +
+    '<option value="__nouvelle"' + (famNeuve ? " selected" : "") + '>' + esc("Nouvelle famille…") + '</option></select></label>';
+  if (famNeuve) h += '<label class="fld">Nom de la nouvelle famille<input type="text" data-f="family" value="' +
+    esc(p.family || "") + '" placeholder="' + esc("Clean Rock, Indie Drive, Punk Attack…") + '"></label>';
   h += '<p class="hint">Un preset par famille de son, pas par morceau : la banque reste courte et le pédalier ' +
        'change peu. Une variante ne se justifie que si un morceau demande vraiment autre chose.</p>';
-  var autres = library().filter(function(x){ return x.kind === "zoom" && x.id !== p.id; });
+  var autres = library().filter(function(x){ return estB2(x) && x.id !== p.id; });
   h += '<div class="row">' +
     '<label class="fld">Variante<input type="text" data-f="variant" value="' + esc(p.variant || "") +
       '" placeholder="' + esc("Couplet, refrain, sans saturation…") + '"></label>' +
@@ -6851,16 +6900,30 @@ function zoomEditor(p){
   return h;
 }
 
-/** Les morceaux que sert la fiche, avec un raccourci vers ceux déjà connus. */
-function zoomSongsEditor(p){
-  var ms = Array.isArray(p.songs) ? p.songs : [], dans = ms.map(cleDe);
-  var connus = {}, liste = [];
+/** « Titre — Artiste » redevient un morceau. Le dernier tiret sépare l'artiste. */
+function morceauDeCle(k){
+  var i = String(k).lastIndexOf(" — ");
+  return i < 0 ? {title:String(k), artist:""} : {title:k.slice(0, i), artist:k.slice(i + 3)};
+}
+/** Les morceaux déjà enregistrés : ceux des fiches, et ceux des setlists. */
+function morceauxEnregistres(){
+  var vus = {}, out = [];
   library().forEach(function(x){
     morceauxDe(x).forEach(function(m){
       var k = cleDe(m);
-      if (!connus[k] && dans.indexOf(k) < 0){ connus[k] = 1; liste.push(k); }
+      if (!vus[k]){ vus[k] = 1; out.push(k); }
     });
   });
+  setlists().forEach(function(set){
+    (set.songs || []).forEach(function(k){ if (k && !vus[k]){ vus[k] = 1; out.push(k); } });
+  });
+  return out;
+}
+
+/** Les morceaux que sert la fiche, avec un raccourci vers ceux déjà connus. */
+function zoomSongsEditor(p){
+  var ms = Array.isArray(p.songs) ? p.songs : [], dans = ms.map(cleDe);
+  var liste = morceauxEnregistres().filter(function(k){ return dans.indexOf(k) < 0; });
   liste.sort(function(a, b){ return a.localeCompare(b, "fr"); });
   var h = '<fieldset style="--acc:var(--zoom)"><legend>Morceaux servis</legend>' +
     '<p class="hint">Les morceaux de la setlist pour lesquels ce preset convient.</p>';
@@ -6881,7 +6944,7 @@ function zoomSongsEditor(p){
 /** Une fiche Zoom vierge, la basse en façade par défaut. */
 function blankZoom(id){
   var Z = zoomCatalogue();
-  var p = Z ? Z.blankPreset(id) : {id:id, kind:"zoom", gear:"b2four", name:"", tags:[], chain:[],
+  var p = Z ? Z.blankPreset(id) : {id:id, kind:"multi", gear:"b2four", name:"", tags:[], chain:[],
                                     level:{state:"a-verifier", note:""}, notes:""};
   p.song = null;
   p.songs = [];
@@ -6913,12 +6976,12 @@ function banqueDe(set){
     return pa - pb2 || String(a.name).localeCompare(String(b.name));
   };
   if (!set){
-    return library().filter(function(p){ return p.kind === "zoom"; }).sort(tri);
+    return library().filter(estB2).sort(tri);
   }
   /* Une famille sert plusieurs morceaux : elle n'entre qu'une fois, et la
      banque se lit dans l'ordre des patchs, celui du pédalier. */
   library().forEach(function(p){
-    if (p.kind !== "zoom") return;
+    if (!estB2(p)) return;
     if (clesMorceaux(p).some(function(k){ return set.songs.indexOf(k) >= 0; })) out.push(p);
   });
   return out.sort(tri);
@@ -6975,9 +7038,14 @@ function zoomBankSection(set){
     h += '<p class="hint">Aucune fiche Zoom pour les morceaux de cette setlist.</p>';
   } else {
     var cv = couverture(set);
-    h += '<p class="zstat">' + esc(tf("{0} presets pour {1} morceaux · {2} changements de patch sur le set",
-           cv.presets, set.songs.length, cv.changements)) +
-         (cv.sans ? ' · <span class="bad">' + esc(tf("{0} morceau(x) sans preset", cv.sans)) + '</span>' : "") + '</p>';
+    /* Le pluriel à la française : à partir de deux. */
+    var nb = set.songs.length;
+    h += '<p class="zstat">' +
+         esc(tf(cv.presets > 1 ? "{0} presets" : "{0} preset", cv.presets)) + ' ' +
+         esc(tf(nb > 1 ? "pour {0} morceaux" : "pour {0} morceau", nb)) + ' · ' +
+         esc(tf(cv.changements > 1 ? "{0} changements de patch sur le set" : "{0} changement de patch sur le set", cv.changements)) +
+         (cv.sans ? ' · <span class="bad">' + esc(tf(cv.sans > 1 ? "{0} morceaux sans preset" : "{0} morceau sans preset", cv.sans)) +
+           '</span>' : "") + '</p>';
     var avis = [];
     Z.validateBank(enveloppeBanque(set)).presets.forEach(function(x){
       x.warnings.forEach(function(w){
@@ -7022,7 +7090,7 @@ function zoomBankSection(set){
 function ajouteFiche(env){
   var p = migreFiche(clone(env.preset)), warnings = [];
   if (!p || !p.kind || !KINDS[p.kind]) return {ok:false, errors:[{m:"Ce fichier ne contient pas de fiche."}], warnings:[]};
-  if (p.kind === "zoom"){
+  if (estB2(p)){
     var Z = zoomCatalogue();
     if (!Z) return {ok:false, errors:[{m:"Le catalogue Zoom n'est pas chargé."}], warnings:[]};
     var r = Z.validatePreset(p);
@@ -7039,7 +7107,7 @@ function ajouteFiche(env){
   var manque = (p.kind === "board" ? (p.slots || []).map(function(x){ return x.gear; })
                                    : (p.gear ? [p.gear] : [])).filter(function(k){ return !allGear()[k]; });
   if (manque.length) return {ok:false, errors:[{m:"Façade absente : {0}", a:[manque.join(", ")]}], warnings:warnings};
-  if (p.kind === "zoom" && p.bass && p.bass.gear && !allGear()[p.bass.gear]){
+  if (estB2(p) && p.bass && p.bass.gear && !allGear()[p.bass.gear]){
     warnings.push({m:"Basse inconnue ici : {0} — ses réglages sont conservés.", a:[p.bass.gear]});
   }
   S.custom.push(p);
@@ -7314,7 +7382,7 @@ function openNewSheet(){
         '<button class="btn" data-newkind="pedal">Pédale</button>' +
         '<button class="btn" data-newkind="board">Pédalier</button>' +
         '<button class="btn" data-newkind="reaper">Chaîne Reaper</button>' +
-        '<button class="btn" data-newkind="zoom">Zoom B2 FOUR</button>' +
+        '<button class="btn" data-newkind="multi">Multi-effet</button>' +
       '</div></div></div>');
   veil.classList.add("open");
 }
@@ -7493,14 +7561,14 @@ document.getElementById("veil").addEventListener("click", function(e){
     refreshBody(); return;
   }
   var zsa = t.closest("[data-zsact]");
-  if (zsa && draft.kind === "zoom"){
+  if (zsa && estB2(draft)){
     draft.songs = Array.isArray(draft.songs) ? draft.songs : [];
     if (zsa.getAttribute("data-zsact") === "add") draft.songs.push({title:"", artist:""});
     else draft.songs.splice(parseInt(zsa.closest("[data-zs]").getAttribute("data-zs"), 10), 1);
     refreshBody(); return;
   }
   var za = t.closest("[data-zact]");
-  if (za && draft.kind === "zoom"){
+  if (za && estB2(draft)){
     var zi = parseInt(za.closest("[data-zi]").getAttribute("data-zi"), 10), zc = draft.chain;
     var zq = za.getAttribute("data-zact");
     if (zq === "rm") zc.splice(zi, 1);
@@ -7737,7 +7805,7 @@ document.getElementById("veil").addEventListener("input", function(e){
     }
   }
 
-  if (draft.kind === "zoom"){
+  if (estB2(draft)){
     if (t.hasAttribute("data-zbgear")){
       draft.bass = t.value ? bassNeuve(t.value, draft.bass) : null;
       refreshBody(); return;
@@ -7752,8 +7820,17 @@ document.getElementById("veil").addEventListener("input", function(e){
       if (t.value){
         var trouve = null;
         library().forEach(function(x){ morceauxDe(x).forEach(function(m){ if (!trouve && cleDe(m) === t.value) trouve = m; }); });
-        if (trouve) (draft.songs = draft.songs || []).push({title:trouve.title, artist:trouve.artist || ""});
+        if (!trouve) trouve = morceauDeCle(t.value);         /* un morceau de setlist */
+        (draft.songs = draft.songs || []).push({title:trouve.title, artist:trouve.artist || ""});
       }
+      refreshBody(); return;
+    }
+    if (t.hasAttribute("data-zfam")){
+      zFamNouvelle = t.value === "__nouvelle";
+      draft.family = zFamNouvelle ? "" : t.value;
+      /* Le preset porte le nom de sa famille : proposé, jamais imposé. */
+      if (draft.family && !draft.name) draft.name = draft.family.toUpperCase();
+      if (draft.family && !draft.patchName) draft.patchName = draft.family.toUpperCase();
       refreshBody(); return;
     }
     if (t.hasAttribute("data-zadd")){
@@ -7868,7 +7945,9 @@ window.__pb = {
   importerBanque: importerBanque, banqueDe: banqueDe, enveloppeBanque: enveloppeBanque, exportBank: exportBank,
   creerVariante: creerVariante, blank: blank, bassVue: bassVue, zoomBankSection: zoomBankSection,
   apercuFiche: apercuFiche, compareRows: compareRows, zMsg: zMsg,
-  morceauxDe: morceauxDe, clesMorceaux: clesMorceaux, couverture: couverture, zoomSongsEditor: zoomSongsEditor, fmtParam: fmtParam,
+  morceauxDe: morceauxDe, clesMorceaux: clesMorceaux, couverture: couverture, zoomSongsEditor: zoomSongsEditor,
+  estB2: estB2, morceauDeCle: morceauDeCle, morceauxEnregistres: morceauxEnregistres, KINDS: KINDS,
+  card: card, rassembleIsoles: rassembleIsoles, fmtParam: fmtParam,
   chargerSauvegarde: chargerSauvegarde, doImport: doImport,
   depotActif: depotActif, depotFini: depotFini,
   openSets: openSets, openSetEditor: openSetEditor, setlists: setlists, setlistDe: setlistDe,

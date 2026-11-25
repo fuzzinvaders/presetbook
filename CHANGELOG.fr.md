@@ -10,7 +10,7 @@ données : elles vivent dans un volume que l'image ne connaît pas.
 Pour rester sur une version précise plutôt que de suivre la pointe :
 
 ```yaml
-image: ghcr.io/fuzzinvaders/presetbook:v1.15.0   # au lieu de :latest
+image: ghcr.io/fuzzinvaders/presetbook:v1.16.0   # au lieu de :latest
 ```
 
 Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
@@ -19,6 +19,31 @@ Et pour savoir laquelle tourne chez toi, sans fouiller le conteneur :
 curl -s https://ton-domaine/healthz
 docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' presetbook
 ```
+
+---
+
+## 1.16.0 — 25 novembre 2026
+
+### Ajouté
+
+- **Une catégorie Multi-effet**, distincte du pédalier : un pédalier enchaîne des pédales séparées, un multi-effet les
+  réunit dans un seul appareil. Elle a son onglet, sa section dans *Matériel* et son entrée dans *Nouveau preset*. Le
+  Zoom B2 FOUR y est rangé avec tous ses outils — catalogue, chaîne, patchs, banque. Un autre modèle (Zoom B6, HX
+  Stomp…) s'y ajoute depuis *Matériel* et se décrit par ses boutons, comme un ampli, sans hériter de la structure du
+  B2 FOUR.
+- La famille sonore d'un preset se **choisit dans une liste** des familles déjà créées ; *Nouvelle famille…* en
+  nomme une. Le nom du preset et celui de l'appareil la reprennent s'ils sont vides.
+- *Morceaux servis* propose aussi les morceaux des **setlists**, pas seulement ceux des fiches.
+
+### Modifié
+
+- **Les fiches « zoom » des versions 1.14 et 1.15 deviennent des multi-effets** à l'ouverture et à l'import : même
+  identifiant, même appareil, mêmes réglages, mêmes morceaux, mêmes banques. L'ancienne adresse `?kind=zoom` ouvre
+  l'onglet Multi-effet. Une fiche exportée désormais porte `kind: "multi"`.
+- Seul dans sa section, un multi-effet garde son titre en « Par matériel » au lieu de se perdre parmi les « Autres ».
+- L'exemple REPTILIA devient **INDIE DRIVE** (`docs/exemples/indie-drive.presetbook.json`) : seuls le nom, le nom sur
+  l'appareil et la catégorie changent ; chaîne, paramètres et réglages de basse sont identiques, et il ne sert
+  toujours que Reptilia — The Strokes.
 
 ---
 

@@ -19,7 +19,7 @@ ici, et la section [Le matériel](#le-matériel) explique comment le déclarer.
 | **Pédale** | l'effet choisi et ses réglages, avec le dessin du boîtier |
 | **Pédalier** | des pédales dans l'ordre du signal, chacune avec ses réglages et son état |
 | **Chaîne** | le tempo, l'accordage, et les plugins dans l'ordre, avec leurs vrais paramètres |
-| **Zoom** | un patch du Zoom B2 FOUR : numéro, effets et ampli dans l'ordre, la basse et son jeu, le niveau à vérifier |
+| **Multi-effet** | un appareil qui réunit plusieurs effets. Pour le Zoom B2 FOUR : un patch, avec son numéro, ses effets et son ampli dans l'ordre, la basse et son jeu, le niveau à vérifier |
 
 Chaque fiche peut être rattachée à un **morceau** (titre et artiste). C'est ce qui permet de
 rassembler d'un côté la basse, l'ampli et la chaîne d'une même reprise.
@@ -434,7 +434,11 @@ que le son exporté change.
 
 ## Le Zoom B2 FOUR
 
-Une fiche **Zoom** décrit un patch du multi-effets basse, pensé comme une **famille sonore** (Clean Rock, Indie
+Le B2 FOUR est rangé en **Multi-effet**, une catégorie distincte du pédalier : un pédalier enchaîne des pédales
+séparées, un multi-effet les réunit dans un seul appareil. Un autre modèle s'y ajoute depuis *Matériel*, décrit par
+ses boutons ; les outils ci-dessous sont propres au B2 FOUR.
+
+Une fiche du B2 FOUR décrit un patch du multi-effets basse, pensé comme une **famille sonore** (Clean Rock, Indie
 Drive, Punk Attack…) qui sert plusieurs morceaux, et non comme un patch par morceau : quelques familles jouent tout
 un set avec peu de changements au pédalier. Elle porte son numéro (001 à 300), la liste des morceaux servis, les
 effets dans l'ordre du signal — cinq au plus, un seul ampli, une seule pédale —, chacun avec ses paramètres sous leur nom exact, la basse
@@ -455,7 +459,7 @@ propre numéro de patch, pour les seuls morceaux qui la demandent. Une fiche ou 
 Ce JSON est le format de Presetbook, pas un fichier que le B2 FOUR sait charger : les réglages se recopient sur
 l'appareil. Tout le détail — format, contrôles, limites, liste des effets — est dans
 [zoom-b2four.md](zoom-b2four.md), avec un exemple importable :
-[exemples/reptilia.presetbook.json](exemples/reptilia.presetbook.json).
+[exemples/indie-drive.presetbook.json](exemples/indie-drive.presetbook.json).
 
 ## Le catalogue et vos données
 

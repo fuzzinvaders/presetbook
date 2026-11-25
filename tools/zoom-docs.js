@@ -146,7 +146,7 @@ function schema() {
         type: "object", required: ["kind", "name", "chain"],
         properties: {
           id: { type: "string" },
-          kind: { const: "zoom" },
+          kind: { enum: ["multi", "zoom"], description: "« multi » (Multi-effet) depuis la 1.16 ; « zoom » pour les fiches 1.14 et 1.15, converties à l'import." },
           gear: { const: "b2four" },
           catalog: { type: "string" },
           name: { type: "string", minLength: 1 },

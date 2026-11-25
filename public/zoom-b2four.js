@@ -368,7 +368,10 @@
   function validatePreset(p) {
     var errors = [], warnings = [];
     if (!p || typeof p !== "object") return { errors: [msg("La fiche n'est pas un objet.")], warnings: [] };
-    if (p.kind !== "zoom") errors.push(msg("Genre inattendu : {0}", [String(p.kind)]));
+    /* « multi » depuis la 1.16 ; « zoom » est le genre des fiches 1.14 et 1.15,
+       que Presetbook convertit à l'import. */
+    if (p.kind !== "multi" && p.kind !== "zoom") errors.push(msg("Genre inattendu : {0}", [String(p.kind)]));
+    else if (p.gear && p.gear !== "b2four") errors.push(msg("Appareil {0} : cette fiche n'est pas un patch du B2 FOUR.", [String(p.gear)]));
     if (!p.name || typeof p.name !== "string") errors.push(msg("Nom manquant."));
     if (!Array.isArray(p.chain)) {
       errors.push(msg("La chaîne d'effets manque."));
@@ -556,7 +559,7 @@
   /** Une fiche vide, prête à remplir. */
   function blankPreset(id) {
     return {
-      id: id, kind: "zoom", gear: "b2four", catalog: CATALOG, name: "", tags: [], patch: null, tempo: null,
+      id: id, kind: "multi", gear: "b2four", catalog: CATALOG, name: "", tags: [], patch: null, tempo: null,
       song: null, songs: [], family: "", bass: null, chain: [],
       level: { state: "a-verifier", note: "" }, variant: "", variantOf: null, notes: ""
     };

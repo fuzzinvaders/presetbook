@@ -64,7 +64,7 @@ check("300 patchs, numérotés à partir de 001", Z.LIMITS.patchMin === 1 && Z.L
 
 /* --- les règles de l'appareil ------------------------------------------- */
 function fiche(chain, extra) {
-  return Object.assign({ id: "u-t", kind: "zoom", gear: "b2four", name: "TEST", chain: chain }, extra || {});
+  return Object.assign({ id: "u-t", kind: "multi", gear: "b2four", name: "TEST", chain: chain }, extra || {});
 }
 const b = (fx, p) => ({ fx: fx, on: true, p: p || {} });
 const v = (p) => Z.validatePreset(p);
@@ -97,15 +97,28 @@ check("un nom de plus de 14 caractères est signalé", v(fiche([], { name: "UN N
 check("un autre catalogue est signalé", v(fiche([], { catalog: "B2FOUR-FX/AUTRE" })).warnings.length === 1);
 
 /* --- les exemples livrés ------------------------------------------------- */
-const exFiche = lireJson("reptilia.presetbook.json");
+const exFiche = lireJson("indie-drive.presetbook.json");
+/* La fiche telle que la 1.15 l'écrivait : genre « zoom », nom REPTILIA. */
+const fiche115 = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "reptilia-1.15.presetbook.json"), "utf8"));
 const exBanque = lireJson("yaserock64-exemple.b2four-bank.json");
 const rEx = v(exFiche.preset);
-check("REPTILIA est conforme, sans un avertissement", rEx.errors.length === 0 && rEx.warnings.length === 0,
+check("INDIE DRIVE est conforme, sans un avertissement", rEx.errors.length === 0 && rEx.warnings.length === 0,
   JSON.stringify(rEx));
 check("REPTILIA tient dans l'appareil : 4 effets dont un ampli",
   exFiche.preset.chain.length === 4 && exFiche.preset.chain.filter((x) => Z.FX[x.fx].cat === "BASS AMP").length === 1);
 check("REPTILIA prend un patch libre, hors des patchs d'usine",
   exFiche.preset.patch > Z.LIMITS.factoryMax && exFiche.preset.patch <= Z.LIMITS.patchMax);
+/* --- REPTILIA devient INDIE DRIVE : le nom change, pas le son ------------- */
+check("le preset s'appelle INDIE DRIVE, sur la fiche et sur l'appareil",
+  exFiche.preset.name === "INDIE DRIVE" && exFiche.preset.patchName === "INDIE DRIVE");
+const differents = Object.keys(Object.assign({}, fiche115.preset, exFiche.preset))
+  .filter((k) => JSON.stringify(fiche115.preset[k]) !== JSON.stringify(exFiche.preset[k])).sort();
+check("seuls le genre et les deux noms ont changé depuis REPTILIA",
+  differents.join(",") === "kind,name,patchName", differents.join(","));
+check("la chaîne d'effets est identique, réglage par réglage",
+  JSON.stringify(exFiche.preset.chain) === JSON.stringify(fiche115.preset.chain));
+check("la basse et ses réglages aussi", JSON.stringify(exFiche.preset.bass) === JSON.stringify(fiche115.preset.bass));
+check("le même identifiant : les liens tiennent", exFiche.preset.id === fiche115.preset.id);
 check("REPTILIA est de la famille Indie Drive, et sert Reptilia",
   exFiche.preset.family === "Indie Drive" && exFiche.preset.song === null &&
   JSON.stringify(exFiche.preset.songs) === JSON.stringify([{ title: "Reptilia", artist: "The Strokes" }]));
@@ -173,6 +186,78 @@ check("le schéma borne la chaîne à cinq blocs, un ampli, une pédale",
   sch.$defs.fiche.properties.chain.maxItems === 5 &&
   sch.$defs.fiche.properties.chain.allOf.every((x) => x.maxContains === 1));
 
+/* --- la catégorie Multi-effet ------------------------------------------- */
+const wk = run(page, { search: "", ZB2F: Z });
+const pk = wk.__pb;
+check("une catégorie Multi-effet, distincte du pédalier",
+  pk.KINDS.multi && pk.KINDS.multi.label === "Multi-effet" && pk.KINDS.board && !pk.KINDS.zoom);
+check("le B2 FOUR est rangé en Multi-effet", pk.GEAR.b2four.kind === "multi");
+check("un onglet Multi-effet, juste après Pédalier",
+  /data-k="board"[\s\S]*?<\/button><button class="tab" role="tab" data-k="multi"[^>]*>Multi-effet/.test(wk.__nodes.get("tabs").innerHTML));
+pk.openGearList();
+const materiel = wk.__nodes.get("veil").innerHTML;
+check("l'écran Matériel a sa section Multi-effets, avec le B2 FOUR",
+  /<legend>Multi-effets<\/legend>[\s\S]*Zoom B2 FOUR/.test(materiel) && /data-gnew="multi"/.test(materiel));
+check("le nouveau preset propose Multi-effet", (() => {
+  const src = fs.readFileSync(page, "utf8");
+  return /data-newkind="multi">Multi-effet</.test(src) && !/data-newkind="zoom"/.test(src);
+})());
+const wu = run(page, { search: "?kind=zoom", ZB2F: Z });
+check("l'ancienne adresse ?kind=zoom ouvre l'onglet Multi-effet", wu.__pb.ui().kind === "multi", wu.__pb.ui().kind);
+
+/* une fiche 1.15 s'importe, convertie, sans rien perdre */
+pk.addPreset(copie(fiche115));
+const migree = pk.findPreset("u-reptilia");
+check("une fiche 1.15 entre en Multi-effet, même identifiant", !!migree && migree.kind === "multi" && migree.gear === "b2four");
+check("avec sa chaîne, sa basse et ses morceaux intacts",
+  JSON.stringify(migree.chain) === JSON.stringify(fiche115.preset.chain) &&
+  JSON.stringify(migree.bass) === JSON.stringify(fiche115.preset.bass) &&
+  JSON.stringify(migree.songs) === JSON.stringify(fiche115.preset.songs));
+check("son nom n'est pas changé à son insu", migree.name === "Reptilia");
+
+/* un état enregistré en 1.15 : fiche « zoom » et setlist, tout suit */
+const etat115 = pk.normalize({ custom: [copie(fiche115.preset)],
+  sets: [{ id: "s-1", name: "YASE", songs: ["Reptilia — The Strokes", "Psycho Killer — Talking Heads"], di: "TUBE 1" }] });
+check("l'état 1.15 est converti au chargement", etat115.custom[0].kind === "multi" && etat115.sets[0].di === "TUBE 1");
+const wm = run(page, { search: "", ZB2F: Z });
+wm.__pb.setState(etat115);
+const cvm = wm.__pb.couverture(etat115.sets[0]);
+check("la banque de la setlist retrouve la fiche convertie",
+  cvm.presets === 1 && cvm.lignes[0].principal && cvm.lignes[0].principal.id === "u-reptilia" && cvm.sans === 1);
+
+/* un multi-effet seul ne se perd plus parmi les « Autres » */
+const groupes = pk.rassembleIsoles([["Zoom B2 FOUR", [migree]], ["A", [{ kind: "bass" }]], ["B", [{ kind: "amp" }]]]);
+check("seul dans sa section, le B2 FOUR garde son titre",
+  groupes.some((g) => g[0] === "Zoom B2 FOUR") && groupes.some((g) => g[0] === "Autres"));
+
+/* un autre multi-effet : ses boutons, pas la structure du B2 FOUR */
+const S0 = pk.getState();
+S0.gear["g-hx"] = { kind: "multi", brand: "Line 6", model: "HX Stomp", face: "plain", controls: [
+  { k: "c.vol", t: "scale", l: "Volume", min: 0, max: 10, step: 0.5, d: 5 }] };
+const hx = pk.blank("multi");
+hx.gear = "g-hx"; hx.name = "Essai HX";
+pk.applyGearDefaults(hx);
+check("une fiche d'un autre multi-effet n'est pas un patch du B2 FOUR", !pk.estB2(hx));
+check("sa carte montre ses boutons", (() => { const h = pk.card(hx); return h.indexOf("Line 6 HX Stomp") >= 0 && h.indexOf("zpath") < 0; })());
+pk.openEditor(hx, true);
+const edHx = wk.__nodes.get("veil").innerHTML;
+check("son éditeur est celui des façades, sans catalogue Zoom", /data-sl="c.vol"/.test(edHx) && !/data-zi=/.test(edHx));
+check("et le B2 FOUR reste choisissable comme appareil", /<option value="b2four"/.test(edHx));
+pk.closeEditor && pk.closeEditor();
+
+/* la famille se choisit parmi celles qui existent ; une nouvelle se nomme à part */
+pk.openEditor(migree, false);
+const edFam = wk.__nodes.get("veil").innerHTML;
+check("la famille se choisit dans une liste", /<select data-zfam>/.test(edFam) &&
+  /<option value="Indie Drive" selected>/.test(edFam) && /value="__nouvelle"/.test(edFam));
+check("sans champ libre tant qu'on ne crée pas de famille", !/data-f="family"/.test(edFam));
+check("un morceau de setlist se reprend tel quel", (() => {
+  pk.getState().sets = [{ id: "s-2", name: "Set", songs: ["Psycho Killer — Talking Heads"] }];
+  const h = pk.zoomSongsEditor(pk.getDraft());
+  const m = pk.morceauDeCle("Psycho Killer — Talking Heads");
+  return /<option value="Psycho Killer — Talking Heads">/.test(h) && m.title === "Psycho Killer" && m.artist === "Talking Heads";
+})());
+
 /* --- dans la page -------------------------------------------------------- */
 const w = run(page, { search: "", ZB2F: Z });
 const pb = w.__pb;
@@ -203,7 +288,8 @@ check("et les morceaux servis", carte.indexOf("Pour 1 morceau") >= 0 && carte.in
 pb.openEditor(rep, false);
 const ed = w.__nodes.get("veil").innerHTML;
 check("l'éditeur a un bloc par effet", (ed.match(/data-zi="/g) || []).length === 4);
-check("l'éditeur demande la famille, avec celles déjà nommées", /data-f="family"/.test(ed) && /<datalist id="zfamilles">/.test(ed));
+check("l'éditeur demande la famille, parmi celles déjà nommées", /<select data-zfam>/.test(ed) &&
+  /<option value="Indie Drive" selected>/.test(ed));
 check("l'éditeur liste les morceaux servis, un par ligne", (ed.match(/data-zs="/g) || []).length === 1 &&
   /data-zsact="add"/.test(ed));
 check("le champ « morceau » unique a disparu pour une famille", !/data-f="song.title"/.test(ed));
@@ -263,7 +349,7 @@ check("un morceau sans preset se voit", cv.sans === 1 && cv.lignes[3].principal 
 check("le set compte ses changements de patch", cv.changements === 2 && cv.presets === 3, JSON.stringify(cv));
 const section = p3.zoomBankSection(sets3[0]);
 check("la banque le dit en une ligne", /3 presets pour 4 morceaux · 2 changements de patch sur le set/.test(section) &&
-  /1 morceau\(x\) sans preset/.test(section));
+  /1 morceau sans preset/.test(section));
 check("une famille paraît sous chacun de ses morceaux quand on range par morceau",
   (() => { p3.ui().group = "song"; p3.render(); const h = w3.__nodes.get("list").innerHTML;
            return (h.match(/data-id="u-reptilia"/g) || []).length === 3; })());
@@ -286,7 +372,7 @@ check("avec son DI MODEL", w4.__pb.getState().sets[0].di === "TUBE 2");
 
 /* réimportée dans la même bibliothèque : rien n'est écrasé, les liens suivent */
 p3.importerBanque(copie(env3));
-const copies = p3.library().filter((x) => x.kind === "zoom");
+const copies = p3.library().filter((x) => x.kind === "multi");
 const neuveSat = copies.find((x) => x.id !== "u-indie-refrain" && x.name.indexOf("refrain") >= 0);
 const neuveRep = copies.find((x) => x.id !== "u-reptilia" && x.family === "Indie Drive" && !x.variantOf);
 check("réimportée sur elle-même, elle s'ajoute sans rien écraser", copies.length === 6);
@@ -381,9 +467,9 @@ Object.keys(ecrans).forEach((nom) => {
     await fetch(BASE + "/api/presets", { method: "PUT",
       headers: { "Content-Type": "application/json", Cookie: cookie }, body: JSON.stringify(etat) });
     const relu = await (await fetch(BASE + "/api/presets", { headers: { Cookie: cookie } })).json();
-    const zr = (relu.custom || []).filter((x) => x.kind === "zoom");
+    const zr = (relu.custom || []).filter((x) => x.kind === "multi");
     check("le serveur garde les fiches Zoom telles quelles",
-      zr.length === 6 && JSON.stringify(zr[0]) === JSON.stringify(etat.custom.filter((x) => x.kind === "zoom")[0]));
+      zr.length === 6 && JSON.stringify(zr[0]) === JSON.stringify(etat.custom.filter((x) => x.kind === "multi")[0]));
     check("et le DI MODEL de la banque", (relu.sets || []).some((x) => x.di === "TUBE 2"), JSON.stringify(relu.sets));
   } catch (e) {
     failed++; console.log("  ÉCHEC serveur — " + e.message);

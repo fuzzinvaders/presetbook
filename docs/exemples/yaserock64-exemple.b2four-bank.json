@@ -10,11 +10,11 @@
   "presets": [
     {
       "id": "u-reptilia",
-      "kind": "zoom",
+      "kind": "multi",
       "gear": "b2four",
       "catalog": "B2FOUR-FX/Z2I-4875-01",
-      "name": "Reptilia",
-      "patchName": "REPTILIA",
+      "name": "INDIE DRIVE",
+      "patchName": "INDIE DRIVE",
       "patch": 251,
       "tempo": null,
       "family": "Indie Drive",

@@ -28,7 +28,8 @@ check("les fiches qui l'utilisent sont comptées", /1[0-9] fiches/.test(liste), 
 check("une façade livrée est signalée", /· livré/.test(liste));
 check("on peut dupliquer une façade livrée", /data-gdup/.test(liste));
 check("on ne peut pas modifier une façade livrée", !/data-gedit/.test(liste));
-check("bouton de création par famille", (liste.match(/data-gnew/g) || []).length === 3,
+/* instruments, amplis, pédales, multi-effets */
+check("bouton de création par famille", (liste.match(/data-gnew/g) || []).length === 4,
   String((liste.match(/data-gnew/g) || []).length));
 check("section pédales", /<legend>Pédales<\/legend>/.test(liste));
 

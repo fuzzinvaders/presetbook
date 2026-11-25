@@ -4,6 +4,11 @@ Presetbook décrit des patchs du multi-effets basse **Zoom B2 FOUR** : la chaîn
 modèles d'ampli et leurs réglages, la basse et la façon de la jouer, le niveau à vérifier en groupe. Les fiches
 s'organisent en **banques** (une setlist), s'exportent et se réimportent en JSON.
 
+Le B2 FOUR est rangé dans la catégorie **Multi-effet** : un appareil qui réunit plusieurs effets, à ne pas confondre
+avec un pédalier, qui enchaîne des pédales séparées. Les outils décrits ici — catalogue, chaîne, patchs, banque —
+sont propres au B2 FOUR ; un autre multi-effet (Zoom B6, HX Stomp…) se décrit dans *Matériel* par ses boutons, comme
+un ampli, sans hériter de cette structure.
+
 **Un preset par famille sonore, pas par morceau.** Une fiche représente une famille cohérente — Clean Rock, Indie
 Drive, Punk Attack, New Wave… — et liste les morceaux qu'elle sert. Une banque de six à huit familles joue tout un
 set avec peu de patchs et peu de changements au pédalier ; une variante ne s'ajoute que lorsqu'un morceau demande
@@ -14,8 +19,8 @@ vraiment autre chose. Presetbook signale les doublons et les différences artifi
 
 - Liste exhaustive des effets et paramètres : [zoom-b2four-effets.md](zoom-b2four-effets.md)
 - Schéma JSON complet : [zoom-b2four.schema.json](zoom-b2four.schema.json)
-- Exemple importable, une fiche : [exemples/reptilia.presetbook.json](exemples/reptilia.presetbook.json)
-- Exemple importable, une banque (REPTILIA seul, point de départ de YASEROCK64) :
+- Exemple importable, une fiche : [exemples/indie-drive.presetbook.json](exemples/indie-drive.presetbook.json)
+- Exemple importable, une banque (INDIE DRIVE seul, point de départ de YASEROCK64) :
   [exemples/yaserock64-exemple.b2four-bank.json](exemples/yaserock64-exemple.b2four-bank.json)
 
 ## D'où viennent les données
@@ -45,7 +50,7 @@ des modules partagés entre la page et Node.
 | Fichier | Rôle |
 | --- | --- |
 | `public/zoom-b2four.js` | **nouveau** — le catalogue (104 effets), les limites de l'appareil, les contrôles (`validatePreset`, `validateBank`), l'enveloppe de banque. Seule source des données Zoom. |
-| `public/index.html` | un 6ᵉ genre de fiche, **Zoom** : carte, éditeur, variantes, comparaison, banque dans les setlists, import et export |
+| `public/index.html` | une catégorie de fiche **Multi-effet** ; pour le B2 FOUR : carte, éditeur, variantes, comparaison, banque dans les setlists, import et export |
 | `tools/zoom-docs.js` | **nouveau** — régénère la liste des effets et le schéma depuis le catalogue |
 | `test/zoom.test.js` | **nouveau** — catalogue, règles, import/export sans perte, banque, anglais, aller-retour serveur |
 | `server.js` | inchangé : les fiches personnelles et les setlists sont déjà conservées telles quelles |
@@ -54,12 +59,12 @@ Ce qui existait est réutilisé et n'a pas changé de comportement : l'enveloppe
 (`{v:1, presetbook:"preset", preset, gear}`), l'import par dépôt ou par sélecteur, la duplication, les setlists, le
 filtre par marque et par matériel, la comparaison. Les fiches des cinq autres genres ne sont pas touchées.
 
-## Modèle d'une fiche Zoom
+## Modèle d'une fiche du B2 FOUR
 
 ```json
 {
-  "id": "u-reptilia", "kind": "zoom", "gear": "b2four", "catalog": "B2FOUR-FX/Z2I-4875-01",
-  "name": "Reptilia", "patchName": "REPTILIA", "patch": 251, "tempo": null,
+  "id": "u-reptilia", "kind": "multi", "gear": "b2four", "catalog": "B2FOUR-FX/Z2I-4875-01",
+  "name": "INDIE DRIVE", "patchName": "INDIE DRIVE", "patch": 251, "tempo": null,
   "family": "Indie Drive",
   "songs": [{ "title": "Reptilia", "artist": "The Strokes" }],
   "tags": ["indie-rock", "garage-rock", "rock-alternatif"],
@@ -77,7 +82,9 @@ filtre par marque et par matériel, la comparaison. Les fiches des cinq autres g
 
 | Champ | Sens |
 | --- | --- |
-| `family` | la famille sonore : Clean Rock, Indie Drive, Punk Attack… |
+| `kind`, `gear` | `multi` (Multi-effet) et `b2four`. Les fiches 1.14 et 1.15 portaient `kind: "zoom"` : elles sont converties à l'ouverture et à l'import, même identifiant, mêmes réglages. |
+| `name`, `patchName` | le nom du preset, celui de sa famille sonore (« INDIE DRIVE »), et son nom sur l'appareil |
+| `family` | la famille sonore, choisie parmi celles déjà créées ou nommée une première fois : Clean Rock, Indie Drive, Punk Attack… |
 | `songs` | les morceaux que le preset sert, `{title, artist}`. Remplace le `song` unique de la 1.14 : une fiche qui le porte encore est convertie à l'ouverture ou à l'import. |
 | `patch` | mémoire 1 à 300 (affichée 001–300). 001–250 sont les patchs d'usine : 251–300 restent libres. |
 | `patchName` | nom sur l'appareil (par défaut, `name`) |
@@ -99,7 +106,7 @@ configuration de la **banque**. Une recommandation propre à un morceau peut all
 
 ## Une banque
 
-Une banque est une setlist : ses morceaux dans l'ordre, et les fiches Zoom qui en servent au moins un — chacune une
+Une banque est une setlist : ses morceaux dans l'ordre, et les fiches du B2 FOUR qui en servent au moins un — chacune une
 seule fois, triées par numéro de patch. Sa configuration porte le DI MODEL.
 
 L'écran de la banque dit, morceau par morceau, quel preset le joue (le principal, puis ses variantes), combien de
@@ -174,9 +181,11 @@ perdre aucune valeur.
 
 ## Créer, importer, modifier, exporter
 
-1. **Créer** — *Nouveau preset* → *Zoom B2 FOUR*. Donne le nom et les styles. Dans *Patch du B2 FOUR*, le numéro
-   (251 à 300 pour ne rien écraser), le nom sur l'appareil, le tempo si un delay le suit, et la **famille sonore**.
-   Dans *Morceaux servis*, ajoute chaque morceau que ce preset joue — ou reprends un morceau déjà saisi.
+1. **Créer** — *Nouveau preset* → *Multi-effet* (le B2 FOUR est l'appareil proposé). Dans *Patch du B2 FOUR*, choisis
+   la **famille sonore** dans la liste, ou *Nouvelle famille…* pour en nommer une : le nom du preset et celui de
+   l'appareil la reprennent s'ils sont vides. Puis le numéro (251 à 300 pour ne rien écraser) et le tempo si un delay
+   le suit. Dans *Morceaux servis*, ajoute chaque morceau que ce preset joue, à la main ou parmi ceux déjà
+   enregistrés — fiches et setlists ; ✕ retire l'association sans toucher au morceau. Rien n'est attribué tout seul.
 2. **La basse** — choisis l'instrument : ses boutons apparaissent comme sur sa fiche. Note les cordes, le tirant,
    le jeu et la technique.
 3. **La chaîne** — *+ Ajouter un effet*, par catégorie. Chaque bloc montre ses paramètres avec la plage du
